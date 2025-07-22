@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #ffffff;
@@ -23,4 +23,44 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes underline {
+  0% {
+    width: 0;
+    opacity: 1;
+  }
+  10% {
+    width: 10%;
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 1;
+  }
+}
+.animate-underline {
+  display: block;
+  height: 0.25em;
+  background: #ef4444;
+  border-radius: 9999px;
+  animation: underline 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 1 !important;
+}
+
+.svg-underline-animate path {
+  stroke-dasharray: 320;
+  stroke-dashoffset: 320;
+  animation: svg-underline-draw 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes svg-underline-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.svg-underline-static path {
+  stroke-dasharray: 320;
+  stroke-dashoffset: 0;
 }

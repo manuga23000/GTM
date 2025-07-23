@@ -2,7 +2,8 @@
 import Navbar from '@/components/layout/Navbar'
 import Hero from '@/components/sections/Hero'
 import QualitySolutions from '@/components/sections/QualitySolutions'
-import Services from '@/components/sections/Services'
+import ServiciosParticulares from '@/components/sections/ServiciosParticulares'
+import ServiciosEmpresariales from '@/components/sections/ServiciosEmpresariales'
 import BookingSection from '@/components/sections/BookingSection'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
 
@@ -12,7 +13,8 @@ export default function Home() {
       <Navbar />
       <Hero />
       <QualitySolutions />
-      <Services />
+      <ServiciosParticulares />
+      <ServiciosEmpresariales />
       <BookingSection />
       <WhatsAppButton />
     </div>

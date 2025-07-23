@@ -20,19 +20,17 @@ export default function Hero() {
   }, [])
 
   return (
-    <section className='relative pt-28 min-h-screen flex items-center'>
-      {/* Background Image */}
-      <div className='absolute inset-0'>
-        <Image
-          src='/images/hero-engine.png'
-          alt='Motor GTM'
-          fill
-          className='object-cover'
-          priority
-        />
-        {/* Overlay for text readability */}
-        <div className='absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/50'></div>
-      </div>
+    <section
+      className='relative pt-28 min-h-screen flex items-center'
+      style={{
+        backgroundImage: "url('/images/hero-engine1.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+      }}
+    >
+      {/* Overlay para legibilidad del texto */}
+      <div className='absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/50'></div>
 
       <div className='relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
@@ -51,27 +49,6 @@ export default function Hero() {
                 <br />
                 <span className='text-red-500 relative inline-block w-full pb-2'>
                   EXPERIENCIA
-                  <svg
-                    className={`absolute left-0 right-0 -bottom-2 w-full h-6 ${
-                      underline
-                        ? 'svg-underline-animate'
-                        : showLine
-                        ? 'svg-underline-static'
-                        : 'opacity-0'
-                    }`}
-                    viewBox='0 0 300 24'
-                    fill='none'
-                    xmlns='http://www.w3.org/2000/svg'
-                    preserveAspectRatio='none'
-                  >
-                    <path
-                      d='M10 20 Q150 40 290 20'
-                      stroke='#ef4444'
-                      strokeWidth='6'
-                      strokeLinecap='round'
-                      fill='none'
-                    />
-                  </svg>
                 </span>
               </h1>
             </div>
@@ -92,21 +69,7 @@ export default function Hero() {
       </div>
 
       <style jsx>{`
-        .svg-underline-animate path {
-          stroke-dasharray: 300;
-          stroke-dashoffset: 300;
-          animation: draw 1.2s ease-in-out forwards;
-        }
-
-        .svg-underline-static {
-          opacity: 1;
-        }
-
-        @keyframes draw {
-          to {
-            stroke-dashoffset: 0;
-          }
-        }
+        /* Elimino estilos relacionados al subrayado animado */
       `}</style>
     </section>
   )

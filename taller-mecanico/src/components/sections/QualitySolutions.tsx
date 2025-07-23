@@ -5,39 +5,50 @@ export default function QualitySolutions() {
     <section className='py-20 bg-white text-black'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
-          {/* Left Content - Images */}
-          <div className='relative'>
-            {/* Main Engine Image */}
-            <div className='relative mb-6'>
+          {/* Grid de 4 imágenes 2x2 */}
+          <div className='grid grid-cols-2 gap-4'>
+            {/* Imagen 1 - Superior izquierda */}
+            <div className='relative h-48 border-2 border-red-500 rounded-lg overflow-hidden shadow-lg transform rotate-1'>
               <Image
-                src='/images/engine-main.jpg'
+                src='/images/motor1.jpg'
                 alt='Motor principal GTM'
-                width={400}
-                height={300}
-                className='rounded-lg shadow-lg w-full h-64 object-cover'
+                fill
+                className='object-cover'
               />
             </div>
 
-            {/* Bottom Grid - Two smaller images */}
-            <div className='grid grid-cols-2 gap-4'>
+            {/* Imagen 2 - Superior derecha */}
+            <div className='relative h-48 border-2 border-red-500 rounded-lg overflow-hidden shadow-lg transform -rotate-1'>
               <Image
-                src='/images/engine-parts.jpg'
+                src='/images/motor2.jpg'
                 alt='Componentes del motor'
-                width={200}
-                height={150}
-                className='rounded-lg shadow-lg w-full h-32 object-cover'
+                fill
+                className='object-cover'
               />
+            </div>
+
+            {/* Imagen 3 - Inferior izquierda */}
+            <div className='relative h-48 border-2 border-red-500 rounded-lg overflow-hidden shadow-lg transform -rotate-1'>
               <Image
-                src='/images/transmission.jpg'
+                src='/images/motor3.jpg'
                 alt='Transmisión GTM'
-                width={200}
-                height={150}
-                className='rounded-lg shadow-lg w-full h-32 object-cover'
+                fill
+                className='object-cover'
+              />
+            </div>
+
+            {/* Imagen 4 - Inferior derecha */}
+            <div className='relative h-48 border-2 border-red-500 rounded-lg overflow-hidden shadow-lg transform rotate-1'>
+              <Image
+                src='/images/motor4.jpg'
+                alt='Detalle motor GTM'
+                fill
+                className='object-cover'
               />
             </div>
           </div>
 
-          {/* Right Content - Text */}
+          {/* Contenido de texto */}
           <div className='space-y-6'>
             <div>
               <p className='text-gray-600 text-lg font-medium italic mb-4'>
@@ -47,18 +58,17 @@ export default function QualitySolutions() {
               <h2 className='text-4xl md:text-5xl font-bold leading-tight mb-6'>
                 SOLUCIONES CON
                 <br />
-                <span className='text-red-500'>CALIDAD</span>
+                <span className='text-red-500'>INNOVACIÓN</span>
               </h2>
             </div>
 
             <div className='text-gray-700 text-base leading-relaxed space-y-4'>
               <p>
-                En <strong>Mecánica Grandoli</strong>, ofrecemos un servicio
-                integral para el mantenimiento y reparación de tu vehículo,
-                abarcando desde la especialización en cajas automáticas, con
-                diagnósticos precisos y reprogramaciones avanzadas, hasta
-                reparaciones completas de mecánica en general, como motores,
-                frenos y suspensión.
+                En <strong>GTM</strong>, ofrecemos un servicio integral para el
+                mantenimiento y reparación de tu vehículo, abarcando desde la
+                especialización en cajas automáticas, con diagnósticos precisos
+                y reprogramaciones avanzadas, hasta reparaciones completas de
+                mecánica en general, como motores, frenos y suspensión.
               </p>
 
               <p>

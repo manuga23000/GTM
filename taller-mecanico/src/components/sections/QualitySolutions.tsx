@@ -7,7 +7,7 @@ export default function QualitySolutions() {
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
           {/* Grid de 4 imágenes 2x2 */}
           <div className='grid grid-cols-2 gap-4'>
-            {/* Imagen 1 - Superior izquierda */}
+            {/* Imagen 1 */}
             <div className='relative h-48 border-2 border-red-500 rounded-lg overflow-hidden shadow-lg transform rotate-1'>
               <Image
                 src='/images/soluciones/motor1.jpg'
@@ -16,8 +16,7 @@ export default function QualitySolutions() {
                 className='object-cover'
               />
             </div>
-
-            {/* Imagen 2 - Superior derecha */}
+            {/* Imagen 2 */}
             <div className='relative h-48 border-2 border-red-500 rounded-lg overflow-hidden shadow-lg transform -rotate-1'>
               <Image
                 src='/images/soluciones/motor2.jpg'
@@ -26,8 +25,7 @@ export default function QualitySolutions() {
                 className='object-cover'
               />
             </div>
-
-            {/* Imagen 3 - Inferior izquierda */}
+            {/* Imagen 3 */}
             <div className='relative h-48 border-2 border-red-500 rounded-lg overflow-hidden shadow-lg transform -rotate-1'>
               <Image
                 src='/images/soluciones/motor3.jpg'
@@ -36,11 +34,10 @@ export default function QualitySolutions() {
                 className='object-cover'
               />
             </div>
-
-            {/* Imagen 4 - Inferior derecha */}
+            {/* Imagen 4 */}
             <div className='relative h-48 border-2 border-red-500 rounded-lg overflow-hidden shadow-lg transform rotate-1'>
               <Image
-                src='/images/soluciones/motor4.jpg'
+                src='/images/soluciones/flex.jpg'
                 alt='Detalle motor GTM'
                 fill
                 className='object-cover'
@@ -64,26 +61,24 @@ export default function QualitySolutions() {
 
             <div className='text-gray-700 text-base leading-relaxed space-y-4'>
               <p>
-                En <strong>GTM</strong>, ofrecemos un servicio integral para el
-                mantenimiento y reparación de tu vehículo, abarcando desde la
-                especialización en cajas automáticas, con diagnósticos precisos
-                y reprogramaciones avanzadas, hasta reparaciones completas de
-                mecánica en general, como motores, frenos y suspensión.
+                En <strong>GTM</strong> brindamos un servicio integral de
+                mantenimiento y reparación, desde cajas automáticas con
+                diagnósticos y reprogramaciones avanzadas, hasta mecánica
+                general: motores, frenos y suspensión.
               </p>
 
               <p>
-                Nuestro enfoque en la tecnología nos permite realizar trabajos
-                de electrónica avanzada, solucionando fallas en sistemas
-                eléctricos y electrónicos, e implementando dispositivos
-                modernos. Contamos con equipos de diagnóstico de última
-                generación para detectar y solucionar problemas rápidamente,
-                además de ser expertos en la reparación y reprogramación de
-                ECUs, módulos y cajas de fusibles.
+                Con un enfoque tecnológico, resolvemos fallas eléctricas y
+                electrónicas, incorporamos dispositivos modernos y usamos
+                equipos de diagnóstico de última generación. Reparamos y
+                reprogramamos ECUs, módulos y cajas de fusibles.
               </p>
 
               <p>
-                Todo esto, respaldado por un equipo altamente capacitado y
-                comprometido.
+                También realizamos{' '}
+                <strong>programaciones Stage 1, 2 y 3</strong> para mejorar el
+                rendimiento del motor, adaptándolo desde uso urbano hasta alta
+                performance.
               </p>
             </div>
           </div>

@@ -4,7 +4,7 @@ export default function ServiciosEmpresariales() {
       <section
         className='relative w-full min-h-[600px] flex items-center justify-center py-20'
         style={{
-          backgroundImage: "url('/images/flota.png')",
+          backgroundImage: "url('/images/servicios/flota.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'left',
           backgroundAttachment: 'fixed',
@@ -57,32 +57,32 @@ export default function ServiciosEmpresariales() {
           </p>
           <div className='flex flex-wrap justify-center items-center gap-8'>
             <img
-              src='/images/transtec.png'
+              src='/images/marcas/transtec.png'
               alt='Transtec'
               className='max-h-20 max-w-[150px] object-contain p-2 mx-2'
             />
             <img
-              src='/images/valvoline.png'
+              src='/images/marcas/valvoline.png'
               alt='Valvoline'
               className='max-h-20 max-w-[150px] object-contain p-2 mx-2'
             />
             <img
-              src='/images/altomadeinusa.png'
+              src='/images/marcas/altomadeinusa.png'
               alt='Alto'
               className='max-h-20 max-w-[150px] object-contain p-2 mx-2'
             />
             <img
-              src='/images/precision.png'
+              src='/images/marcas/precision.png'
               alt='Precision'
               className='max-h-20 max-w-[150px] object-contain p-2 mx-2'
             />
             <img
-              src='/images/raybestos.png'
+              src='/images/marcas/raybestos.png'
               alt='Raybestos'
               className='max-h-20 max-w-[150px] object-contain p-2 mx-2'
             />
             <img
-              src='/images/borgwarner.png'
+              src='/images/marcas/borgwarner.png'
               alt='BorgWarner'
               className='max-h-20 max-w-[150px] object-contain p-2 mx-2'
             />
@@ -93,7 +93,7 @@ export default function ServiciosEmpresariales() {
       <section
         className='relative w-full min-h-[500px] flex flex-col items-center justify-center py-20'
         style={{
-          backgroundImage: "url('/images/revisacion.jpg')",
+          backgroundImage: "url('/images/home/revisacion.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
@@ -137,7 +137,7 @@ export default function ServiciosEmpresariales() {
       <section
         className='relative w-full min-h-[450px] flex flex-col items-center justify-center py-16'
         style={{
-          backgroundImage: "url('/images/cajaautomatica.jpg')",
+          backgroundImage: "url('/images/home/cajaautomatica.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
@@ -154,7 +154,7 @@ export default function ServiciosEmpresariales() {
           </h2>
           <div className='flex justify-center mb-8'>
             <img
-              src='/images/atf.png'
+              src='/images/home/atf.png'
               alt='Máquina ATF'
               className='h-110 object-contain drop-shadow-xl'
             />

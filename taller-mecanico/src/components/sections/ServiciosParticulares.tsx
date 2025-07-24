@@ -5,7 +5,7 @@ export default function ServiciosParticulares() {
     <section
       className='relative w-full min-h-[600px] flex items-center justify-center py-20'
       style={{
-        backgroundImage: "url('/images/chevrolet2.png')",
+        backgroundImage: "url('/images/servicios/chevrolet.png')",
         backgroundSize: 'cover',
         backgroundPosition: 'right',
         backgroundAttachment: 'fixed',

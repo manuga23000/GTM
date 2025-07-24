@@ -18,7 +18,7 @@ export default function Footer() {
     <footer
       className='bg-black text-white pt-16 pb-6 mt-0 relative'
       style={{
-        backgroundImage: "url('/images/footer.jpg')",
+        backgroundImage: "url('/images/footer/footer.jpg')",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
@@ -28,7 +28,7 @@ export default function Footer() {
         {/* Logo y título principal */}
         <div className='flex items-center mb-8'>
           <Image
-            src='/images/LOGO GTM.png'
+            src='/images/header/LOGO GTM.png'
             alt='Logo GTM'
             width={60}
             height={60}
@@ -97,11 +97,8 @@ export default function Footer() {
               <div className='flex items-center text-sm'>
                 <FaEnvelope className='text-red-500 mr-3 flex-shrink-0' />
                 <div>
-                  <a
-                    href='mailto:cajasautomaticas@hotmail.com.ar'
-                    className='text-white font-semibold hover:text-red-500 transition break-all'
-                  >
-                    cajasautomaticas@hotmail.com.ar
+                  <a className='text-white font-semibold hover:text-red-500 transition break-all'>
+                    gtmsn291@gmail.com
                   </a>
                 </div>
               </div>

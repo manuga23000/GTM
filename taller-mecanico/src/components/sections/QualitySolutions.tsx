@@ -10,7 +10,7 @@ export default function QualitySolutions() {
             {/* Imagen 1 - Superior izquierda */}
             <div className='relative h-48 border-2 border-red-500 rounded-lg overflow-hidden shadow-lg transform rotate-1'>
               <Image
-                src='/images/motor1.jpg'
+                src='/images/soluciones/motor1.jpg'
                 alt='Motor principal GTM'
                 fill
                 className='object-cover'
@@ -20,7 +20,7 @@ export default function QualitySolutions() {
             {/* Imagen 2 - Superior derecha */}
             <div className='relative h-48 border-2 border-red-500 rounded-lg overflow-hidden shadow-lg transform -rotate-1'>
               <Image
-                src='/images/motor2.jpg'
+                src='/images/soluciones/motor2.jpg'
                 alt='Componentes del motor'
                 fill
                 className='object-cover'
@@ -30,7 +30,7 @@ export default function QualitySolutions() {
             {/* Imagen 3 - Inferior izquierda */}
             <div className='relative h-48 border-2 border-red-500 rounded-lg overflow-hidden shadow-lg transform -rotate-1'>
               <Image
-                src='/images/motor3.jpg'
+                src='/images/soluciones/motor3.jpg'
                 alt='Transmisión GTM'
                 fill
                 className='object-cover'
@@ -40,7 +40,7 @@ export default function QualitySolutions() {
             {/* Imagen 4 - Inferior derecha */}
             <div className='relative h-48 border-2 border-red-500 rounded-lg overflow-hidden shadow-lg transform rotate-1'>
               <Image
-                src='/images/motor4.jpg'
+                src='/images/soluciones/motor4.jpg'
                 alt='Detalle motor GTM'
                 fill
                 className='object-cover'

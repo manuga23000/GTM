@@ -31,7 +31,7 @@ export default function Navbar() {
           <div className='flex items-center'>
             <Link href='/'>
               <Image
-                src='/images/LOGO GTM.png'
+                src='/images/header/LOGO GTM.png'
                 alt='GTM Logo'
                 width={78}
                 height={78}

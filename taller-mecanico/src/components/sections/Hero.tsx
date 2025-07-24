@@ -23,7 +23,7 @@ export default function Hero() {
     <section
       className='relative pt-28 min-h-screen flex items-center'
       style={{
-        backgroundImage: "url('/images/hero-engine1.png')",
+        backgroundImage: "url('/images/home/hero-engine.png')",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',

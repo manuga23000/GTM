@@ -184,7 +184,7 @@ export default function Footer() {
         <div className='border-t border-gray-700 pt-6 mb-6'>
           <div className='flex flex-wrap justify-center gap-6 text-sm'>
             <Link
-              href='#servicios'
+              href='/servicios'
               className='text-gray-300 hover:text-red-500 transition font-medium'
             >
               Servicios

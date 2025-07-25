@@ -2,8 +2,20 @@ import React from 'react'
 
 export default function ProgramacionModulos() {
   return (
-    <section className='py-20 bg-gray-900 text-white'>
-      <div className='max-w-7xl mx-auto px-4'>
+    <section
+      className='py-20 text-white relative'
+      style={{
+        backgroundImage: "url('/images/sobrenosotros/combinadoflex.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      <div
+        className='absolute inset-0 bg-gray-900'
+        style={{ opacity: 0.6, pointerEvents: 'none' }}
+      />
+      <div className='relative max-w-7xl mx-auto px-4'>
         <div className='text-center mb-16'>
           <h2 className='text-4xl md:text-5xl font-bold mb-6'>
             PROGRAMACIÓN DE <span className='text-red-600'>MÓDULOS</span>

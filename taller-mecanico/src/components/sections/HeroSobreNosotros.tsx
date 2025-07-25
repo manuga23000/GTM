@@ -5,7 +5,7 @@ export default function HeroSobreNosotros() {
     <section
       className='relative min-h-[90vh] flex items-center justify-center'
       style={{
-        backgroundImage: "url('/images/home/hero-engine.png')",
+        backgroundImage: "url('/images/sobrenosotros/sobrenosotros.jpg')",
         backgroundSize: 'cover',
         backgroundPosition: '80% center',
         backgroundAttachment: 'fixed',

@@ -2,10 +2,14 @@
 import React, { useState } from 'react'
 
 const imagenes = [
-  '/images/servicios/caja.jpg',
-  '/images/servicios/diagnostico.png',
-  '/images/servicios/mecanica.png',
-  '/images/servicios/ecu.jpg',
+  '/images/sobrenosotros/carru1.jpg',
+  '/images/sobrenosotros/carru2.jpg',
+  '/images/sobrenosotros/carru3.jpg',
+  '/images/sobrenosotros/carru4.jpg',
+  '/images/sobrenosotros/carru5.jpg',
+  '/images/sobrenosotros/carru6.jpg',
+  '/images/sobrenosotros/carru7.jpg',
+  '/images/sobrenosotros/carru8.jpg',
 ]
 
 export default function CarruselImagenes() {

@@ -43,7 +43,7 @@ export default function Navbar() {
           {/* Navigation Menu - Desktop */}
           <div className='hidden lg:flex items-center space-x-8 h-full flex-1 justify-center'>
             <Link
-              href='/servicios'
+              href='#servicios'
               className='relative text-white hover:text-red-500 px-4 h-full flex items-center text-sm font-semibold tracking-wide transition-all duration-300 group whitespace-nowrap'
             >
               SERVICIOS
@@ -63,7 +63,7 @@ export default function Navbar() {
               RESERVAR TURNOS
             </Link>
             <Link
-              href='#contacto'
+              href='/contacto'
               className='relative text-white hover:text-red-500 px-4 h-full flex items-center text-sm font-semibold tracking-wide transition-all duration-300 group whitespace-nowrap'
             >
               CONTACTO
@@ -108,7 +108,7 @@ export default function Navbar() {
           <div className='lg:hidden'>
             <div className='px-2 pt-2 pb-3 space-y-1 bg-black/95 backdrop-blur-md border-t border-gray-800/50'>
               <Link
-                href='/servicios'
+                href='#servicios'
                 className='text-white hover:text-red-500 block px-3 py-2 text-sm font-semibold tracking-wide transition-colors'
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -129,7 +129,7 @@ export default function Navbar() {
                 RESERVAR TURNOS
               </Link>
               <Link
-                href='#contacto'
+                href='/contacto'
                 className='text-white hover:text-red-500 block px-3 py-2 text-sm font-semibold tracking-wide transition-colors'
                 onClick={() => setIsMenuOpen(false)}
               >

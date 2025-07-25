@@ -2,12 +2,12 @@ import React from 'react'
 
 export default function ConoceLoQueNosDestaca() {
   return (
-    <section className='py-20 bg-white'>
+    <section className='pt-20 pb-5 bg-white'>
       <div className='max-w-7xl mx-auto px-4'>
         <h2 className='text-4xl md:text-5xl font-extrabold text-center mb-10 text-black'>
           CONOCE LO QUE NOS <span className='text-red-600'>DESTACA</span>
         </h2>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-8 mb-12'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
           <p className='text-gray-800'>
             En GTM, con más de 20 años de experiencia en el rubro, nos
             especializamos en la reparación y mantenimiento de vehículos.

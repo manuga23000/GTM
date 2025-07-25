@@ -8,9 +8,7 @@ export default function MartinGrandoli() {
           <h2 className='text-3xl md:text-4xl font-extrabold mb-2 text-red-600'>
             MARTIN GRANDOLI
           </h2>
-          <h3 className='text-gray-700 font-semibold mb-4'>
-            FUNDADOR DE MECÁNICA GRANDOLI
-          </h3>
+          <h3 className='text-gray-700 font-semibold mb-4'>FUNDADOR DE GTM</h3>
           <p className='text-gray-800 mb-4'>
             Martín Grandoli es un profesional con una vasta trayectoria en el
             mundo de la mecánica automotriz, especializado en diagnóstico y
@@ -30,11 +28,11 @@ export default function MartinGrandoli() {
             eficaces a sus clientes.
           </p>
         </div>
-        <div className='flex justify-center'>
+        <div className='flex justify-center items-center h-full'>
           <img
-            src='/images/header/LOGO GTM.png'
+            src='/images/sobrenosotros/fotoperfil.png'
             alt='Martín Grandoli'
-            className='w-72 h-72 object-cover rounded-xl border-4 border-red-600 shadow-lg bg-black'
+            className='w-full h-full max-w-[420px] max-h-[420px] object-cover rounded-xl border-4 border-red-600 shadow-lg bg-black'
           />
         </div>
       </div>

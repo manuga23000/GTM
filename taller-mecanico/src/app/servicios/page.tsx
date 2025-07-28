@@ -2,7 +2,7 @@
 import Navbar from '@/components/layout/Navbar'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
 import BookingSection from '@/components/sections/BookingSection'
-import ContactoSection from '@/components/sections/ContactoSection'
+import ContactanosHoyMismo from '@/components/sections/ContactanosHoyMismo'
 import ServiciosHero from '@/components/sections/ServiciosHero'
 import ServiciosBasicos from '@/components/sections/ServiciosBasicos'
 import ServiciosPrincipales from '@/components/sections/ServiciosPrincipales'
@@ -18,7 +18,7 @@ export default function ServiciosPage() {
       <ServiciosPrincipales />
       <ProgramacionModulos />
       <CapacitacionTecnica />
-      <ContactoSection />
+      <ContactanosHoyMismo />
       <BookingSection />
       <WhatsAppButton />
     </div>

@@ -4,7 +4,7 @@ import { useRef } from 'react'
 import Button from '@/components/ui/Button'
 import Link from 'next/link'
 
-export default function ContactoSection() {
+export default function ContactanosHoyMismo() {
   const contactRef = useRef(null)
   const isContactInView = useInView(contactRef, { once: true, margin: '-50px' })
 

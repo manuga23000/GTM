@@ -3,7 +3,7 @@ import ConoceLoQueNosDestaca from '@/components/sections/ConoceLoQueNosDestaca'
 import CarruselImagenes from '@/components/sections/CarruselImagenes'
 import TrabajaConNosotros from '@/components/sections/TrabajaConNosotros'
 import MartinGrandoli from '@/components/sections/MartinGrandoli'
-import ContactoSection from '@/components/sections/ContactoSection'
+import ContactanosHoyMismo from '@/components/sections/ContactanosHoyMismo'
 import BookingSection from '@/components/sections/BookingSection'
 import Navbar from '@/components/layout/Navbar'
 
@@ -16,7 +16,7 @@ export default function SobreNosotrosPage() {
       <CarruselImagenes />
       <TrabajaConNosotros />
       <MartinGrandoli />
-      <ContactoSection />
+      <ContactanosHoyMismo />
       <BookingSection />
     </div>
   )

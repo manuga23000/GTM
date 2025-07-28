@@ -8,7 +8,6 @@ export default function ServiciosEmpresariales() {
   const mainRef = useRef(null)
   const brandsRef = useRef(null)
   const specializedRef = useRef(null)
-  const contactRef = useRef(null)
 
   const isMainInView = useInView(mainRef, { once: true, margin: '-50px' })
   const isBrandsInView = useInView(brandsRef, { once: true, margin: '-50px' })
@@ -16,25 +15,16 @@ export default function ServiciosEmpresariales() {
     once: true,
     margin: '-50px',
   })
-  const isContactInView = useInView(contactRef, { once: true, margin: '-50px' })
 
-  // Animaciones sutiles
+  // Animaciones simplificadas
   const fadeInRight = {
     hidden: { opacity: 0, x: 30 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: { duration: 0.8, ease: 'easeOut' },
-    },
+    visible: { opacity: 1, x: 0 },
   }
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: 'easeOut' },
-    },
+    visible: { opacity: 1, y: 0 },
   }
 
   const staggerContainer = {
@@ -49,41 +39,17 @@ export default function ServiciosEmpresariales() {
 
   const listItemVariants = {
     hidden: { opacity: 0, x: 20 },
-    visible: (custom: number) => ({
-      opacity: 1,
-      x: 0,
-      transition: {
-        duration: 0.5,
-        delay: custom * 0.1,
-        ease: 'easeOut',
-      },
-    }),
+    visible: { opacity: 1, x: 0 },
   }
 
   const brandVariants = {
     hidden: { opacity: 0, scale: 0.8 },
-    visible: (custom: number) => ({
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.5,
-        delay: custom * 0.1,
-        ease: 'easeOut',
-      },
-    }),
+    visible: { opacity: 1, scale: 1 },
   }
 
   const cardVariants = {
     hidden: { opacity: 0, y: 30 },
-    visible: (custom: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        delay: custom * 0.15,
-        ease: 'easeOut',
-      },
-    }),
+    visible: { opacity: 1, y: 0 },
   }
 
   const services = [
@@ -165,7 +131,6 @@ export default function ServiciosEmpresariales() {
               {services.map((service, index) => (
                 <motion.li
                   key={index}
-                  custom={index}
                   variants={listItemVariants}
                   whileHover={{
                     x: -5,
@@ -230,7 +195,6 @@ export default function ServiciosEmpresariales() {
             {brands.map((brand, index) => (
               <motion.img
                 key={index}
-                custom={index}
                 variants={brandVariants}
                 whileHover={{
                   scale: 1.1,
@@ -299,7 +263,6 @@ export default function ServiciosEmpresariales() {
             {specializedServices.map((service, index) => (
               <motion.div
                 key={index}
-                custom={index}
                 variants={cardVariants}
                 whileHover={{
                   scale: 1.05,
@@ -327,75 +290,6 @@ export default function ServiciosEmpresariales() {
             </Link>
           </motion.div>
         </div>
-      </section>
-
-      {/* Sección de Contacto */}
-      <section
-        className='relative w-full min-h-[450px] flex flex-col items-center justify-center py-16'
-        style={{
-          backgroundImage: "url('/images/home/cajaautomatica.jpg')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }}
-        ref={contactRef}
-      >
-        <div className='absolute inset-0 bg-black/60 z-0'></div>
-        <motion.div
-          variants={staggerContainer}
-          initial='hidden'
-          animate={isContactInView ? 'visible' : 'hidden'}
-          className='relative z-10 w-full max-w-3xl mx-auto text-center px-4'
-        >
-          <motion.p
-            variants={fadeInUp}
-            className='text-white text-sm mb-2 italic'
-          >
-            Confiá en los expertos para mantener tu vehículo en óptimas
-            condiciones.
-          </motion.p>
-
-          <motion.h2
-            variants={fadeInUp}
-            className='text-4xl md:text-5xl font-extrabold mb-6 text-white'
-          >
-            CONTÁCTANOS{' '}
-            <motion.span
-              className='text-red-600'
-              whileHover={{
-                textShadow: '0px 0px 8px rgb(239, 68, 68)',
-                transition: { duration: 0.3 },
-              }}
-            >
-              HOY
-            </motion.span>{' '}
-            MISMO.
-          </motion.h2>
-
-          <motion.div
-            variants={fadeInUp}
-            whileHover={{
-              scale: 1.05,
-              y: -5,
-              transition: { duration: 0.3 },
-            }}
-            className='flex justify-center mb-8'
-          >
-            <img
-              src='/images/home/atf.png'
-              alt='Máquina ATF'
-              className='h-110 object-contain drop-shadow-xl'
-            />
-          </motion.div>
-
-          <motion.div variants={fadeInUp}>
-            <Link href='/contacto'>
-              <Button variant='primary' size='lg'>
-                Contacto
-              </Button>
-            </Link>
-          </motion.div>
-        </motion.div>
       </section>
     </>
   )

@@ -87,7 +87,7 @@ export default function BookingSection() {
         >
           {/* Título principal */}
           <motion.h2
-            variants={fadeInUp}
+            variants={fadeInUp as any}
             className='text-4xl md:text-6xl font-bold'
           >
             RESERVA TU{' '}
@@ -104,7 +104,7 @@ export default function BookingSection() {
 
           {/* Párrafo descriptivo */}
           <motion.p
-            variants={fadeInUp}
+            variants={fadeInUp as any}
             className='text-gray-300 text-lg max-w-3xl mx-auto leading-relaxed'
           >
             Agenda tu cita de manera rápida y sencilla. Selecciona el servicio
@@ -121,7 +121,7 @@ export default function BookingSection() {
               <motion.div
                 key={index}
                 custom={index}
-                variants={cardVariants}
+                variants={cardVariants as any}
                 whileHover={{
                   scale: 1.05,
                   y: -5,
@@ -164,13 +164,13 @@ export default function BookingSection() {
           </motion.div>
 
           {/* Botón y texto adicional */}
-          <motion.div variants={buttonVariants} className='mt-12'>
+          <motion.div variants={buttonVariants as any} className='mt-12'>
             <Button variant='primary' size='xl'>
               PRÓXIMAMENTE - SISTEMA DE TURNOS
             </Button>
 
             <motion.p
-              variants={fadeInUp}
+              variants={fadeInUp as any}
               className='text-gray-400 mt-4 text-sm'
             >
               Mientras tanto, contáctanos por{' '}

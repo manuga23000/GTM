@@ -158,7 +158,15 @@ export const createStaggerAnimation = (
 })
 
 export const createFadeInAnimation = (direction = 'up', duration = 0.8) => {
-  const baseAnimation: any = {
+  const baseAnimation: {
+    hidden: { opacity: number; y?: number; x?: number }
+    visible: {
+      opacity: number
+      y?: number
+      x?: number
+      transition: { duration: number; ease: string }
+    }
+  } = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,

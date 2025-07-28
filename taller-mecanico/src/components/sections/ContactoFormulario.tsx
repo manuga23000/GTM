@@ -1,6 +1,82 @@
+'use client'
+import { useState, useEffect } from 'react'
 import Button from '@/components/ui/Button'
+import { initEmailJS, sendEmail } from '@/lib/emailjs'
+
+interface FormData {
+  name: string
+  email: string
+  message: string
+}
 
 export default function ContactoFormulario() {
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    email: '',
+    message: '',
+  })
+  const [isLoading, setIsLoading] = useState(false)
+  const [status, setStatus] = useState<{
+    type: 'success' | 'error' | null
+    message: string
+  }>({ type: null, message: '' })
+
+  // Inicializar EmailJS cuando el componente se monta
+  useEffect(() => {
+    initEmailJS()
+  }, [])
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setStatus({ type: null, message: '' })
+
+    // Validación básica
+    if (!formData.name || !formData.email || !formData.message) {
+      setStatus({
+        type: 'error',
+        message: 'Por favor, completa todos los campos.',
+      })
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      const result = await sendEmail(formData)
+
+      if (result.success) {
+        setStatus({
+          type: 'success',
+          message: '¡Mensaje enviado correctamente! Te contactaremos pronto.',
+        })
+        // Limpiar el formulario
+        setFormData({ name: '', email: '', message: '' })
+      } else {
+        setStatus({
+          type: 'error',
+          message: result.message,
+        })
+      }
+    } catch (error) {
+      setStatus({
+        type: 'error',
+        message: 'Error al enviar el mensaje. Intenta nuevamente.',
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <main className='max-w-7xl mx-auto px-4 py-16 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start'>
       {/* Columna izquierda: Datos y mapa */}
@@ -28,10 +104,13 @@ export default function ContactoFormulario() {
 
       {/* Columna derecha: Formulario */}
       <div className='bg-black/80 rounded-lg shadow-lg p-10 flex flex-col justify-center'>
-        <form className='space-y-7'>
+        <form onSubmit={handleSubmit} className='space-y-7'>
           <div>
             <input
               type='text'
+              name='name'
+              value={formData.name}
+              onChange={handleChange}
               placeholder='Nombre'
               className='w-full px-4 py-3 rounded bg-gray-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 mb-2'
               required
@@ -40,6 +119,9 @@ export default function ContactoFormulario() {
           <div>
             <input
               type='email'
+              name='email'
+              value={formData.email}
+              onChange={handleChange}
               placeholder='Email'
               className='w-full px-4 py-3 rounded bg-gray-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 mb-2'
               required
@@ -47,13 +129,36 @@ export default function ContactoFormulario() {
           </div>
           <div>
             <textarea
+              name='message'
+              value={formData.message}
+              onChange={handleChange}
               placeholder='Mensaje'
               className='w-full px-4 py-3 rounded bg-gray-900 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 min-h-[120px] mb-2'
               required
             ></textarea>
           </div>
-          <Button type='submit' variant='primary' size='xl' className='w-full'>
-            Enviar Mensaje
+
+          {/* Mensaje de estado */}
+          {status.message && (
+            <div
+              className={`p-3 rounded-lg text-sm ${
+                status.type === 'success'
+                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                  : 'bg-red-500/20 text-red-400 border border-red-500/30'
+              }`}
+            >
+              {status.message}
+            </div>
+          )}
+
+          <Button
+            type='submit'
+            variant='primary'
+            size='xl'
+            className='w-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
+            disabled={isLoading}
+          >
+            {isLoading ? 'Enviando...' : 'Enviar Mensaje'}
           </Button>
         </form>
       </div>

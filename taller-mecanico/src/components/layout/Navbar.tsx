@@ -43,14 +43,14 @@ export default function Navbar() {
           {/* Navigation Menu - Desktop */}
           <div className='hidden lg:flex items-center space-x-8 h-full flex-1 justify-center'>
             <Link
-              href='#servicios'
+              href='/servicios'
               className='relative text-white hover:text-red-500 px-4 h-full flex items-center text-sm font-semibold tracking-wide transition-all duration-300 group whitespace-nowrap'
             >
               SERVICIOS
               <span className='absolute bottom-0 left-0 w-full h-0.5 bg-red-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300'></span>
             </Link>
             <Link
-              href='#sobre-nosotros'
+              href='/sobre-nosotros'
               className='relative text-white hover:text-red-500 px-4 h-full flex items-center text-sm font-semibold tracking-wide transition-all duration-300 group whitespace-nowrap'
             >
               SOBRE NOSOTROS

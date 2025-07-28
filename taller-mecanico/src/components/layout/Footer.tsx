@@ -138,7 +138,7 @@ export default function Footer() {
 
             <div className='flex flex-wrap gap-3'>
               <a
-                href='https://facebook.com'
+                href='https://www.facebook.com/tallermercanicograndoli/'
                 target='_blank'
                 rel='noopener noreferrer'
                 aria-label='Facebook'
@@ -148,7 +148,7 @@ export default function Footer() {
               </a>
 
               <a
-                href='https://www.instagram.com/'
+                href='https://www.instagram.com/gtm_sn291/'
                 target='_blank'
                 rel='noopener noreferrer'
                 aria-label='Instagram'
@@ -158,7 +158,7 @@ export default function Footer() {
               </a>
 
               <a
-                href='https://www.tiktok.com/'
+                href='https://www.tiktok.com/@gtmsn291'
                 target='_blank'
                 rel='noopener noreferrer'
                 aria-label='TikTok'
@@ -184,19 +184,19 @@ export default function Footer() {
         <div className='border-t border-gray-700 pt-6 mb-6'>
           <div className='flex flex-wrap justify-center gap-6 text-sm'>
             <Link
-              href='#servicios'
+              href='/servicios'
               className='text-gray-300 hover:text-red-500 transition font-medium'
             >
               Servicios
             </Link>
             <Link
-              href='#sobre-nosotros'
+              href='/sobre-nosotros'
               className='text-gray-300 hover:text-red-500 transition font-medium'
             >
               Sobre Nosotros
             </Link>
             <Link
-              href='#reservar-turnos'
+              href='/reservar-turnos'
               className='text-gray-300 hover:text-red-500 transition font-medium'
             >
               Reservar Turnos

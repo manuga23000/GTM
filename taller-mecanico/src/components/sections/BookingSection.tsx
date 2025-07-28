@@ -74,7 +74,7 @@ export default function BookingSection() {
   }
 
   return (
-    <section id='reservar-turnos' className='py-20 bg-black' ref={ref}>
+    <section id='reservar-turnos' className='py-20 bg-gray-900' ref={ref}>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center'>
         <motion.div
           variants={containerVariants}
@@ -85,7 +85,7 @@ export default function BookingSection() {
           {/* Título principal */}
           <motion.h2
             variants={fadeInUp}
-            className='text-4xl md:text-6xl font-bold'
+            className='text-4xl md:text-6xl font-bold text-white'
           >
             RESERVA TU{' '}
             <motion.span

@@ -1,28 +1,13 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
-import Image from 'next/image'
 import Button from '@/components/ui/Button'
 import Link from 'next/link'
 
 export default function Hero() {
-  const [underline, setUnderline] = useState(false)
-  const [showLine, setShowLine] = useState(false)
   const heroRef = useRef(null)
   const isHeroInView = useInView(heroRef, { once: true, margin: '-50px' })
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setUnderline(true)
-      setShowLine(false)
-      setTimeout(() => {
-        setUnderline(false)
-        setShowLine(true)
-      }, 1200)
-    }, 6000)
-    return () => clearInterval(interval)
-  }, [])
 
   // Animaciones simplificadas
   const fadeInUp = {

@@ -72,7 +72,7 @@ export default function ContactoFormulario() {
           message: result.message,
         })
       }
-    } catch (error) {
+    } catch {
       setStatus({
         type: 'error',
         message: 'Error al enviar el mensaje. Intenta nuevamente.',

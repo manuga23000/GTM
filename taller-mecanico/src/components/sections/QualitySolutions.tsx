@@ -2,6 +2,7 @@
 import Image from 'next/image'
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
+import Link from 'next/link'
 import { animations } from '@/lib/animations'
 
 export default function QualitySolutions() {
@@ -59,7 +60,7 @@ export default function QualitySolutions() {
       rotate: -1,
     },
     {
-      src: '/images/soluciones/motor4.jpg',
+      src: '/images/soluciones/flex.jpg',
       alt: 'Detalle motor GTM',
       rotate: 1,
     },
@@ -172,17 +173,24 @@ export default function QualitySolutions() {
               className='space-y-4'
             >
               <p className='text-gray-700 text-lg leading-relaxed'>
-                En GTM, nos especializamos en brindar soluciones integrales para
-                tu vehículo. Nuestro equipo de técnicos certificados utiliza
-                tecnología de última generación para diagnosticar y reparar
-                cualquier problema que pueda tener tu automóvil.
+                En <strong>GTM</strong> brindamos un servicio integral de
+                mantenimiento y reparación, desde cajas automáticas con
+                diagnósticos y reprogramaciones avanzadas, hasta mecánica
+                general: motores, frenos y suspensión.
               </p>
 
               <p className='text-gray-700 text-lg leading-relaxed'>
-                Desde trabajos de mecánica general hasta reparaciones complejas
-                de cajas automáticas y sistemas electrónicos, garantizamos
-                resultados duraderos y un servicio de excelencia que supera las
-                expectativas de nuestros clientes.
+                Con un enfoque tecnológico, resolvemos fallas eléctricas y
+                electrónicas, incorporamos dispositivos modernos y usamos
+                equipos de diagnóstico de última generación. Reparamos y
+                reprogramamos ECUs, módulos y cajas de fusibles.
+              </p>
+
+              <p className='text-gray-700 text-lg leading-relaxed'>
+                También realizamos{' '}
+                <strong>programaciones Stage 1, 2 y 3</strong> para mejorar el
+                rendimiento del motor, adaptándolo desde uso urbano hasta alta
+                performance.
               </p>
             </motion.div>
 
@@ -192,20 +200,24 @@ export default function QualitySolutions() {
               animate={isInView ? 'visible' : 'hidden'}
               className='flex flex-col sm:flex-row gap-4 pt-4'
             >
-              <motion.button
-                whileHover={animations.buttonHover}
-                whileTap={animations.buttonTap}
-                className='bg-red-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-300'
-              >
-                CONOCER SERVICIOS
-              </motion.button>
-              <motion.button
-                whileHover={animations.buttonHover}
-                whileTap={animations.buttonTap}
-                className='border-2 border-red-600 text-red-600 px-8 py-3 rounded-lg font-semibold hover:bg-red-600 hover:text-white transition-colors duration-300'
-              >
-                CONTACTAR
-              </motion.button>
+              <Link href='/servicios' className='block'>
+                <motion.button
+                  whileHover={animations.buttonHover}
+                  whileTap={animations.buttonTap}
+                  className='w-full bg-red-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-300 cursor-pointer'
+                >
+                  CONOCER SERVICIOS
+                </motion.button>
+              </Link>
+              <Link href='/contacto' className='block'>
+                <motion.button
+                  whileHover={animations.buttonHover}
+                  whileTap={animations.buttonTap}
+                  className='w-full border-2 border-red-600 text-red-600 px-8 py-3 rounded-lg font-semibold hover:bg-red-600 hover:text-white transition-colors duration-300 cursor-pointer'
+                >
+                  CONTACTAR
+                </motion.button>
+              </Link>
             </motion.div>
           </div>
         </div>

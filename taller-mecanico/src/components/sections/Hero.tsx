@@ -4,26 +4,11 @@ import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import Button from '@/components/ui/Button'
 import Link from 'next/link'
+import { animations } from '@/lib/animations'
 
 export default function Hero() {
   const heroRef = useRef(null)
-  const isHeroInView = useInView(heroRef, { once: true, margin: '-50px' })
-
-  // Animaciones simplificadas
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0 },
-  }
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  }
+  const isHeroInView = useInView(heroRef, { once: true, margin: '-100px' })
 
   return (
     <section
@@ -40,7 +25,7 @@ export default function Hero() {
       <div className='absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/50'></div>
 
       <motion.div
-        variants={staggerContainer}
+        variants={animations.staggerContainer}
         initial='hidden'
         animate={isHeroInView ? 'visible' : 'hidden'}
         className='relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
@@ -48,19 +33,16 @@ export default function Hero() {
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
           {/* Left Content */}
           <div className='space-y-8'>
-            <motion.div variants={fadeInUp} className='space-y-4'>
+            <motion.div variants={animations.fadeInUp} className='space-y-4'>
               <motion.p
                 className='text-red-500 text-lg font-medium italic'
-                whileHover={{
-                  textShadow: '0px 0px 8px rgb(239, 68, 68)',
-                  transition: { duration: 0.3 },
-                }}
+                whileHover={animations.textGlow}
               >
                 Tu Aliado En Soluciones Automotrices
               </motion.p>
               <motion.h1
                 className='text-5xl md:text-7xl font-bold leading-tight'
-                variants={fadeInUp}
+                variants={animations.fadeInUp}
               >
                 MANTENIMIENTO
                 <br />
@@ -70,10 +52,7 @@ export default function Hero() {
                 <br />
                 <motion.span
                   className='text-red-500 relative inline-block w-full pb-2'
-                  whileHover={{
-                    textShadow: '0px 0px 8px rgb(239, 68, 68)',
-                    transition: { duration: 0.3 },
-                  }}
+                  whileHover={animations.textGlow}
                 >
                   EXPERIENCIA
                 </motion.span>
@@ -81,7 +60,7 @@ export default function Hero() {
             </motion.div>
 
             <motion.div
-              variants={fadeInUp}
+              variants={animations.fadeInUp}
               className='flex flex-col sm:flex-row gap-4'
             >
               <Button variant='primary' size='lg'>

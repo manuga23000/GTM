@@ -2,31 +2,15 @@
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import Link from 'next/link'
+import { animations } from '@/lib/animations'
 
 export default function ProgramacionModulos() {
   const modulosRef = useRef(null)
-  const isModulosInView = useInView(modulosRef, { once: true, margin: '-50px' })
+  const isModulosInView = useInView(modulosRef, {
+    once: true,
+    margin: '-100px',
+  })
 
-  // Animaciones simplificadas
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0 },
-  }
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  }
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0 },
-  }
   return (
     <section
       className='py-20 text-white relative'
@@ -44,28 +28,25 @@ export default function ProgramacionModulos() {
       />
       <div className='relative max-w-7xl mx-auto px-4'>
         <motion.div
-          variants={fadeInUp}
+          variants={animations.fadeInUp}
           initial='hidden'
           animate={isModulosInView ? 'visible' : 'hidden'}
           className='text-center mb-16'
         >
           <motion.h2
-            variants={fadeInUp}
+            variants={animations.fadeInUp}
             className='text-4xl md:text-5xl font-bold mb-6'
           >
             PROGRAMACIÓN DE{' '}
             <motion.span
               className='text-red-600'
-              whileHover={{
-                textShadow: '0px 0px 8px rgb(239, 68, 68)',
-                transition: { duration: 0.3 },
-              }}
+              whileHover={animations.textGlow}
             >
               MÓDULOS
             </motion.span>
           </motion.h2>
           <motion.p
-            variants={fadeInUp}
+            variants={animations.fadeInUp}
             className='text-gray-300 text-lg max-w-3xl mx-auto'
           >
             Servicios avanzados de programación y reprogramación de ECUs,
@@ -74,18 +55,18 @@ export default function ProgramacionModulos() {
         </motion.div>
         {/* Grid de servicios de programación */}
         <motion.div
-          variants={staggerContainer}
+          variants={animations.staggerContainer}
           initial='hidden'
           animate={isModulosInView ? 'visible' : 'hidden'}
           className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16'
         >
           <motion.div
-            variants={cardVariants}
+            variants={animations.fadeInUp}
             whileHover={{
               scale: 1.05,
               y: -10,
               backgroundColor: '#374151',
-              transition: { duration: 0.3 },
+              transition: { duration: 0.5, ease: 'easeOut' as const },
             }}
             className='bg-gray-800 p-8 rounded-lg text-center hover:bg-gray-700 transition-all'
           >
@@ -93,7 +74,7 @@ export default function ProgramacionModulos() {
               className='w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6'
               whileHover={{
                 scale: 1.1,
-                transition: { duration: 0.3 },
+                transition: { duration: 0.5, ease: 'easeOut' as const },
               }}
             >
               <span className='text-white text-lg font-bold'>S1</span>
@@ -105,12 +86,12 @@ export default function ProgramacionModulos() {
             </p>
           </motion.div>
           <motion.div
-            variants={cardVariants}
+            variants={animations.fadeInUp}
             whileHover={{
               scale: 1.05,
               y: -10,
               backgroundColor: '#374151',
-              transition: { duration: 0.3 },
+              transition: { duration: 0.5, ease: 'easeOut' as const },
             }}
             className='bg-gray-800 p-8 rounded-lg text-center hover:bg-gray-700 transition-all'
           >
@@ -118,7 +99,7 @@ export default function ProgramacionModulos() {
               className='w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6'
               whileHover={{
                 scale: 1.1,
-                transition: { duration: 0.3 },
+                transition: { duration: 0.5, ease: 'easeOut' as const },
               }}
             >
               <span className='text-white text-lg font-bold'>S2</span>
@@ -130,12 +111,12 @@ export default function ProgramacionModulos() {
             </p>
           </motion.div>
           <motion.div
-            variants={cardVariants}
+            variants={animations.fadeInUp}
             whileHover={{
               scale: 1.05,
               y: -10,
               backgroundColor: '#374151',
-              transition: { duration: 0.3 },
+              transition: { duration: 0.5, ease: 'easeOut' as const },
             }}
             className='bg-gray-800 p-8 rounded-lg text-center hover:bg-gray-700 transition-all'
           >
@@ -143,7 +124,7 @@ export default function ProgramacionModulos() {
               className='w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6'
               whileHover={{
                 scale: 1.1,
-                transition: { duration: 0.3 },
+                transition: { duration: 0.5, ease: 'easeOut' as const },
               }}
             >
               <span className='text-white text-lg font-bold'>S3</span>
@@ -155,12 +136,12 @@ export default function ProgramacionModulos() {
             </p>
           </motion.div>
           <motion.div
-            variants={cardVariants}
+            variants={animations.fadeInUp}
             whileHover={{
               scale: 1.05,
               y: -10,
               backgroundColor: '#374151',
-              transition: { duration: 0.3 },
+              transition: { duration: 0.5, ease: 'easeOut' as const },
             }}
             className='bg-gray-800 p-8 rounded-lg text-center hover:bg-gray-700 transition-all'
           >
@@ -168,7 +149,7 @@ export default function ProgramacionModulos() {
               className='w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-6'
               whileHover={{
                 scale: 1.1,
-                transition: { duration: 0.3 },
+                transition: { duration: 0.5, ease: 'easeOut' as const },
               }}
             >
               <span className='text-white text-lg font-bold'>ECU</span>
@@ -182,32 +163,35 @@ export default function ProgramacionModulos() {
         </motion.div>
         {/* Servicios adicionales */}
         <motion.div
-          variants={staggerContainer}
+          variants={animations.staggerContainer}
           initial='hidden'
           animate={isModulosInView ? 'visible' : 'hidden'}
           className='grid grid-cols-1 md:grid-cols-2 gap-8 mb-16'
         >
           <motion.div
-            variants={cardVariants}
+            variants={animations.fadeInUp}
             whileHover={{
               scale: 1.02,
               backgroundColor: '#374151',
-              transition: { duration: 0.3 },
+              transition: { duration: 0.5, ease: 'easeOut' as const },
             }}
             className='bg-gray-800 p-8 rounded-lg'
           >
             <motion.h4
-              variants={fadeInUp}
+              variants={animations.fadeInUp}
               className='text-2xl font-bold mb-4 text-red-600'
             >
               Codificación de Módulos
             </motion.h4>
-            <motion.p variants={fadeInUp} className='text-gray-300 mb-4'>
+            <motion.p
+              variants={animations.fadeInUp}
+              className='text-gray-300 mb-4'
+            >
               Codificación de módulos nuevos, adaptación de componentes y
               configuración de sistemas específicos para cada vehículo.
             </motion.p>
             <motion.ul
-              variants={fadeInUp}
+              variants={animations.fadeInUp}
               className='text-gray-300 text-sm space-y-2'
             >
               <li>• Codificación de llaves y sistemas de seguridad</li>
@@ -216,26 +200,29 @@ export default function ProgramacionModulos() {
             </motion.ul>
           </motion.div>
           <motion.div
-            variants={cardVariants}
+            variants={animations.fadeInUp}
             whileHover={{
               scale: 1.02,
               backgroundColor: '#374151',
-              transition: { duration: 0.3 },
+              transition: { duration: 0.5, ease: 'easeOut' as const },
             }}
             className='bg-gray-800 p-8 rounded-lg'
           >
             <motion.h4
-              variants={fadeInUp}
+              variants={animations.fadeInUp}
               className='text-2xl font-bold mb-4 text-red-600'
             >
               Reprogramación Personalizada
             </motion.h4>
-            <motion.p variants={fadeInUp} className='text-gray-300 mb-4'>
+            <motion.p
+              variants={animations.fadeInUp}
+              className='text-gray-300 mb-4'
+            >
               Ajustes específicos según las necesidades del cliente, desde
               mejoras de rendimiento hasta corrección de fallas.
             </motion.p>
             <motion.ul
-              variants={fadeInUp}
+              variants={animations.fadeInUp}
               className='text-gray-300 text-sm space-y-2'
             >
               <li>• Eliminación de FAP/DPF</li>
@@ -246,7 +233,7 @@ export default function ProgramacionModulos() {
         </motion.div>
         {/* Call to action */}
         <motion.div
-          variants={fadeInUp}
+          variants={animations.fadeInUp}
           initial='hidden'
           animate={isModulosInView ? 'visible' : 'hidden'}
           className='text-center'
@@ -254,14 +241,17 @@ export default function ProgramacionModulos() {
           <motion.div
             whileHover={{
               scale: 1.05,
-              transition: { duration: 0.3 },
+              transition: { duration: 0.5, ease: 'easeOut' as const },
             }}
             className='bg-red-600 p-8 rounded-lg inline-block'
           >
-            <motion.h4 variants={fadeInUp} className='text-2xl font-bold mb-4'>
+            <motion.h4
+              variants={animations.fadeInUp}
+              className='text-2xl font-bold mb-4'
+            >
               Consulta Especializada
             </motion.h4>
-            <motion.p variants={fadeInUp} className='mb-6'>
+            <motion.p variants={animations.fadeInUp} className='mb-6'>
               Cada vehículo requiere un análisis personalizado. Consultanos
               sobre las posibilidades para tu auto.
             </motion.p>
@@ -270,7 +260,7 @@ export default function ProgramacionModulos() {
                 whileHover={{
                   scale: 1.05,
                   backgroundColor: '#f3f4f6',
-                  transition: { duration: 0.3 },
+                  transition: { duration: 0.5, ease: 'easeOut' as const },
                 }}
                 className='bg-white text-red-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition-all cursor-pointer'
               >

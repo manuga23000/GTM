@@ -2,12 +2,13 @@
 import Image from 'next/image'
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
+import { animations } from '@/lib/animations'
 
 export default function QualitySolutions() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
-  // Animaciones para las imágenes
+  // Animaciones para las imágenes - más suaves
   const imageVariants = {
     hidden: {
       opacity: 0,
@@ -21,58 +22,23 @@ export default function QualitySolutions() {
       y: 0,
       rotate: custom,
       transition: {
-        duration: 0.6,
-        delay: custom * 0.15, // Entrada escalonada
+        duration: 1.2, // Más lento
+        delay: custom * 0.3, // Más espaciado
+        ease: 'easeOut' as const,
       },
     }),
   }
 
-  // Animación continua de levitación
+  // Animación continua de levitación - más suave
   const floatVariants = {
     animate: {
-      y: [-2, 2, -2],
+      y: [-4, 4, -4],
       transition: {
-        duration: 4,
+        duration: 6, // Más lento
         repeat: Infinity,
+        ease: 'easeInOut' as const,
       },
     },
-  }
-
-  // Animaciones para el texto
-  const textVariants = {
-    hidden: { opacity: 0, x: -50 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        duration: 0.8,
-        delay: 0.3,
-      },
-    },
-  }
-
-  const titleVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.8,
-        delay: 0.5,
-      },
-    },
-  }
-
-  const paragraphVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (custom: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        delay: 0.7 + custom * 0.2,
-      },
-    }),
   }
 
   // Datos de las imágenes con sus rotaciones
@@ -120,7 +86,7 @@ export default function QualitySolutions() {
                   whileHover={{
                     scale: 1.05,
                     rotate: image.rotate * 2,
-                    transition: { duration: 0.3 },
+                    transition: { duration: 0.5, ease: 'easeOut' as const },
                   }}
                   whileTap={{ scale: 0.95 }}
                   className='w-full h-full'
@@ -174,7 +140,7 @@ export default function QualitySolutions() {
           <div className='space-y-6'>
             <div>
               <motion.p
-                variants={textVariants}
+                variants={animations.fadeInLeft}
                 initial='hidden'
                 animate={isInView ? 'visible' : 'hidden'}
                 className='text-gray-600 text-lg font-medium italic mb-4'
@@ -183,7 +149,7 @@ export default function QualitySolutions() {
               </motion.p>
 
               <motion.h2
-                variants={titleVariants}
+                variants={animations.fadeInUp}
                 initial='hidden'
                 animate={isInView ? 'visible' : 'hidden'}
                 className='text-4xl md:text-5xl font-bold leading-tight mb-6'
@@ -192,10 +158,7 @@ export default function QualitySolutions() {
                 <br />
                 <motion.span
                   className='text-red-500'
-                  whileHover={{
-                    textShadow: '0px 0px 8px rgb(239, 68, 68)',
-                    transition: { duration: 0.3 },
-                  }}
+                  whileHover={animations.textGlow}
                 >
                   CALIDAD
                 </motion.span>
@@ -203,8 +166,7 @@ export default function QualitySolutions() {
             </div>
 
             <motion.div
-              variants={paragraphVariants}
-              custom={0}
+              variants={animations.fadeInUp}
               initial='hidden'
               animate={isInView ? 'visible' : 'hidden'}
               className='space-y-4'
@@ -225,28 +187,21 @@ export default function QualitySolutions() {
             </motion.div>
 
             <motion.div
-              variants={paragraphVariants}
-              custom={1}
+              variants={animations.fadeInUp}
               initial='hidden'
               animate={isInView ? 'visible' : 'hidden'}
               className='flex flex-col sm:flex-row gap-4 pt-4'
             >
               <motion.button
-                whileHover={{
-                  scale: 1.05,
-                  transition: { duration: 0.2 },
-                }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={animations.buttonHover}
+                whileTap={animations.buttonTap}
                 className='bg-red-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-300'
               >
                 CONOCER SERVICIOS
               </motion.button>
               <motion.button
-                whileHover={{
-                  scale: 1.05,
-                  transition: { duration: 0.2 },
-                }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={animations.buttonHover}
+                whileTap={animations.buttonTap}
                 className='border-2 border-red-600 text-red-600 px-8 py-3 rounded-lg font-semibold hover:bg-red-600 hover:text-white transition-colors duration-300'
               >
                 CONTACTAR

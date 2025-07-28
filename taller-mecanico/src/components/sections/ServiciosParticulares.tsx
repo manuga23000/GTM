@@ -3,36 +3,11 @@ import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import Button from '@/components/ui/Button'
 import Link from 'next/link'
+import { animations } from '@/lib/animations'
 
 export default function ServiciosParticulares() {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-50px' })
-
-  // Animaciones más sutiles
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-      },
-    },
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: -30 },
-    visible: { opacity: 1, x: 0 },
-  }
-
-  const listItemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 },
-  }
-
-  const buttonVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  }
+  const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   const services = [
     '✓ Trabajos de electrónica',
@@ -54,29 +29,26 @@ export default function ServiciosParticulares() {
     >
       <div className='w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center px-4'>
         <motion.div
-          variants={containerVariants}
+          variants={animations.staggerContainer}
           initial='hidden'
           animate={isInView ? 'visible' : 'hidden'}
           className='flex flex-col items-start text-left space-y-6'
         >
           <motion.h2
-            variants={itemVariants}
+            variants={animations.fadeInLeft}
             className='text-white font-extrabold text-5xl mb-2'
           >
             SERVICIOS <br />
             <motion.span
               className='relative text-red-600 inline-block'
-              whileHover={{
-                scale: 1.02,
-                transition: { duration: 0.3 },
-              }}
+              whileHover={animations.buttonHover}
             >
               PARTICULARES
             </motion.span>
           </motion.h2>
 
           <motion.p
-            variants={itemVariants}
+            variants={animations.fadeInLeft}
             className='text-white text-lg max-w-xl mt-6 mb-8'
           >
             Brindamos atención especializada para tu vehículo con tecnología de
@@ -87,16 +59,16 @@ export default function ServiciosParticulares() {
           </motion.p>
 
           <motion.ul
-            variants={containerVariants}
+            variants={animations.staggerContainer}
             className='text-white text-lg font-bold space-y-2 mb-10'
           >
             {services.map((service, index) => (
               <motion.li
                 key={index}
-                variants={listItemVariants}
+                variants={animations.fadeInLeft}
                 whileHover={{
                   x: 5,
-                  transition: { duration: 0.2 },
+                  transition: { duration: 0.4, ease: 'easeOut' as const },
                 }}
                 className='cursor-pointer hover:text-red-400 transition-colors duration-200'
               >
@@ -105,7 +77,7 @@ export default function ServiciosParticulares() {
             ))}
           </motion.ul>
 
-          <motion.div variants={buttonVariants}>
+          <motion.div variants={animations.fadeInUp}>
             <Link href='/servicios'>
               <Button variant='primary' size='lg'>
                 Ver Más

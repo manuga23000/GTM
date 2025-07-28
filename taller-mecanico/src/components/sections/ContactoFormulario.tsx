@@ -4,6 +4,7 @@ import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import Button from '@/components/ui/Button'
 import { initEmailJS, sendEmail } from '@/lib/emailjs'
+import { animations } from '@/lib/animations'
 
 interface FormData {
   name: string
@@ -24,7 +25,10 @@ export default function ContactoFormulario() {
   }>({ type: null, message: '' })
 
   const sectionRef = useRef(null)
-  const isSectionInView = useInView(sectionRef, { once: true, margin: '-50px' })
+  const isSectionInView = useInView(sectionRef, {
+    once: true,
+    margin: '-100px',
+  })
 
   // Inicializar EmailJS cuando el componente se monta
   useEffect(() => {
@@ -82,44 +86,18 @@ export default function ContactoFormulario() {
     }
   }
 
-  // Animaciones simplificadas
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0 },
-  }
-
-  const fadeInLeft = {
-    hidden: { opacity: 0, x: -30 },
-    visible: { opacity: 1, x: 0 },
-  }
-
-  const fadeInRight = {
-    hidden: { opacity: 0, x: 30 },
-    visible: { opacity: 1, x: 0 },
-  }
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  }
-
   return (
     <motion.main
       ref={sectionRef}
-      variants={staggerContainer}
+      variants={animations.staggerContainer}
       initial='hidden'
       animate={isSectionInView ? 'visible' : 'hidden'}
       className='max-w-7xl mx-auto px-4 py-16 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start'
     >
       {/* Columna izquierda: Datos y mapa */}
-      <motion.div variants={fadeInLeft}>
+      <motion.div variants={animations.fadeInLeft}>
         <motion.p
-          variants={fadeInUp}
+          variants={animations.fadeInUp}
           className='text-gray-300 text-base mb-8 max-w-2xl'
         >
           Si necesitás más información sobre nuestros servicios, tenés preguntas
@@ -129,11 +107,11 @@ export default function ContactoFormulario() {
 
         {/* Mapa */}
         <motion.div
-          variants={fadeInUp}
+          variants={animations.fadeInUp}
           className='rounded-lg overflow-hidden shadow-lg'
           whileHover={{
             scale: 1.02,
-            transition: { duration: 0.3 },
+            transition: { duration: 0.5, ease: 'easeOut' as const },
           }}
         >
           <iframe
@@ -151,19 +129,19 @@ export default function ContactoFormulario() {
 
       {/* Columna derecha: Formulario */}
       <motion.div
-        variants={fadeInRight}
+        variants={animations.fadeInRight}
         className='bg-black/80 rounded-lg shadow-lg p-10 flex flex-col justify-center'
         whileHover={{
           boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-          transition: { duration: 0.3 },
+          transition: { duration: 0.5, ease: 'easeOut' as const },
         }}
       >
         <motion.form
-          variants={staggerContainer}
+          variants={animations.staggerContainer}
           onSubmit={handleSubmit}
           className='space-y-7'
         >
-          <motion.div variants={fadeInUp}>
+          <motion.div variants={animations.fadeInUp}>
             <motion.input
               type='text'
               name='name'
@@ -174,11 +152,11 @@ export default function ContactoFormulario() {
               required
               whileFocus={{
                 scale: 1.02,
-                transition: { duration: 0.2 },
+                transition: { duration: 0.4, ease: 'easeOut' as const },
               }}
             />
           </motion.div>
-          <motion.div variants={fadeInUp}>
+          <motion.div variants={animations.fadeInUp}>
             <motion.input
               type='email'
               name='email'
@@ -189,11 +167,11 @@ export default function ContactoFormulario() {
               required
               whileFocus={{
                 scale: 1.02,
-                transition: { duration: 0.2 },
+                transition: { duration: 0.4, ease: 'easeOut' as const },
               }}
             />
           </motion.div>
-          <motion.div variants={fadeInUp}>
+          <motion.div variants={animations.fadeInUp}>
             <motion.textarea
               name='message'
               value={formData.message}
@@ -203,7 +181,7 @@ export default function ContactoFormulario() {
               required
               whileFocus={{
                 scale: 1.02,
-                transition: { duration: 0.2 },
+                transition: { duration: 0.4, ease: 'easeOut' as const },
               }}
             ></motion.textarea>
           </motion.div>
@@ -223,7 +201,7 @@ export default function ContactoFormulario() {
             </motion.div>
           )}
 
-          <motion.div variants={fadeInUp}>
+          <motion.div variants={animations.fadeInUp}>
             <Button
               type='submit'
               variant='primary'

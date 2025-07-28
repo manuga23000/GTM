@@ -3,53 +3,28 @@ import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import Button from '@/components/ui/Button'
 import Link from 'next/link'
+import { animations } from '@/lib/animations'
 
 export default function ServiciosEmpresariales() {
   const mainRef = useRef(null)
   const brandsRef = useRef(null)
   const specializedRef = useRef(null)
 
-  const isMainInView = useInView(mainRef, { once: true, margin: '-50px' })
-  const isBrandsInView = useInView(brandsRef, { once: true, margin: '-50px' })
+  const isMainInView = useInView(mainRef, { once: true, margin: '-100px' })
+  const isBrandsInView = useInView(brandsRef, { once: true, margin: '-100px' })
   const isSpecializedInView = useInView(specializedRef, {
     once: true,
-    margin: '-50px',
+    margin: '-100px',
   })
 
-  // Animaciones simplificadas
-  const fadeInRight = {
-    hidden: { opacity: 0, x: 30 },
-    visible: { opacity: 1, x: 0 },
-  }
-
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0 },
-  }
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  }
-
-  const listItemVariants = {
-    hidden: { opacity: 0, x: 20 },
-    visible: { opacity: 1, x: 0 },
-  }
-
+  // Animaciones más suaves para las marcas
   const brandVariants = {
     hidden: { opacity: 0, scale: 0.8 },
-    visible: { opacity: 1, scale: 1 },
-  }
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: { duration: 0.8, ease: 'easeOut' as const },
+    },
   }
 
   const services = [
@@ -92,13 +67,13 @@ export default function ServiciosEmpresariales() {
           <div className='hidden lg:block'></div>
 
           <motion.div
-            variants={staggerContainer}
+            variants={animations.staggerContainer}
             initial='hidden'
             animate={isMainInView ? 'visible' : 'hidden'}
             className='flex flex-col items-end text-right space-y-6'
           >
             <motion.h2
-              variants={fadeInRight}
+              variants={animations.fadeInRight}
               className='text-white font-extrabold text-5xl mb-2'
             >
               SERVICIOS <br />
@@ -114,7 +89,7 @@ export default function ServiciosEmpresariales() {
             </motion.h2>
 
             <motion.p
-              variants={fadeInRight}
+              variants={animations.fadeInRight}
               className='text-white text-lg max-w-xl mt-6 mb-8'
             >
               Desarrollamos soluciones integrales para el mantenimiento y
@@ -125,16 +100,16 @@ export default function ServiciosEmpresariales() {
             </motion.p>
 
             <motion.ul
-              variants={staggerContainer}
+              variants={animations.staggerContainer}
               className='text-white text-lg font-bold space-y-2 mb-10'
             >
               {services.map((service, index) => (
                 <motion.li
                   key={index}
-                  variants={listItemVariants}
+                  variants={animations.listItemVariants}
                   whileHover={{
                     x: -5,
-                    transition: { duration: 0.2 },
+                    transition: { duration: 0.4, ease: 'easeOut' as const },
                   }}
                   className='cursor-pointer hover:text-red-400 transition-colors duration-200 text-right'
                 >
@@ -143,7 +118,7 @@ export default function ServiciosEmpresariales() {
               ))}
             </motion.ul>
 
-            <motion.div variants={fadeInRight}>
+            <motion.div variants={animations.fadeInRight}>
               <Link href='/servicios'>
                 <Button variant='primary' size='lg'>
                   Ver Más
@@ -158,7 +133,7 @@ export default function ServiciosEmpresariales() {
       <section className='bg-white py-12' ref={brandsRef}>
         <div className='max-w-7xl mx-auto px-4 text-center'>
           <motion.h3
-            variants={fadeInUp}
+            variants={animations.fadeInUp}
             initial='hidden'
             animate={isBrandsInView ? 'visible' : 'hidden'}
             className='text-red-600 font-bold tracking-widest text-lg mb-6'
@@ -167,7 +142,7 @@ export default function ServiciosEmpresariales() {
           </motion.h3>
 
           <motion.p
-            variants={fadeInUp}
+            variants={animations.fadeInUp}
             initial='hidden'
             animate={isBrandsInView ? 'visible' : 'hidden'}
             className='text-gray-800 text-lg mb-1'
@@ -177,7 +152,7 @@ export default function ServiciosEmpresariales() {
           </motion.p>
 
           <motion.p
-            variants={fadeInUp}
+            variants={animations.fadeInUp}
             initial='hidden'
             animate={isBrandsInView ? 'visible' : 'hidden'}
             className='text-gray-800 text-lg mb-10'
@@ -187,7 +162,7 @@ export default function ServiciosEmpresariales() {
           </motion.p>
 
           <motion.div
-            variants={staggerContainer}
+            variants={animations.staggerContainer}
             initial='hidden'
             animate={isBrandsInView ? 'visible' : 'hidden'}
             className='flex flex-wrap justify-center items-center gap-8'
@@ -199,7 +174,7 @@ export default function ServiciosEmpresariales() {
                 whileHover={{
                   scale: 1.1,
                   y: -5,
-                  transition: { duration: 0.3 },
+                  transition: { duration: 0.5, ease: 'easeOut' as const },
                 }}
                 src={brand.src}
                 alt={brand.alt}
@@ -224,7 +199,7 @@ export default function ServiciosEmpresariales() {
         <div className='absolute inset-0 bg-black/80 z-0'></div>
         <div className='relative z-10 w-full max-w-5xl mx-auto text-center px-4'>
           <motion.h2
-            variants={fadeInUp}
+            variants={animations.fadeInUp}
             initial='hidden'
             animate={isSpecializedInView ? 'visible' : 'hidden'}
             className='text-5xl md:text-6xl font-extrabold mb-6 text-white'
@@ -242,7 +217,7 @@ export default function ServiciosEmpresariales() {
           </motion.h2>
 
           <motion.p
-            variants={fadeInUp}
+            variants={animations.fadeInUp}
             initial='hidden'
             animate={isSpecializedInView ? 'visible' : 'hidden'}
             className='text-white text-lg mb-10'
@@ -255,7 +230,7 @@ export default function ServiciosEmpresariales() {
           </motion.p>
 
           <motion.div
-            variants={staggerContainer}
+            variants={animations.staggerContainer}
             initial='hidden'
             animate={isSpecializedInView ? 'visible' : 'hidden'}
             className='flex flex-col md:flex-row justify-center gap-6 mb-10'
@@ -263,7 +238,7 @@ export default function ServiciosEmpresariales() {
             {specializedServices.map((service, index) => (
               <motion.div
                 key={index}
-                variants={cardVariants}
+                variants={animations.cardVariants}
                 whileHover={{
                   scale: 1.05,
                   backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -279,7 +254,7 @@ export default function ServiciosEmpresariales() {
           </motion.div>
 
           <motion.div
-            variants={fadeInUp}
+            variants={animations.fadeInUp}
             initial='hidden'
             animate={isSpecializedInView ? 'visible' : 'hidden'}
           >

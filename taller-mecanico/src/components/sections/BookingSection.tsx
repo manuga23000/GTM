@@ -44,7 +44,6 @@ export default function BookingSection() {
       y: 0,
       transition: {
         duration: 0.8,
-        ease: [0.25, 0.46, 0.45, 0.94],
       },
     },
   }
@@ -58,7 +57,6 @@ export default function BookingSection() {
       transition: {
         duration: 0.7,
         delay: custom * 0.15,
-        ease: [0.25, 0.46, 0.45, 0.94],
       },
     }),
   }
@@ -71,7 +69,6 @@ export default function BookingSection() {
       transition: {
         duration: 0.8,
         delay: 0.6,
-        ease: 'easeOut',
       },
     },
   }
@@ -87,7 +84,7 @@ export default function BookingSection() {
         >
           {/* Título principal */}
           <motion.h2
-            variants={fadeInUp as any}
+            variants={fadeInUp}
             className='text-4xl md:text-6xl font-bold'
           >
             RESERVA TU{' '}
@@ -104,7 +101,7 @@ export default function BookingSection() {
 
           {/* Párrafo descriptivo */}
           <motion.p
-            variants={fadeInUp as any}
+            variants={fadeInUp}
             className='text-gray-300 text-lg max-w-3xl mx-auto leading-relaxed'
           >
             Agenda tu cita de manera rápida y sencilla. Selecciona el servicio
@@ -121,7 +118,7 @@ export default function BookingSection() {
               <motion.div
                 key={index}
                 custom={index}
-                variants={cardVariants as any}
+                variants={cardVariants}
                 whileHover={{
                   scale: 1.05,
                   y: -5,
@@ -164,13 +161,13 @@ export default function BookingSection() {
           </motion.div>
 
           {/* Botón y texto adicional */}
-          <motion.div variants={buttonVariants as any} className='mt-12'>
+          <motion.div variants={buttonVariants} className='mt-12'>
             <Button variant='primary' size='xl'>
               PRÓXIMAMENTE - SISTEMA DE TURNOS
             </Button>
 
             <motion.p
-              variants={fadeInUp as any}
+              variants={fadeInUp}
               className='text-gray-400 mt-4 text-sm'
             >
               Mientras tanto, contáctanos por{' '}

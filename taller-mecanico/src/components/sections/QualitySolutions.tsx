@@ -23,7 +23,6 @@ export default function QualitySolutions() {
       transition: {
         duration: 0.6,
         delay: custom * 0.15, // Entrada escalonada
-        ease: [0.25, 0.46, 0.45, 0.94],
       },
     }),
   }
@@ -35,7 +34,6 @@ export default function QualitySolutions() {
       transition: {
         duration: 4,
         repeat: Infinity,
-        ease: 'easeInOut',
       },
     },
   }
@@ -49,7 +47,6 @@ export default function QualitySolutions() {
       transition: {
         duration: 0.8,
         delay: 0.3,
-        ease: 'easeOut',
       },
     },
   }
@@ -62,7 +59,6 @@ export default function QualitySolutions() {
       transition: {
         duration: 0.8,
         delay: 0.5,
-        ease: 'easeOut',
       },
     },
   }
@@ -75,7 +71,6 @@ export default function QualitySolutions() {
       transition: {
         duration: 0.6,
         delay: 0.7 + custom * 0.2,
-        ease: 'easeOut',
       },
     }),
   }
@@ -202,50 +197,61 @@ export default function QualitySolutions() {
                     transition: { duration: 0.3 },
                   }}
                 >
-                  INNOVACIÓN
+                  CALIDAD
                 </motion.span>
               </motion.h2>
             </div>
 
-            <div className='text-gray-700 text-base leading-relaxed space-y-4'>
-              <motion.p
-                custom={0}
-                variants={paragraphVariants}
-                initial='hidden'
-                animate={isInView ? 'visible' : 'hidden'}
-              >
-                En <strong>GTM</strong>, ofrecemos un servicio integral para el
-                mantenimiento y reparación de tu vehículo, abarcando desde la
-                especialización en cajas automáticas, con diagnósticos precisos
-                y reprogramaciones avanzadas, hasta reparaciones completas de
-                mecánica en general, como motores, frenos y suspensión.
-              </motion.p>
+            <motion.div
+              variants={paragraphVariants}
+              custom={0}
+              initial='hidden'
+              animate={isInView ? 'visible' : 'hidden'}
+              className='space-y-4'
+            >
+              <p className='text-gray-700 text-lg leading-relaxed'>
+                En GTM, nos especializamos en brindar soluciones integrales para
+                tu vehículo. Nuestro equipo de técnicos certificados utiliza
+                tecnología de última generación para diagnosticar y reparar
+                cualquier problema que pueda tener tu automóvil.
+              </p>
 
-              <motion.p
-                custom={1}
-                variants={paragraphVariants}
-                initial='hidden'
-                animate={isInView ? 'visible' : 'hidden'}
-              >
-                Nuestro enfoque en la tecnología nos permite realizar trabajos
-                de electrónica avanzada, solucionando fallas en sistemas
-                eléctricos y electrónicos, e implementando dispositivos
-                modernos. Contamos con equipos de diagnóstico de última
-                generación para detectar y solucionar problemas rápidamente,
-                además de ser expertos en la reparación y reprogramación de
-                ECUs, módulos y cajas de fusibles.
-              </motion.p>
+              <p className='text-gray-700 text-lg leading-relaxed'>
+                Desde trabajos de mecánica general hasta reparaciones complejas
+                de cajas automáticas y sistemas electrónicos, garantizamos
+                resultados duraderos y un servicio de excelencia que supera las
+                expectativas de nuestros clientes.
+              </p>
+            </motion.div>
 
-              <motion.p
-                custom={2}
-                variants={paragraphVariants}
-                initial='hidden'
-                animate={isInView ? 'visible' : 'hidden'}
+            <motion.div
+              variants={paragraphVariants}
+              custom={1}
+              initial='hidden'
+              animate={isInView ? 'visible' : 'hidden'}
+              className='flex flex-col sm:flex-row gap-4 pt-4'
+            >
+              <motion.button
+                whileHover={{
+                  scale: 1.05,
+                  transition: { duration: 0.2 },
+                }}
+                whileTap={{ scale: 0.95 }}
+                className='bg-red-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-300'
               >
-                Todo esto, respaldado por un equipo altamente capacitado y
-                comprometido.
-              </motion.p>
-            </div>
+                CONOCER SERVICIOS
+              </motion.button>
+              <motion.button
+                whileHover={{
+                  scale: 1.05,
+                  transition: { duration: 0.2 },
+                }}
+                whileTap={{ scale: 0.95 }}
+                className='border-2 border-red-600 text-red-600 px-8 py-3 rounded-lg font-semibold hover:bg-red-600 hover:text-white transition-colors duration-300'
+              >
+                CONTACTAR
+              </motion.button>
+            </motion.div>
           </div>
         </div>
       </div>

@@ -44,7 +44,8 @@ export default function BookingSection() {
       y: 0,
       transition: {
         duration: 0.8,
-        ease: [0.25, 0.46, 0.45, 0.94],
+        type: 'tween',
+        ease: [0.25, 0.46, 0.45, 0.94] as const,
       },
     },
   }
@@ -58,7 +59,8 @@ export default function BookingSection() {
       transition: {
         duration: 0.7,
         delay: custom * 0.15,
-        ease: [0.25, 0.46, 0.45, 0.94],
+        type: 'tween',
+        ease: [0.25, 0.46, 0.45, 0.94] as const,
       },
     }),
   }

@@ -1,6 +1,40 @@
-import React from 'react'
+'use client'
+import { motion, useInView } from 'framer-motion'
+import { useRef } from 'react'
+import Link from 'next/link'
 
 export default function ServiciosPrincipales() {
+  const serviciosRef = useRef(null)
+  const isServiciosInView = useInView(serviciosRef, {
+    once: true,
+    margin: '-50px',
+  })
+
+  // Animaciones simplificadas
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0 },
+  }
+
+  const fadeInLeft = {
+    hidden: { opacity: 0, x: -30 },
+    visible: { opacity: 1, x: 0 },
+  }
+
+  const fadeInRight = {
+    hidden: { opacity: 0, x: 30 },
+    visible: { opacity: 1, x: 0 },
+  }
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.3,
+      },
+    },
+  }
   const servicios = [
     {
       titulo: 'CAJAS AUTOMÁTICAS',
@@ -26,46 +60,105 @@ export default function ServiciosPrincipales() {
   ]
 
   return (
-    <section className='py-20 bg-white'>
+    <section className='py-20 bg-white' ref={serviciosRef}>
       <div className='max-w-7xl mx-auto px-4'>
-        <div className='text-center mb-16'>
-          <h2 className='text-4xl md:text-5xl font-bold text-gray-900 mb-4'>
-            SERVICIOS <span className='text-red-600'>ESPECIALIZADOS</span>
-          </h2>
-          <p className='text-gray-600 text-lg max-w-2xl mx-auto'>
+        <motion.div
+          variants={fadeInUp}
+          initial='hidden'
+          animate={isServiciosInView ? 'visible' : 'hidden'}
+          className='text-center mb-16'
+        >
+          <motion.h2
+            variants={fadeInUp}
+            className='text-4xl md:text-5xl font-bold text-gray-900 mb-4'
+          >
+            SERVICIOS{' '}
+            <motion.span
+              className='text-red-600'
+              whileHover={{
+                textShadow: '0px 0px 8px rgb(239, 68, 68)',
+                transition: { duration: 0.3 },
+              }}
+            >
+              ESPECIALIZADOS
+            </motion.span>
+          </motion.h2>
+          <motion.p
+            variants={fadeInUp}
+            className='text-gray-600 text-lg max-w-2xl mx-auto'
+          >
             Nuestras especialidades con tecnología de última generación
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
-        <div className='space-y-20'>
+        <motion.div
+          variants={staggerContainer}
+          initial='hidden'
+          animate={isServiciosInView ? 'visible' : 'hidden'}
+          className='space-y-20'
+        >
           {servicios.map((servicio, index) => (
-            <div
+            <motion.div
               key={index}
+              variants={fadeInUp}
+              whileHover={{
+                scale: 1.02,
+                transition: { duration: 0.3 },
+              }}
               className={`flex flex-col lg:flex-row items-center gap-12 ${
                 servicio.lado === 'derecha' ? 'lg:flex-row-reverse' : ''
               }`}
             >
-              <div className='lg:w-1/2'>
+              <motion.div
+                className='lg:w-1/2'
+                variants={
+                  servicio.lado === 'derecha' ? fadeInRight : fadeInLeft
+                }
+                whileHover={{
+                  scale: 1.05,
+                  transition: { duration: 0.3 },
+                }}
+              >
                 <img
                   src={servicio.imagen}
                   alt={servicio.titulo}
                   className='w-full h-80 object-cover rounded-lg shadow-lg'
                 />
-              </div>
-              <div className='lg:w-1/2'>
-                <h3 className='text-3xl font-bold text-red-600 mb-6'>
+              </motion.div>
+              <motion.div
+                className='lg:w-1/2'
+                variants={
+                  servicio.lado === 'derecha' ? fadeInLeft : fadeInRight
+                }
+              >
+                <motion.h3
+                  variants={fadeInUp}
+                  className='text-3xl font-bold text-red-600 mb-6'
+                >
                   {servicio.titulo}
-                </h3>
-                <p className='text-gray-700 text-lg leading-relaxed mb-8'>
+                </motion.h3>
+                <motion.p
+                  variants={fadeInUp}
+                  className='text-gray-700 text-lg leading-relaxed mb-8'
+                >
                   {servicio.descripcion}
-                </p>
-                <button className='bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-all shadow-lg hover:scale-105'>
-                  Solicitar
-                </button>
-              </div>
-            </div>
+                </motion.p>
+                <Link href='/contacto'>
+                  <motion.button
+                    whileHover={{
+                      scale: 1.05,
+                      backgroundColor: '#dc2626',
+                      transition: { duration: 0.3 },
+                    }}
+                    className='bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-all shadow-lg cursor-pointer'
+                  >
+                    Solicitar
+                  </motion.button>
+                </Link>
+              </motion.div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   )

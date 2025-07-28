@@ -1,5 +1,7 @@
 'use client'
 import React, { useState } from 'react'
+import { motion, useInView } from 'framer-motion'
+import { useRef } from 'react'
 
 const imagenes = [
   '/images/sobrenosotros/carru1.jpg',
@@ -15,9 +17,27 @@ const imagenes = [
 export default function CarruselImagenes() {
   const [actual, setActual] = useState(0)
   const total = imagenes.length
+  const sectionRef = useRef(null)
+  const isSectionInView = useInView(sectionRef, { once: true, margin: '-50px' })
 
   const siguiente = () => setActual((actual + 1) % total)
   const anterior = () => setActual((actual - 1 + total) % total)
+
+  // Animaciones simplificadas
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0 },
+  }
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  }
 
   return (
     <section
@@ -25,22 +45,39 @@ export default function CarruselImagenes() {
       style={{
         background: 'linear-gradient(135deg, #f8fafc 60%, #ffe5e5 100%)',
       }}
+      ref={sectionRef}
     >
-      <div className='max-w-5xl mx-auto flex flex-col items-center'>
+      <motion.div
+        variants={staggerContainer}
+        initial='hidden'
+        animate={isSectionInView ? 'visible' : 'hidden'}
+        className='max-w-5xl mx-auto flex flex-col items-center'
+      >
         <div className='flex flex-col items-center w-full'>
           {/* Espacio extra entre camioneta y carrusel eliminado */}
-          <div className='flex items-center gap-6 mb-4'>
-            <button
+          <motion.div
+            variants={fadeInUp}
+            className='flex items-center gap-6 mb-4'
+          >
+            <motion.button
               onClick={anterior}
               className='rounded-full bg-white shadow-lg border-2 border-red-200 hover:bg-red-600 hover:text-white text-red-600 text-3xl font-bold w-12 h-12 flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-400'
               aria-label='Anterior'
               style={{ cursor: 'pointer' }}
+              whileHover={{
+                scale: 1.1,
+                transition: { duration: 0.2 },
+              }}
+              whileTap={{
+                scale: 0.95,
+                transition: { duration: 0.1 },
+              }}
             >
               &lt;
-            </button>
+            </motion.button>
             <div className='flex gap-6 items-center min-h-[180px]'>
               {imagenes.map((img, idx) => (
-                <img
+                <motion.img
                   key={img}
                   src={img}
                   alt={`Imagen taller ${idx + 1}`}
@@ -57,22 +94,34 @@ export default function CarruselImagenes() {
                         ? 'block'
                         : 'none',
                   }}
+                  whileHover={{
+                    scale: idx === actual ? 1.1 : 1.05,
+                    transition: { duration: 0.3 },
+                  }}
                 />
               ))}
             </div>
-            <button
+            <motion.button
               onClick={siguiente}
               className='rounded-full bg-white shadow-lg border-2 border-red-200 hover:bg-red-600 hover:text-white text-red-600 text-3xl font-bold w-12 h-12 flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-400'
               aria-label='Siguiente'
               style={{ cursor: 'pointer' }}
+              whileHover={{
+                scale: 1.1,
+                transition: { duration: 0.2 },
+              }}
+              whileTap={{
+                scale: 0.95,
+                transition: { duration: 0.1 },
+              }}
             >
               &gt;
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         </div>
-        <div className='mt-6 flex gap-3'>
+        <motion.div variants={fadeInUp} className='mt-6 flex gap-3'>
           {imagenes.map((_, idx) => (
-            <span
+            <motion.span
               key={idx}
               onClick={() => setActual(idx)}
               className={`h-4 w-4 rounded-full border-2 border-red-200 transition-all duration-300 cursor-pointer ${
@@ -83,10 +132,18 @@ export default function CarruselImagenes() {
               style={{
                 boxShadow: idx === actual ? '0 0 10px #dc2626aa' : 'none',
               }}
-            ></span>
+              whileHover={{
+                scale: 1.2,
+                transition: { duration: 0.2 },
+              }}
+              whileTap={{
+                scale: 0.9,
+                transition: { duration: 0.1 },
+              }}
+            ></motion.span>
           ))}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </section>
   )
 }

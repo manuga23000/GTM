@@ -1,5 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
+import { motion, useInView } from 'framer-motion'
+import { useRef } from 'react'
 import Image from 'next/image'
 import Button from '@/components/ui/Button'
 import Link from 'next/link'
@@ -7,6 +9,8 @@ import Link from 'next/link'
 export default function Hero() {
   const [underline, setUnderline] = useState(false)
   const [showLine, setShowLine] = useState(false)
+  const heroRef = useRef(null)
+  const isHeroInView = useInView(heroRef, { once: true, margin: '-50px' })
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -20,6 +24,22 @@ export default function Hero() {
     return () => clearInterval(interval)
   }, [])
 
+  // Animaciones simplificadas
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0 },
+  }
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  }
+
   return (
     <section
       className='relative pt-28 min-h-screen flex items-center'
@@ -29,32 +49,56 @@ export default function Hero() {
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
       }}
+      ref={heroRef}
     >
       {/* Overlay para legibilidad del texto */}
       <div className='absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/50'></div>
 
-      <div className='relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+      <motion.div
+        variants={staggerContainer}
+        initial='hidden'
+        animate={isHeroInView ? 'visible' : 'hidden'}
+        className='relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
+      >
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
           {/* Left Content */}
           <div className='space-y-8'>
-            <div className='space-y-4'>
-              <p className='text-red-500 text-lg font-medium italic'>
+            <motion.div variants={fadeInUp} className='space-y-4'>
+              <motion.p
+                className='text-red-500 text-lg font-medium italic'
+                whileHover={{
+                  textShadow: '0px 0px 8px rgb(239, 68, 68)',
+                  transition: { duration: 0.3 },
+                }}
+              >
                 Tu Aliado En Soluciones Automotrices
-              </p>
-              <h1 className='text-5xl md:text-7xl font-bold leading-tight'>
+              </motion.p>
+              <motion.h1
+                className='text-5xl md:text-7xl font-bold leading-tight'
+                variants={fadeInUp}
+              >
                 MANTENIMIENTO
                 <br />
                 Y REPARACIÓN
                 <br />
                 CON
                 <br />
-                <span className='text-red-500 relative inline-block w-full pb-2'>
+                <motion.span
+                  className='text-red-500 relative inline-block w-full pb-2'
+                  whileHover={{
+                    textShadow: '0px 0px 8px rgb(239, 68, 68)',
+                    transition: { duration: 0.3 },
+                  }}
+                >
                   EXPERIENCIA
-                </span>
-              </h1>
-            </div>
+                </motion.span>
+              </motion.h1>
+            </motion.div>
 
-            <div className='flex flex-col sm:flex-row gap-4'>
+            <motion.div
+              variants={fadeInUp}
+              className='flex flex-col sm:flex-row gap-4'
+            >
               <Button variant='primary' size='lg'>
                 RESERVAR TURNO
               </Button>
@@ -63,13 +107,13 @@ export default function Hero() {
                   CONOCER MÁS
                 </Button>
               </Link>
-            </div>
+            </motion.div>
           </div>
 
           {/* Right Content - Hidden on mobile, visible on large screens */}
           <div className='hidden lg:block'></div>
         </div>
-      </div>
+      </motion.div>
 
       <style jsx>{`
         /* Elimino estilos relacionados al subrayado animado */

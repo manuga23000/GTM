@@ -55,7 +55,7 @@ export default function TrabajaConNosotros() {
             <div className='p-8'>
               <motion.h3
                 variants={animations.fadeInUp}
-                className='text-2xl font-bold mb-2'
+                className='text-2xl font-bold mb-2 text-center lg:text-left '
               >
                 SERVICIOS A{' '}
                 <motion.span
@@ -98,7 +98,7 @@ export default function TrabajaConNosotros() {
             <div className='p-8'>
               <motion.h3
                 variants={animations.fadeInUp}
-                className='text-2xl font-bold mb-2'
+                className='text-2xl font-bold mb-2 text-center lg:text-left'
               >
                 SERVICIOS A{' '}
                 <motion.span

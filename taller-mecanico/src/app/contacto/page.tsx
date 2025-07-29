@@ -3,6 +3,7 @@ import Navbar from '@/components/layout/Navbar'
 import ContactoHero from '@/components/sections/ContactoHero'
 import ContactoInfo from '@/components/sections/ContactoInfo'
 import ContactoFormulario from '@/components/sections/ContactoFormulario'
+import WhatsAppButton from '@/components/layout/WhatsAppButton'
 
 export default function ContactoPage() {
   return (
@@ -11,6 +12,7 @@ export default function ContactoPage() {
       <ContactoHero />
       <ContactoInfo />
       <ContactoFormulario />
+      <WhatsAppButton />
     </div>
   )
 }

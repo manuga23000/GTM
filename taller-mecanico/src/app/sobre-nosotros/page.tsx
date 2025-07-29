@@ -6,6 +6,7 @@ import MartinGrandoli from '@/components/sections/MartinGrandoli'
 import ContactanosHoyMismo from '@/components/sections/ContactanosHoyMismo'
 import BookingSection from '@/components/sections/BookingSection'
 import Navbar from '@/components/layout/Navbar'
+import WhatsAppButton from '@/components/layout/WhatsAppButton'
 
 export default function SobreNosotrosPage() {
   return (
@@ -18,6 +19,7 @@ export default function SobreNosotrosPage() {
       <MartinGrandoli />
       <ContactanosHoyMismo />
       <BookingSection />
+      <WhatsAppButton />
     </div>
   )
 }

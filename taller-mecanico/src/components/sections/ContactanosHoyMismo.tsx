@@ -20,11 +20,11 @@ export default function ContactanosHoyMismo() {
         backgroundImage: "url('/images/home/cajaautomatica.jpg')",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
       }}
       ref={contactRef}
     >
-      <div className='absolute inset-0 bg-black/60 z-0'></div>
+      <div className='absolute inset-0 bg-black/40 md:bg-black/60 z-0'></div>
       <motion.div
         variants={animations.staggerContainer}
         initial='hidden'

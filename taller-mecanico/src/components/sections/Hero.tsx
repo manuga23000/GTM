@@ -12,12 +12,12 @@ export default function Hero() {
 
   return (
     <section
-      className='relative pt-36 pb-24 sm:pt-28 sm:min-h-screen flex items-start sm:items-center'
+      className='relative pt-36 pb-24 sm:pt-28 sm:min-h-screen flex items-start sm:items-center overflow-hidden'
       style={{
         backgroundImage: "url('/images/home/hero-engine.png')",
         backgroundSize: 'cover',
         backgroundPosition: 'center right',
-        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat',
       }}
       ref={heroRef}
     >
@@ -28,20 +28,20 @@ export default function Hero() {
         variants={animations.staggerContainer}
         initial='hidden'
         animate={isHeroInView ? 'visible' : 'hidden'}
-        className='relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-hidden'
+        className='relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
       >
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
           {/* Left Content */}
-          <div className='space-y-8 text-center lg:text-left overflow-x-hidden'>
+          <div className='space-y-8 text-center lg:text-left'>
             <motion.div variants={animations.fadeInUp} className='space-y-4'>
               <motion.p
-                className='text-red-500 text-lg font-medium italic'
+                className='text-white text-md font-medium italic'
                 whileHover={animations.textGlow}
               >
                 Tu Aliado En Soluciones Automotrices
               </motion.p>
               <motion.h1
-                className='text-5xl md:text-7xl font-bold leading-tight overflow-x-hidden break-words'
+                className='text-5xl md:text-7xl font-bold leading-tight break-words'
                 variants={animations.fadeInUp}
               >
                 MANTENIMIENTO
@@ -85,16 +85,7 @@ export default function Hero() {
             background-image: url('/images/home/hero-enginemobile.jpg') !important;
             background-position: center !important;
             background-size: cover !important;
-            background-attachment: scroll !important;
-            overflow-x: hidden !important;
-            width: 100% !important;
-          }
-        }
-
-        @media (max-width: 768px) {
-          section {
-            background-attachment: scroll !important;
-            overflow-x: hidden !important;
+            background-repeat: no-repeat !important;
           }
         }
       `}</style>

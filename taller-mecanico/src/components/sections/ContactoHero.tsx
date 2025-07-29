@@ -18,6 +18,43 @@ export default function ContactoHero() {
       }}
       ref={heroRef}
     >
+      <style jsx>{`
+        @media (max-width: 768px) {
+          section {
+            background-position: right center !important;
+            background-attachment: scroll !important;
+            min-height: 81vh !important;
+            padding-top: 11rem !important;
+            padding-bottom: 5rem !important;
+            align-items: flex-start !important;
+          }
+
+          section > div {
+            max-width: 80rem !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+          }
+
+          @media (min-width: 640px) {
+            section {
+              padding-top: 12rem !important;
+            }
+
+            section > div {
+              padding-left: 1.5rem !important;
+              padding-right: 1.5rem !important;
+            }
+          }
+
+          @media (min-width: 1024px) {
+            section > div {
+              padding-left: 2rem !important;
+              padding-right: 2rem !important;
+            }
+          }
+        }
+      `}</style>
+
       <div className='absolute inset-0 bg-black/70 z-0'></div>
       <motion.div
         variants={animations.staggerContainer}
@@ -32,6 +69,13 @@ export default function ContactoHero() {
         >
           CONTACTO
         </motion.h1>
+        <motion.p
+          variants={animations.fadeInUp}
+          className='text-white text-lg mb-8 max-w-2xl mx-auto'
+        >
+          Estamos aquí para ayudarte. Contactanos para consultas, presupuestos o
+          cualquier duda sobre nuestros servicios automotrices.
+        </motion.p>
       </motion.div>
     </section>
   )

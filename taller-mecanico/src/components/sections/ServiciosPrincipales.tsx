@@ -37,17 +37,17 @@ export default function ServiciosPrincipales() {
   ]
 
   return (
-    <section className='py-20 bg-white' ref={serviciosRef}>
+    <section className='py-12 md:py-20 bg-white' ref={serviciosRef}>
       <div className='max-w-7xl mx-auto px-4'>
         <motion.div
           variants={animations.fadeInUp}
           initial='hidden'
           animate={isServiciosInView ? 'visible' : 'hidden'}
-          className='text-center mb-16'
+          className='text-center mb-12 md:mb-16'
         >
           <motion.h2
             variants={animations.fadeInUp}
-            className='text-4xl md:text-5xl font-bold text-gray-900 mb-4'
+            className='text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4'
           >
             SERVICIOS{' '}
             <motion.span
@@ -59,7 +59,7 @@ export default function ServiciosPrincipales() {
           </motion.h2>
           <motion.p
             variants={animations.fadeInUp}
-            className='text-gray-600 text-lg max-w-2xl mx-auto'
+            className='text-gray-600 text-base md:text-lg max-w-2xl mx-auto px-4'
           >
             Nuestras especialidades con tecnología de última generación
           </motion.p>
@@ -69,7 +69,7 @@ export default function ServiciosPrincipales() {
           variants={animations.staggerContainer}
           initial='hidden'
           animate={isServiciosInView ? 'visible' : 'hidden'}
-          className='space-y-20'
+          className='space-y-12 md:space-y-20'
         >
           {servicios.map((servicio, index) => (
             <motion.div
@@ -79,12 +79,12 @@ export default function ServiciosPrincipales() {
                 scale: 1.02,
                 transition: { duration: 0.5, ease: 'easeOut' as const },
               }}
-              className={`flex flex-col lg:flex-row items-center gap-12 ${
+              className={`flex flex-col lg:flex-row items-center gap-8 md:gap-12 ${
                 servicio.lado === 'derecha' ? 'lg:flex-row-reverse' : ''
               }`}
             >
               <motion.div
-                className='lg:w-1/2'
+                className='w-full lg:w-1/2'
                 variants={
                   servicio.lado === 'derecha'
                     ? animations.fadeInRight
@@ -100,11 +100,11 @@ export default function ServiciosPrincipales() {
                   alt={servicio.titulo}
                   width={600}
                   height={320}
-                  className='w-full h-80 object-cover rounded-lg shadow-lg'
+                  className='w-full h-64 md:h-80 object-cover rounded-lg shadow-lg'
                 />
               </motion.div>
               <motion.div
-                className='lg:w-1/2'
+                className='w-full lg:w-1/2 text-center lg:text-left'
                 variants={
                   servicio.lado === 'derecha'
                     ? animations.fadeInLeft
@@ -113,13 +113,13 @@ export default function ServiciosPrincipales() {
               >
                 <motion.h3
                   variants={animations.fadeInUp}
-                  className='text-3xl font-bold text-red-600 mb-6'
+                  className='text-2xl md:text-3xl font-bold text-red-600 mb-4 md:mb-6'
                 >
                   {servicio.titulo}
                 </motion.h3>
                 <motion.p
                   variants={animations.fadeInUp}
-                  className='text-gray-700 text-lg leading-relaxed mb-8'
+                  className='text-gray-700 text-base md:text-lg leading-relaxed mb-6 md:mb-8 px-2 md:px-0'
                 >
                   {servicio.descripcion}
                 </motion.p>
@@ -130,7 +130,7 @@ export default function ServiciosPrincipales() {
                       backgroundColor: '#dc2626',
                       transition: { duration: 0.5, ease: 'easeOut' as const },
                     }}
-                    className='bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-all shadow-lg cursor-pointer'
+                    className='bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 md:px-8 rounded-lg transition-all shadow-lg cursor-pointer w-full md:w-auto'
                   >
                     Solicitar
                   </motion.button>

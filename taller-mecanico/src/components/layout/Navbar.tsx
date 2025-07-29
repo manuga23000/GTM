@@ -109,7 +109,7 @@ export default function Navbar() {
       }`}
     >
       <div className='max-w-7xl mx-auto px-6 lg:px-8'>
-        <div className='flex items-center justify-between h-16 lg:h-24'>
+        <div className='flex items-center justify-between h-14 lg:h-24'>
           {/* Logo */}
           <div className='flex items-center'>
             <Link href='/'>
@@ -118,7 +118,7 @@ export default function Navbar() {
                 alt='GTM Logo'
                 width={78}
                 height={78}
-                className='w-16 h-16 lg:w-24 lg:h-24 rounded-full object-cover mr-4 lg:mr-8'
+                className='w-14 h-14 lg:w-24 lg:h-24 rounded-full object-cover mr-4 lg:mr-8'
               />
             </Link>
           </div>

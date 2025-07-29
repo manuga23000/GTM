@@ -20,18 +20,48 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Cerrar menú al hacer scroll
+  // CORREGIDO: Solo cerrar menú al hacer scroll si está abierto, con debounce
   useEffect(() => {
-    if (isMenuOpen) {
-      setIsMenuOpen(false)
+    let timeoutId: NodeJS.Timeout
+
+    const handleScrollClose = () => {
+      if (isMenuOpen) {
+        clearTimeout(timeoutId)
+        timeoutId = setTimeout(() => {
+          setIsMenuOpen(false)
+        }, 100)
+      }
     }
-  }, [scrolled, isMenuOpen])
+
+    if (isMenuOpen) {
+      window.addEventListener('scroll', handleScrollClose, { passive: true })
+      return () => {
+        window.removeEventListener('scroll', handleScrollClose)
+        clearTimeout(timeoutId)
+      }
+    }
+  }, [isMenuOpen])
+
+  // Prevenir scroll del body cuando el menú está abierto
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow
+
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = originalOverflow
+    }
+
+    return () => {
+      document.body.style.overflow = originalOverflow
+    }
+  }, [isMenuOpen])
 
   // Animaciones para el menú móvil
   const menuVariants = {
     closed: {
       opacity: 0,
-      y: -20,
+      height: 0,
       transition: {
         duration: 0.3,
         ease: 'easeInOut' as const,
@@ -39,7 +69,7 @@ export default function Navbar() {
     },
     open: {
       opacity: 1,
-      y: 0,
+      height: 'auto',
       transition: {
         duration: 0.4,
         ease: 'easeOut' as const,
@@ -128,7 +158,7 @@ export default function Navbar() {
           <div className='lg:hidden'>
             <motion.button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className='text-white hover:text-red-500 focus:outline-none focus:text-red-500 p-3 rounded-lg hover:bg-white/10 transition-colors duration-200'
+              className='text-white hover:text-red-500 focus:outline-none focus:text-red-500 p-3 rounded-lg hover:bg-white/10 transition-colors duration-200 relative z-50'
               variants={buttonVariants}
               animate={isMenuOpen ? 'open' : 'closed'}
               transition={{ duration: 0.3 }}
@@ -159,11 +189,11 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu - Mejorado con animaciones */}
+        {/* Mobile Menu - Corregido */}
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
-              className='lg:hidden'
+              className='lg:hidden overflow-hidden'
               variants={menuVariants}
               initial='closed'
               animate='open'
@@ -174,7 +204,7 @@ export default function Navbar() {
                 <motion.div variants={menuItemVariants}>
                   <Link
                     href='/servicios'
-                    className='flex items-center justify-between text-white hover:text-red-400 block px-4 py-4 text-base font-semibold tracking-wide transition-all duration-300 rounded-xl hover:bg-white/10 active:bg-white/20 group'
+                    className='flex items-center justify-between text-white hover:text-red-400 px-4 py-4 text-base font-semibold tracking-wide transition-all duration-300 rounded-xl hover:bg-white/10 active:bg-white/20 group'
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span>SERVICIOS</span>
@@ -197,7 +227,7 @@ export default function Navbar() {
                 <motion.div variants={menuItemVariants}>
                   <Link
                     href='/sobre-nosotros'
-                    className='flex items-center justify-between text-white hover:text-red-400 block px-4 py-4 text-base font-semibold tracking-wide transition-all duration-300 rounded-xl hover:bg-white/10 active:bg-white/20 group'
+                    className='flex items-center justify-between text-white hover:text-red-400 px-4 py-4 text-base font-semibold tracking-wide transition-all duration-300 rounded-xl hover:bg-white/10 active:bg-white/20 group'
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span>SOBRE NOSOTROS</span>
@@ -220,7 +250,7 @@ export default function Navbar() {
                 <motion.div variants={menuItemVariants} className='pt-2'>
                   <Link
                     href='#reservar-turnos'
-                    className='flex items-center justify-center bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white block px-6 py-4 text-base font-bold tracking-wide rounded-xl transition-all duration-300 shadow-lg hover:shadow-red-500/25 hover:scale-105 active:scale-95'
+                    className='flex items-center justify-center bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-6 py-4 text-base font-bold tracking-wide rounded-xl transition-all duration-300 shadow-lg hover:shadow-red-500/25 hover:scale-105 active:scale-95'
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <svg
@@ -243,7 +273,7 @@ export default function Navbar() {
                 <motion.div variants={menuItemVariants}>
                   <Link
                     href='/contacto'
-                    className='flex items-center justify-between text-white hover:text-red-400 block px-4 py-4 text-base font-semibold tracking-wide transition-all duration-300 rounded-xl hover:bg-white/10 active:bg-white/20 group'
+                    className='flex items-center justify-between text-white hover:text-red-400 px-4 py-4 text-base font-semibold tracking-wide transition-all duration-300 rounded-xl hover:bg-white/10 active:bg-white/20 group'
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span>CONTACTO</span>

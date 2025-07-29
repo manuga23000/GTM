@@ -28,11 +28,11 @@ export default function Hero() {
         variants={animations.staggerContainer}
         initial='hidden'
         animate={isHeroInView ? 'visible' : 'hidden'}
-        className='relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
+        className='relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-hidden'
       >
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
           {/* Left Content */}
-          <div className='space-y-8 text-center lg:text-left'>
+          <div className='space-y-8 text-center lg:text-left overflow-x-hidden'>
             <motion.div variants={animations.fadeInUp} className='space-y-4'>
               <motion.p
                 className='text-red-500 text-lg font-medium italic'
@@ -41,7 +41,7 @@ export default function Hero() {
                 Tu Aliado En Soluciones Automotrices
               </motion.p>
               <motion.h1
-                className='text-5xl md:text-7xl font-bold leading-tight'
+                className='text-5xl md:text-7xl font-bold leading-tight overflow-x-hidden break-words'
                 variants={animations.fadeInUp}
               >
                 MANTENIMIENTO
@@ -86,6 +86,15 @@ export default function Hero() {
             background-position: center !important;
             background-size: cover !important;
             background-attachment: scroll !important;
+            overflow-x: hidden !important;
+            width: 100% !important;
+          }
+        }
+
+        @media (max-width: 768px) {
+          section {
+            background-attachment: scroll !important;
+            overflow-x: hidden !important;
           }
         }
       `}</style>

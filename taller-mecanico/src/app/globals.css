@@ -20,10 +20,23 @@
   }
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html {
+  overflow-x: hidden;
+  width: 100%;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'Montserrat', sans-serif;
+  overflow-x: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 h1,
@@ -32,6 +45,8 @@ h1,
   font-family: 'Montserrat', sans-serif;
   font-weight: 800 !important;
   text-transform: uppercase !important;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
 }
 
 @media (max-width: 640px) {
@@ -39,6 +54,9 @@ h1,
   .text-5xl {
     font-size: 2rem !important;
     line-height: 2.6rem !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: 100vw !important;
   }
 }
 
@@ -80,4 +98,27 @@ h1,
 .svg-underline-static path {
   stroke-dasharray: 320;
   stroke-dashoffset: 0;
+}
+
+/* Prevenir scroll horizontal en móviles */
+@media (max-width: 768px) {
+  html,
+  body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
+  * {
+    max-width: 100% !important;
+  }
+
+  section,
+  div,
+  nav,
+  header,
+  footer {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
 }

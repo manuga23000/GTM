@@ -132,9 +132,11 @@ export default function BookingSection() {
 
           {/* Botón y texto adicional */}
           <motion.div variants={animations.fadeInUp} className='mt-12'>
-            <Button variant='primary' size='xl'>
-              PRÓXIMAMENTE - SISTEMA DE TURNOS
-            </Button>
+            <Link href='/turnos'>
+              <Button variant='primary' size='xl'>
+                RESERVAR TURNO AHORA
+              </Button>
+            </Link>
 
             <motion.p
               variants={animations.fadeInUp}

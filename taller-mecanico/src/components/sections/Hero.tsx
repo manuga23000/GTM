@@ -12,11 +12,11 @@ export default function Hero() {
 
   return (
     <section
-      className='relative pt-28 min-h-screen flex items-center'
+      className='relative pt-36 pb-24 sm:pt-28 sm:min-h-screen flex items-start sm:items-center'
       style={{
         backgroundImage: "url('/images/home/hero-engine.png')",
         backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundPosition: 'center right',
         backgroundAttachment: 'fixed',
       }}
       ref={heroRef}
@@ -32,7 +32,7 @@ export default function Hero() {
       >
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
           {/* Left Content */}
-          <div className='space-y-8'>
+          <div className='space-y-8 text-center lg:text-left'>
             <motion.div variants={animations.fadeInUp} className='space-y-4'>
               <motion.p
                 className='text-red-500 text-lg font-medium italic'
@@ -61,13 +61,13 @@ export default function Hero() {
 
             <motion.div
               variants={animations.fadeInUp}
-              className='flex flex-col sm:flex-row gap-4'
+              className='flex flex-col sm:flex-row gap-4 justify-center lg:justify-start'
             >
-              <Button variant='primary' size='lg'>
+              <Button variant='primary' size='lg' className='w-full sm:w-auto'>
                 RESERVAR TURNO
               </Button>
-              <Link href='/servicios'>
-                <Button variant='outline' size='lg'>
+              <Link href='/servicios' className='w-full sm:w-auto'>
+                <Button variant='outline' size='lg' className='w-full'>
                   CONOCER MÁS
                 </Button>
               </Link>
@@ -80,7 +80,14 @@ export default function Hero() {
       </motion.div>
 
       <style jsx>{`
-        /* Elimino estilos relacionados al subrayado animado */
+        @media (max-width: 640px) {
+          section {
+            background-image: url('/images/home/hero-enginemobile.jpg') !important;
+            background-position: center !important;
+            background-size: cover !important;
+            background-attachment: scroll !important;
+          }
+        }
       `}</style>
     </section>
   )

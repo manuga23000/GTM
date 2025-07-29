@@ -155,7 +155,7 @@ export default function QualitySolutions() {
                 animate={isInView ? 'visible' : 'hidden'}
                 className='text-4xl md:text-5xl font-bold leading-tight mb-6'
               >
-                SOLUCIONES CON
+                SOLUCIONES DE
                 <br />
                 <motion.span
                   className='text-red-500'

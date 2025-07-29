@@ -49,7 +49,7 @@ export default function ContactanosHoyMismo() {
           >
             HOY
           </motion.span>{' '}
-          MISMO.
+          MISMO
         </motion.h2>
 
         <motion.div
@@ -64,7 +64,7 @@ export default function ContactanosHoyMismo() {
           <img
             src='/images/home/atf.png'
             alt='Máquina ATF'
-            className='h-110 object-contain drop-shadow-xl'
+            className='h-80 md:h-110 object-contain drop-shadow-xl'
           />
         </motion.div>
 

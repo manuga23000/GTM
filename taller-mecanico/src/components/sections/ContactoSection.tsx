@@ -64,7 +64,7 @@ export default function ContactoSection() {
           >
             HOY
           </motion.span>{' '}
-          MISMO.
+          MISMO
         </motion.h2>
 
         <motion.div

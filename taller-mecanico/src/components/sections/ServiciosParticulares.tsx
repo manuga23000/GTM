@@ -89,6 +89,29 @@ export default function ServiciosParticulares() {
         {/* Columna derecha vacía para dejar ver la imagen */}
         <div className='hidden lg:block'></div>
       </div>
+
+      <style jsx>{`
+        @media (max-width: 640px) {
+          section {
+            background-attachment: scroll !important;
+            background-position: right center !important;
+          }
+          section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1;
+          }
+          section > div {
+            z-index: 2;
+            position: relative;
+          }
+        }
+      `}</style>
     </section>
   )
 }

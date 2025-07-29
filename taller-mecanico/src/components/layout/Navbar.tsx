@@ -25,7 +25,7 @@ export default function Navbar() {
     if (isMenuOpen) {
       setIsMenuOpen(false)
     }
-  }, [scrolled])
+  }, [scrolled, isMenuOpen])
 
   // Animaciones para el menú móvil
   const menuVariants = {

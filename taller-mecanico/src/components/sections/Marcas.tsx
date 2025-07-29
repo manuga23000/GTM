@@ -1,6 +1,7 @@
-import { motion } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { animations } from '@/lib/animations'
 import { useRef } from 'react'
+import Image from 'next/image'
 
 const brands = [
   { src: '/images/marcas/transtec.png', alt: 'Transtec' },
@@ -22,7 +23,7 @@ const brandVariants = {
 
 export default function Marcas() {
   const brandsRef = useRef(null)
-  const isBrandsInView = require('framer-motion').useInView(brandsRef, {
+  const isBrandsInView = useInView(brandsRef, {
     once: true,
     margin: '-100px',
   })
@@ -66,7 +67,7 @@ export default function Marcas() {
           className='flex flex-col md:flex-row flex-wrap justify-center items-center gap-8'
         >
           {brands.map((brand, index) => (
-            <motion.img
+            <motion.div
               key={index}
               variants={brandVariants}
               whileHover={{
@@ -74,10 +75,16 @@ export default function Marcas() {
                 y: -5,
                 transition: { duration: 0.5, ease: 'easeOut' as const },
               }}
-              src={brand.src}
-              alt={brand.alt}
-              className='max-h-20 max-w-[150px] object-contain p-2 mx-2 cursor-pointer hover:opacity-80 transition-opacity duration-300'
-            />
+              className='cursor-pointer hover:opacity-80 transition-opacity duration-300'
+            >
+              <Image
+                src={brand.src}
+                alt={brand.alt}
+                width={150}
+                height={80}
+                className='max-h-20 max-w-[150px] object-contain p-2 mx-2'
+              />
+            </motion.div>
           ))}
         </motion.div>
       </div>

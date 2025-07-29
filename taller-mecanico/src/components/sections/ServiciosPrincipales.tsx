@@ -2,6 +2,7 @@
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { animations } from '@/lib/animations'
 
 export default function ServiciosPrincipales() {
@@ -94,9 +95,11 @@ export default function ServiciosPrincipales() {
                   transition: { duration: 0.5, ease: 'easeOut' as const },
                 }}
               >
-                <img
+                <Image
                   src={servicio.imagen}
                   alt={servicio.titulo}
+                  width={600}
+                  height={320}
                   className='w-full h-80 object-cover rounded-lg shadow-lg'
                 />
               </motion.div>

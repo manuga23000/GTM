@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { animations } from '@/lib/animations'
 import { useRef } from 'react'
 import Button from '@/components/ui/Button'
@@ -12,10 +12,10 @@ const specializedServices = [
 
 export default function ServiciosEspecializados() {
   const specializedRef = useRef(null)
-  const isSpecializedInView = require('framer-motion').useInView(
-    specializedRef,
-    { once: true, margin: '-100px' }
-  )
+  const isSpecializedInView = useInView(specializedRef, {
+    once: true,
+    margin: '-100px',
+  })
 
   return (
     <section

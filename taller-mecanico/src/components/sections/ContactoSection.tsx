@@ -3,6 +3,7 @@ import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import Button from '@/components/ui/Button'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function ContactoSection() {
   const contactRef = useRef(null)
@@ -76,9 +77,11 @@ export default function ContactoSection() {
           }}
           className='flex justify-center mb-8'
         >
-          <img
+          <Image
             src='/images/home/atf.png'
             alt='Máquina ATF'
+            width={400}
+            height={440}
             className='h-110 object-contain drop-shadow-xl'
           />
         </motion.div>

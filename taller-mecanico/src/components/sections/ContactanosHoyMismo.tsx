@@ -3,6 +3,7 @@ import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import Button from '@/components/ui/Button'
 import Link from 'next/link'
+import Image from 'next/image'
 import { animations } from '@/lib/animations'
 
 export default function ContactanosHoyMismo() {
@@ -61,9 +62,11 @@ export default function ContactanosHoyMismo() {
           }}
           className='flex justify-center mb-8'
         >
-          <img
+          <Image
             src='/images/home/atf.png'
             alt='Máquina ATF'
+            width={400}
+            height={440}
             className='h-80 md:h-110 object-contain drop-shadow-xl'
           />
         </motion.div>

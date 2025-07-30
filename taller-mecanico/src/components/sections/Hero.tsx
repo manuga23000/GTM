@@ -63,9 +63,11 @@ export default function Hero() {
               variants={animations.fadeInUp}
               className='flex flex-col sm:flex-row gap-4 justify-center lg:justify-start'
             >
-              <Button variant='primary' size='lg' className='w-full sm:w-auto'>
-                PROXIMAMENTE - SISTEMA DE TURNOS
-              </Button>
+              <Link href='/turnos' className='w-full sm:w-auto'>
+                <Button variant='primary' size='lg' className='w-full'>
+                  PROXIMAMENTE - SISTEMA DE TURNOS
+                </Button>
+              </Link>
               <Link href='/servicios' className='w-full sm:w-auto'>
                 <Button variant='outline' size='lg' className='w-full'>
                   CONOCER MÁS

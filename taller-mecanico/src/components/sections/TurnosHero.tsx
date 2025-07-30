@@ -19,7 +19,7 @@ export default function TurnosHero() {
               📱 WhatsApp Directo
             </div>
             <div className='bg-gray-700 text-gray-300 px-8 py-4 rounded-lg font-semibold'>
-              ⏰ Horarios: Lun-Vie 8:00-18:00
+              ⏰ Horarios: Lun-Vie 8:00-16:00
             </div>
           </div>
         </div>

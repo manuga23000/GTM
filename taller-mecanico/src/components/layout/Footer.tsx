@@ -196,7 +196,7 @@ export default function Footer() {
               Sobre Nosotros
             </Link>
             <Link
-              href='/turnos'
+              href='/reservar-turnos'
               className='text-gray-300 hover:text-red-500 transition font-medium'
             >
               Reservar Turnos

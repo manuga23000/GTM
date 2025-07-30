@@ -140,7 +140,7 @@ export default function Navbar() {
               <span className='absolute bottom-0 left-0 w-full h-0.5 bg-red-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300'></span>
             </Link>
             <Link
-              href='/turnos'
+              href='#reservar-turnos'
               className='bg-red-600 hover:bg-red-700 text-white px-6 py-2 text-sm font-semibold tracking-wide rounded-lg transition-all duration-300 hover:scale-105 shadow-lg whitespace-nowrap ml-4'
             >
               RESERVAR TURNOS
@@ -249,7 +249,7 @@ export default function Navbar() {
 
                 <motion.div variants={menuItemVariants} className='pt-2'>
                   <Link
-                    href='/turnos'
+                    href='#reservar-turnos'
                     className='flex items-center justify-center bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-6 py-4 text-base font-bold tracking-wide rounded-xl transition-all duration-300 shadow-lg hover:shadow-red-500/25 hover:scale-105 active:scale-95'
                     onClick={() => setIsMenuOpen(false)}
                   >

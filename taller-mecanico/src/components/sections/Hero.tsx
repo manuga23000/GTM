@@ -12,7 +12,7 @@ export default function Hero() {
 
   return (
     <section
-      className='relative pt-36 pb-24 sm:pt-28 sm:min-h-screen flex items-start sm:items-center overflow-hidden'
+      className='relative pt-36 pb-24 sm:pt-28 lg:pt-48 sm:min-h-screen flex items-start sm:items-center overflow-hidden'
       style={{
         backgroundImage: "url('/images/home/hero-engine.png')",
         backgroundSize: 'cover',
@@ -61,13 +61,21 @@ export default function Hero() {
 
             <motion.div
               variants={animations.fadeInUp}
-              className='flex flex-col sm:flex-row gap-4 justify-center lg:justify-start'
+              className='flex flex-col sm:flex-row lg:flex-row gap-4 justify-center lg:justify-start'
             >
-              <Button variant='primary' size='lg' className='w-full sm:w-auto'>
+              <Button
+                variant='primary'
+                size='lg'
+                className='w-full sm:w-auto lg:w-auto'
+              >
                 PROXIMAMENTE - SISTEMA DE TURNOS
               </Button>
-              <Link href='/servicios' className='w-full sm:w-auto'>
-                <Button variant='outline' size='lg' className='w-full'>
+              <Link href='/servicios' className='w-full sm:w-auto lg:w-auto'>
+                <Button
+                  variant='outline'
+                  size='lg'
+                  className='w-full lg:w-auto'
+                >
                   CONOCER MÁS
                 </Button>
               </Link>

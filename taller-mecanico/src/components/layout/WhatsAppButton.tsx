@@ -6,7 +6,7 @@ interface WhatsAppButtonProps {
 import { FaWhatsapp } from 'react-icons/fa'
 
 export default function WhatsAppButton({
-  phoneNumber = '5491234567890',
+  phoneNumber = '5493364694921',
   message = '',
 }: WhatsAppButtonProps) {
   const whatsappUrl = `https://wa.me/${phoneNumber}${

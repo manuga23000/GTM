@@ -23,6 +23,7 @@ type ServiceAvailabilityConfig = {
   maxPerDay?: number | null
   maxPerWeek?: number | null
   requiresDate: boolean
+  allowedDays?: number[] // 1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes
 }
 
 const COLLECTION_NAME = 'turnos'
@@ -38,12 +39,32 @@ const SERVICE_AVAILABILITY: Record<string, ServiceAvailabilityConfig> = {
   Otro: { maxPerDay: null, requiresDate: false },
 
   // Sub-servicios de caja automática
-  'Service de mantenimiento': { maxPerWeek: 8, requiresDate: false },
-  'Diagnóstico de caja': { maxPerWeek: 5, requiresDate: false },
-  'Reparación de fugas': { maxPerWeek: 4, requiresDate: false },
-  'Cambio de solenoides': { maxPerWeek: 3, requiresDate: false },
-  'Overhaul completo': { maxPerWeek: 2, requiresDate: true },
-  'Reparaciones mayores': { maxPerWeek: 3, requiresDate: true },
+  'Service de mantenimiento': { maxPerDay: 2, requiresDate: false }, // Hasta 2 por día, todos los días
+  'Diagnóstico de caja': {
+    maxPerWeek: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3],
+  }, // Solo lunes a miércoles
+  'Reparación de fugas': {
+    maxPerWeek: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3],
+  }, // Solo lunes a miércoles
+  'Cambio de solenoides': {
+    maxPerWeek: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3],
+  }, // Solo lunes a miércoles
+  'Overhaul completo': {
+    maxPerWeek: 2,
+    requiresDate: true,
+    allowedDays: [1, 2, 3],
+  }, // Solo lunes a miércoles
+  'Reparaciones mayores': {
+    maxPerWeek: 3,
+    requiresDate: true,
+    allowedDays: [1, 2, 3],
+  }, // Solo lunes a miércoles
 }
 
 /**
@@ -76,11 +97,11 @@ export async function createTurno(
         serviceToCheck = turnoData.subService
       }
 
-      // Solo verificar para servicios que requieren fecha
+      // Verificar disponibilidad para todos los servicios que tienen configuración
       if (
-        ['Diagnóstico', 'Overhaul completo', 'Reparaciones mayores'].includes(
-          serviceToCheck
-        )
+        SERVICE_AVAILABILITY[
+          serviceToCheck as keyof typeof SERVICE_AVAILABILITY
+        ]
       ) {
         const availability = await checkAvailability(
           turnoData.date.toISOString().split('T')[0],
@@ -90,9 +111,7 @@ export async function createTurno(
         if (!availability.available) {
           return {
             success: false,
-            message: `No hay disponibilidad para ${serviceToCheck} en la fecha seleccionada. Disponibles: ${
-              availability.totalSlots - availability.usedSlots
-            }/${availability.totalSlots}`,
+            message: `No hay disponibilidad para ${serviceToCheck} en la fecha seleccionada.`,
             error: 'NO_AVAILABILITY',
           }
         }
@@ -162,6 +181,71 @@ export async function checkAvailability(
       }
     }
 
+    // Verificar si el día está permitido para este servicio
+    if (serviceConfig.allowedDays) {
+      const dateObj = new Date(date)
+      const dayOfWeek = dateObj.getDay() // 0 = domingo, 1 = lunes, etc.
+      // Convertir a 1-7 donde 1 = lunes, 2 = martes, 3 = miércoles, etc.
+      const dayNumber = dayOfWeek === 0 ? 7 : dayOfWeek
+
+      if (!serviceConfig.allowedDays.includes(dayNumber)) {
+        return {
+          date,
+          service,
+          available: false,
+          totalSlots: 0,
+          usedSlots: 0,
+        }
+      }
+    }
+
+    // Si el servicio tiene restricción diaria, verificar disponibilidad diaria
+    if (serviceConfig.maxPerDay) {
+      const startDate = new Date(date + 'T00:00:00')
+      const endDate = new Date(date + 'T23:59:59')
+
+      // Para sub-servicios de caja automática, buscar por subService
+      if (service === 'Service de mantenimiento') {
+        const q = query(
+          collection(db, COLLECTION_NAME),
+          where('subService', '==', service),
+          where('date', '>=', Timestamp.fromDate(startDate)),
+          where('date', '<=', Timestamp.fromDate(endDate)),
+          where('status', 'in', ['pending', 'confirmed'])
+        )
+        const querySnapshot = await getDocs(q)
+        const usedSlots = querySnapshot.size
+        const totalSlots = serviceConfig.maxPerDay || 0
+
+        return {
+          date,
+          service,
+          available: usedSlots < totalSlots,
+          totalSlots,
+          usedSlots,
+        }
+      } else {
+        const q = query(
+          collection(db, COLLECTION_NAME),
+          where('service', '==', service),
+          where('date', '>=', Timestamp.fromDate(startDate)),
+          where('date', '<=', Timestamp.fromDate(endDate)),
+          where('status', 'in', ['pending', 'confirmed'])
+        )
+        const querySnapshot = await getDocs(q)
+        const usedSlots = querySnapshot.size
+        const totalSlots = serviceConfig.maxPerDay || 0
+
+        return {
+          date,
+          service,
+          available: usedSlots < totalSlots,
+          totalSlots,
+          usedSlots,
+        }
+      }
+    }
+
     // Si el servicio tiene restricción semanal, verificar disponibilidad semanal
     if (serviceConfig.maxPerWeek) {
       // Calcular inicio y fin de la semana laboral (lunes a viernes)
@@ -180,7 +264,6 @@ export async function checkAvailability(
       // Para sub-servicios de caja automática, buscar por subService
       if (
         [
-          'Service de mantenimiento',
           'Diagnóstico de caja',
           'Reparación de fugas',
           'Cambio de solenoides',

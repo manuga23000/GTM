@@ -1,7 +1,41 @@
 'use client'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
+import { registerLocale } from 'react-datepicker'
+import { es } from 'date-fns/locale/es'
 import { TurnoInput } from '../../../actions/types/types'
+
+// Crear localización personalizada en español con días en mayúsculas sin acentos
+const esCustom = {
+  ...es,
+  localize: {
+    ...es.localize,
+    day: (n: number) => {
+      const days = ['DO', 'LU', 'MA', 'MI', 'JU', 'VI', 'SA']
+      return days[n]
+    },
+    month: (n: number) => {
+      const months = [
+        'ENERO',
+        'FEBRERO',
+        'MARZO',
+        'ABRIL',
+        'MAYO',
+        'JUNIO',
+        'JULIO',
+        'AGOSTO',
+        'SEPTIEMBRE',
+        'OCTUBRE',
+        'NOVIEMBRE',
+        'DICIEMBRE',
+      ]
+      return months[n]
+    },
+  },
+}
+
+// Registrar la localización personalizada
+registerLocale('es-custom', esCustom)
 
 interface FormFieldsProps {
   formData: TurnoInput
@@ -183,7 +217,27 @@ export default function FormFields({
             onChange={onDateChange}
             dateFormat='dd/MM/yyyy'
             placeholderText='Selecciona una fecha'
-            minDate={new Date()}
+            minDate={(() => {
+              const now = new Date()
+              const today8AM = new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate(),
+                8,
+                10,
+                0
+              )
+
+              // Si es antes de las 8:10 AM, permitir el día de hoy
+              if (now < today8AM) {
+                return new Date()
+              }
+
+              // Si es después de las 8:10 AM, solo permitir desde mañana
+              return new Date(now.getTime() + 24 * 60 * 60 * 1000)
+            })()}
+            locale='es-custom'
+            calendarStartDay={0}
             filterDate={date => {
               // Solo permitir días de lunes a viernes
               const day = date.getDay()
@@ -199,22 +253,35 @@ export default function FormFields({
                 return availabilityCache[cacheKey] === true
               }
 
-              // Para Caja automática, verificar disponibilidad según el sub-servicio
+              // Para Caja automática con sub-servicio seleccionado
               if (
                 formData.service === 'Caja automática' &&
                 formData.subService
               ) {
                 const dateString = date.toISOString().split('T')[0]
                 const cacheKey = `${dateString}-${formData.subService}`
-                return availabilityCache[cacheKey] === true
+
+                // Verificar disponibilidad en el cache
+                const isAvailable = availabilityCache[cacheKey] === true
+
+                // Si no está disponible en el cache, no mostrar la fecha
+                if (!isAvailable) return false
+
+                // Service de mantenimiento: disponible todos los días laborables si hay slots
+                if (formData.subService === 'Service de mantenimiento') {
+                  return true
+                }
+
+                // Todos los demás sub-servicios: solo lunes, martes y miércoles
+                return day >= 1 && day <= 3
               }
 
-              // Para Caja automática sin sub-servicio seleccionado, permitir todas las fechas
+              // Para Caja automática sin sub-servicio seleccionado, solo permitir lunes a miércoles
               if (
                 formData.service === 'Caja automática' &&
                 !formData.subService
               ) {
-                return true
+                return day >= 1 && day <= 3
               }
 
               // Para otros servicios, bloquear todas las fechas

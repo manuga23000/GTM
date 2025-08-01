@@ -1,10 +1,12 @@
-import HeroSobreNosotros from '@/components/sections/HeroSobreNosotros'
-import ConoceLoQueNosDestaca from '@/components/sections/ConoceLoQueNosDestaca'
-import CarruselImagenes from '@/components/sections/CarruselImagenes'
-import TrabajaConNosotros from '@/components/sections/TrabajaConNosotros'
-import MartinGrandoli from '@/components/sections/MartinGrandoli'
-import ContactanosHoyMismo from '@/components/sections/ContactanosHoyMismo'
-import BookingSection from '@/components/sections/BookingSection'
+import {
+  HeroSobreNosotros,
+  ConoceLoQueNosDestaca,
+  CarruselImagenes,
+  TrabajaConNosotros,
+  MartinGrandoli,
+  ContactanosHoyMismo,
+  BookingSection,
+} from '@/components/sections'
 import Navbar from '@/components/layout/Navbar'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
 

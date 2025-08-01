@@ -1,7 +1,6 @@
 'use client'
 import Navbar from '@/components/layout/Navbar'
-import TurnosHero from '@/components/sections/TurnosHero'
-import TurnosFormulario from '@/components/sections/TurnosFormulario'
+import { TurnosHero, TurnosFormulario } from '@/components/sections'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
 
 export default function TurnosPage() {
@@ -9,9 +8,7 @@ export default function TurnosPage() {
     <div className='min-h-screen bg-black text-white'>
       <Navbar />
       <TurnosHero />
-
       <TurnosFormulario />
-
       <WhatsAppButton />
     </div>
   )

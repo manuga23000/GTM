@@ -1,4 +1,147 @@
 'use client'
+import { motion, useInView } from 'framer-motion'
+import { useRef } from 'react'
+import { animations } from '@/lib/animations'
+
+// ============================================================================
+// VERSIÓN TEMPORAL PARA MAIN - SOLO HERO + MENSAJE EN CONSTRUCCIÓN
+// ============================================================================
+// TODO: Descomentar el formulario completo cuando esté listo para producción
+// El formulario completo está comentado abajo con toda la funcionalidad
+// ============================================================================
+
+export default function TurnosFormulario() {
+  const sectionRef = useRef(null)
+  const isSectionInView = useInView(sectionRef, {
+    once: true,
+    margin: '-100px',
+  })
+
+  return (
+    <>
+      {/* Hero Section - ACTIVO */}
+      <section
+        className='relative min-h-[90vh] flex items-center justify-center'
+        style={{
+          backgroundImage: "url('/images/turnos/turnos.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: '80% center',
+          backgroundAttachment: 'fixed',
+        }}
+        ref={sectionRef}
+      >
+        <style jsx>{`
+          @media (max-width: 768px) {
+            section {
+              background-position: right center !important;
+              background-attachment: scroll !important;
+              min-height: 81vh !important;
+              padding-top: 11rem !important;
+              padding-bottom: 5rem !important;
+              align-items: flex-start !important;
+            }
+
+            section > div {
+              max-width: 80rem !important;
+              padding-left: 1rem !important;
+              padding-right: 1rem !important;
+            }
+
+            @media (min-width: 640px) {
+              section {
+                padding-top: 12rem !important;
+              }
+
+              section > div {
+                padding-left: 1.5rem !important;
+                padding-right: 1.5rem !important;
+              }
+            }
+
+            @media (min-width: 1024px) {
+              section > div {
+                padding-left: 2rem !important;
+                padding-right: 2rem !important;
+              }
+            }
+          }
+        `}</style>
+
+        <div className='absolute inset-0 bg-black/70 z-0'></div>
+
+        <motion.div
+          variants={animations.staggerContainer}
+          initial='hidden'
+          animate={isSectionInView ? 'visible' : 'hidden'}
+          className='relative z-10 max-w-4xl mx-auto text-center px-4'
+        >
+          <motion.h1
+            variants={animations.fadeInUp}
+            className='text-5xl md:text-6xl font-extrabold mb-6 text-white'
+          >
+            RESERVA TU{' '}
+            <motion.span
+              className='text-red-600'
+              whileHover={animations.textGlow}
+            >
+              TURNO
+            </motion.span>
+          </motion.h1>
+          <motion.p
+            variants={animations.fadeInUp}
+            className='text-white text-lg mb-8 max-w-2xl mx-auto'
+          >
+            Agenda tu cita de manera rápida y sencilla. Nuestro equipo de expertos
+            está listo para atenderte con la mejor calidad y profesionalismo.
+          </motion.p>
+          
+          {/* Mensaje En Construcción - TEMPORAL */}
+          <motion.div
+            variants={animations.fadeInUp}
+            className='bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-6 mb-8 max-w-2xl mx-auto'
+          >
+            <div className='flex items-center justify-center mb-4'>
+              <div className='w-8 h-8 text-yellow-400 mr-3'>
+                🚧
+              </div>
+              <h3 className='text-yellow-400 text-xl font-bold'>
+                Sección en Construcción
+              </h3>
+            </div>
+            <p className='text-yellow-200 text-sm'>
+              Estamos trabajando en mejorar nuestro sistema de turnos online. 
+              Mientras tanto, podés contactarnos directamente por WhatsApp.
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={animations.fadeInUp}
+            className='flex flex-col sm:flex-row gap-4 justify-center items-center'
+          >
+            <a
+              href="https://wa.me/+5493364123456" // Reemplazar con el número real
+              target="_blank"
+              rel="noopener noreferrer"
+              className='bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold transition-colors duration-300 cursor-pointer'
+            >
+              📱 WhatsApp Directo
+            </a>
+            <div className='bg-gray-700 text-gray-300 px-8 py-4 rounded-lg font-semibold'>
+              ⏰ Horarios: Lun-Vie 8:00-16:00
+            </div>
+          </motion.div>
+        </motion.div>
+      </section>
+    </>
+  )
+}
+
+// ============================================================================
+// FORMULARIO COMPLETO COMENTADO - DESCOMENTAR CUANDO ESTÉ LISTO
+// ============================================================================
+
+/*
+'use client'
 import { useState, useEffect } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
@@ -301,6 +444,101 @@ export default function TurnosFormulario() {
 
   return (
     <>
+      // Hero Section 
+      <section
+        className='relative min-h-[90vh] flex items-center justify-center'
+        style={{
+          backgroundImage: "url('/images/turnos/turnos.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: '80% center',
+          backgroundAttachment: 'fixed',
+        }}
+        ref={sectionRef}
+      >
+        <style jsx>{`
+          @media (max-width: 768px) {
+            section {
+              background-position: right center !important;
+              background-attachment: scroll !important;
+              min-height: 81vh !important;
+              padding-top: 11rem !important;
+              padding-bottom: 5rem !important;
+              align-items: flex-start !important;
+            }
+
+            section > div {
+              max-width: 80rem !important;
+              padding-left: 1rem !important;
+              padding-right: 1rem !important;
+            }
+
+            @media (min-width: 640px) {
+              section {
+                padding-top: 12rem !important;
+              }
+
+              section > div {
+                padding-left: 1.5rem !important;
+                padding-right: 1.5rem !important;
+              }
+            }
+
+            @media (min-width: 1024px) {
+              section > div {
+                padding-left: 2rem !important;
+                padding-right: 2rem !important;
+              }
+            }
+          }
+        `}</style>
+
+        <div className='absolute inset-0 bg-black/70 z-0'></div>
+
+        <motion.div
+          variants={animations.staggerContainer}
+          initial='hidden'
+          animate={isSectionInView ? 'visible' : 'hidden'}
+          className='relative z-10 max-w-4xl mx-auto text-center px-4'
+        >
+          <motion.h1
+            variants={animations.fadeInUp}
+            className='text-5xl md:text-6xl font-extrabold mb-6 text-white'
+          >
+            RESERVA TU{' '}
+            <motion.span
+              className='text-red-600'
+              whileHover={animations.textGlow}
+            >
+              TURNO
+            </motion.span>
+          </motion.h1>
+          <motion.p
+            variants={animations.fadeInUp}
+            className='text-white text-lg mb-8 max-w-2xl mx-auto'
+          >
+            Agenda tu cita de manera rápida y sencilla. Nuestro equipo de expertos
+            está listo para atenderte con la mejor calidad y profesionalismo.
+          </motion.p>
+          <motion.div
+            variants={animations.fadeInUp}
+            className='flex flex-col sm:flex-row gap-4 justify-center items-center'
+          >
+            <a
+              href="https://wa.me/+5493364123456" // Reemplazar con el número real
+              target="_blank"
+              rel="noopener noreferrer"
+              className='bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold transition-colors duration-300 cursor-pointer'
+            >
+              📱 WhatsApp Directo
+            </a>
+            <div className='bg-gray-700 text-gray-300 px-8 py-4 rounded-lg font-semibold'>
+              ⏰ Horarios: Lun-Vie 8:00-16:00
+            </div>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      // Formulario Section 
       <section className='py-20 bg-gray-900'>
         <motion.div
           ref={sectionRef}
@@ -335,7 +573,7 @@ export default function TurnosFormulario() {
                 onDateChange={handleDateChange}
               />
 
-              {/* Mensaje adicional */}
+              // Mensaje adicional 
               <div>
                 <label
                   htmlFor='message'
@@ -354,7 +592,7 @@ export default function TurnosFormulario() {
                 />
               </div>
 
-              {/* Estado del formulario */}
+              // Estado del formulario 
               {status.type && (
                 <div
                   className={`p-4 rounded-lg ${
@@ -367,7 +605,7 @@ export default function TurnosFormulario() {
                 </div>
               )}
 
-              {/* Botón de envío */}
+              // Botón de envío 
               <div className='text-center'>
                 <Button
                   type='submit'
@@ -380,7 +618,7 @@ export default function TurnosFormulario() {
             </form>
           </motion.div>
 
-          {/* Información adicional */}
+          // Información adicional 
           <motion.div
             variants={animations.fadeInUp}
             className='mt-8 text-center space-y-4'
@@ -402,3 +640,4 @@ export default function TurnosFormulario() {
     </>
   )
 }
+*/

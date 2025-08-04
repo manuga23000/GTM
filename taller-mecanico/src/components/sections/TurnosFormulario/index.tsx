@@ -1,125 +1,4 @@
 'use client'
-import { motion, useInView } from 'framer-motion'
-import { useRef } from 'react'
-import { animations } from '@/lib/animations'
-
-// ============================================================================
-// VERSIÓN TEMPORAL PARA MAIN - SOLO HERO + MENSAJE EN CONSTRUCCIÓN
-// ============================================================================
-// TODO: Descomentar el formulario completo cuando esté listo para producción
-// El formulario completo está comentado abajo con toda la funcionalidad
-// ============================================================================
-
-export default function TurnosFormulario() {
-  const sectionRef = useRef(null)
-  const isSectionInView = useInView(sectionRef, {
-    once: true,
-    margin: '-100px',
-  })
-
-  return (
-    <>
-      {/* Hero Section - ACTIVO */}
-      <section
-        className='relative min-h-[90vh] flex items-center justify-center'
-        style={{
-          backgroundImage: "url('/images/turnos/turnos.png')",
-          backgroundSize: 'cover',
-          backgroundPosition: '80% center',
-          backgroundAttachment: 'fixed',
-        }}
-        ref={sectionRef}
-      >
-        <style jsx>{`
-          @media (max-width: 768px) {
-            section {
-              background-position: right center !important;
-              background-attachment: scroll !important;
-              min-height: 81vh !important;
-              padding-top: 11rem !important;
-              padding-bottom: 5rem !important;
-              align-items: flex-start !important;
-            }
-
-            section > div {
-              max-width: 80rem !important;
-              padding-left: 1rem !important;
-              padding-right: 1rem !important;
-            }
-
-            @media (min-width: 640px) {
-              section {
-                padding-top: 12rem !important;
-              }
-
-              section > div {
-                padding-left: 1.5rem !important;
-                padding-right: 1.5rem !important;
-              }
-            }
-
-            @media (min-width: 1024px) {
-              section > div {
-                padding-left: 2rem !important;
-                padding-right: 2rem !important;
-              }
-            }
-          }
-        `}</style>
-
-        <div className='absolute inset-0 bg-black/70 z-0'></div>
-
-        <motion.div
-          variants={animations.staggerContainer}
-          initial='hidden'
-          animate={isSectionInView ? 'visible' : 'hidden'}
-          className='relative z-10 max-w-4xl mx-auto text-center px-4'
-        >
-          {/* Mensaje En Construcción - TEMPORAL */}
-          <motion.div
-            variants={animations.fadeInUp}
-            className='bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-6 mb-8 max-w-2xl mx-auto'
-          >
-            <div className='flex items-center justify-center mb-4'>
-              <div className='w-8 h-8 text-yellow-400 mr-3'>🚧</div>
-              <h3 className='text-yellow-400 text-xl font-bold'>
-                Sección en Construcción
-              </h3>
-            </div>
-            <p className='text-yellow-200 text-sm'>
-              Estamos trabajando en mejorar nuestro sistema de turnos online.
-              Mientras tanto, podés contactarnos directamente por WhatsApp.
-            </p>
-          </motion.div>
-
-          <motion.div
-            variants={animations.fadeInUp}
-            className='flex flex-col sm:flex-row gap-4 justify-center items-center'
-          >
-            <a
-              href='https://wa.me/+5493364123456' // Reemplazar con el número real
-              target='_blank'
-              rel='noopener noreferrer'
-              className='bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold transition-colors duration-300 cursor-pointer'
-            >
-              📱 WhatsApp Directo
-            </a>
-            <div className='bg-gray-700 text-gray-300 px-8 py-4 rounded-lg font-semibold'>
-              ⏰ Horarios: Lun-Vie 8:00-16:00
-            </div>
-          </motion.div>
-        </motion.div>
-      </section>
-    </>
-  )
-}
-
-// ============================================================================
-// FORMULARIO COMPLETO COMENTADO - DESCOMENTAR CUANDO ESTÉ LISTO
-// ============================================================================
-
-/*
-'use client'
 import { useState, useEffect } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
@@ -207,28 +86,51 @@ export default function TurnosFormulario() {
         available: boolean
       }>[] = []
 
+      // Debug: Ver qué fechas estamos verificando
+      console.log('🗓️ Fechas a verificar:', datesToCheck)
+      console.log('🔧 Servicio específico:', specificService)
+
       // Si se especifica un servicio específico, solo cargar ese
       if (specificService) {
         // Verificar cada fecha individualmente
         datesToCheck.forEach(dateString => {
+          const date = new Date(dateString + 'T00:00:00.000Z')
+          const dayOfWeek = date.getDay() // 0=domingo, 1=lunes, 2=martes, etc.
+
+          console.log(
+            `📅 Verificando: ${dateString} (Día ${dayOfWeek}) para servicio: ${specificService}`
+          )
+
           availabilityPromises.push(
             checkAvailability(dateString, specificService)
-              .then(result => ({
-                dateString,
-                service: specificService,
-                available: result.available,
-              }))
-              .catch(() => ({
-                dateString,
-                service: specificService,
-                available: false,
-              }))
+              .then(result => {
+                console.log(
+                  `✅ Resultado para ${dateString}: ${result.available}`
+                )
+                return {
+                  dateString,
+                  service: specificService,
+                  available: result.available,
+                }
+              })
+              .catch(error => {
+                console.error(`❌ Error para ${dateString}:`, error)
+                return {
+                  dateString,
+                  service: specificService,
+                  available: false,
+                }
+              })
           )
         })
       } else {
         // Para cada fecha, verificar todos los servicios que requieren fecha
         datesToCheck.forEach(dateString => {
-          const servicesRequiringDate = ['Diagnóstico']
+          const servicesRequiringDate = [
+            'Diagnóstico',
+            'Revisación técnica',
+            'Otro',
+          ]
           servicesRequiringDate.forEach(service => {
             availabilityPromises.push(
               checkAvailability(dateString, service)
@@ -264,9 +166,51 @@ export default function TurnosFormulario() {
             )
           })
         })
+
+        // Para cada fecha, verificar todos los sub-servicios de mecánica general
+        datesToCheck.forEach(dateString => {
+          const mecanicaGeneralSubServices = [
+            'Cambio de aceite y filtros',
+            'Cambio de correas',
+            'Reparación de frenos',
+            'Cambio de embrague',
+            'Suspensión y amortiguadores',
+            'Reparación de motor',
+            'Cambio de bujías / inyectores',
+            'Cambio de batería',
+            'Diagnóstico de ruidos o vibraciones',
+            'Mantenimiento general',
+            'Reparación de sistema de escape',
+            'Reparación de dirección',
+          ]
+          mecanicaGeneralSubServices.forEach(service => {
+            availabilityPromises.push(
+              checkAvailability(dateString, service)
+                .then(result => ({
+                  dateString,
+                  service,
+                  available: result.available,
+                }))
+                .catch(() => ({ dateString, service, available: false }))
+            )
+          })
+        })
       }
 
       const results = await Promise.all(availabilityPromises)
+
+      // Guardar resultados en cache usando una clave compuesta
+      console.log('📊 Resultados completos de disponibilidad:')
+      results.forEach(({ dateString, service, available }) => {
+        const date = new Date(dateString + 'T00:00:00.000Z')
+        const dayOfWeek = date.getDay()
+        const dayName = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][
+          dayOfWeek
+        ]
+        console.log(
+          `${dayName} ${dateString}: ${available ? '✅' : '❌'} (${service})`
+        )
+      })
 
       // Guardar resultados en cache usando una clave compuesta
       results.forEach(({ dateString, service, available }) => {
@@ -274,7 +218,7 @@ export default function TurnosFormulario() {
         newCache[cacheKey] = available
       })
     } catch (error) {
-      console.error('Error loading availability:', error)
+      console.error('❌ Error loading availability:', error)
     }
 
     setAvailabilityCache(newCache)
@@ -290,7 +234,15 @@ export default function TurnosFormulario() {
   useEffect(() => {
     if (formData.service === 'Diagnóstico') {
       loadAvailability('Diagnóstico')
-    } else if (formData.service === 'Caja automática' && formData.subService) {
+    } else if (formData.service === 'Revisación técnica') {
+      loadAvailability('Revisación técnica')
+    } else if (formData.service === 'Otro') {
+      loadAvailability('Otro')
+    } else if (
+      (formData.service === 'Caja automática' ||
+        formData.service === 'Mecánica general') &&
+      formData.subService
+    ) {
       loadAvailability(formData.subService)
     } else {
       // Para otros servicios, limpiar cache
@@ -309,8 +261,12 @@ export default function TurnosFormulario() {
       [name]: value,
     }))
 
-    // Si se cambia el servicio, limpiar sub-servicio si no es caja automática
-    if (name === 'service' && value !== 'Caja automática') {
+    // Si se cambia el servicio, limpiar sub-servicio si no es caja automática o mecánica general
+    if (
+      name === 'service' &&
+      value !== 'Caja automática' &&
+      value !== 'Mecánica general'
+    ) {
       setFormData(prev => ({
         ...prev,
         subService: '',
@@ -330,16 +286,22 @@ export default function TurnosFormulario() {
     setIsLoading(true)
     setStatus({ type: null, message: '' })
 
-    // Validación básica
-    if (
-      !formData.name ||
-      !formData.phone ||
-      !formData.vehicle ||
-      !formData.service
-    ) {
+    // Validación básica - Solo servicio obligatorio para testing
+    if (!formData.service) {
       setStatus({
         type: 'error',
-        message: 'Por favor, completa los campos obligatorios.',
+        message: 'Por favor, selecciona un servicio.',
+      })
+      setIsLoading(false)
+      return
+    }
+
+    // Para Programación de módulos, mostrar mensaje especial pero permitir envío
+    if (formData.service === 'Programación de módulos') {
+      setStatus({
+        type: 'success',
+        message:
+          'Gracias por tu interés. Te recomendamos contactarnos por WhatsApp para coordinar este servicio de manera más eficiente.',
       })
       setIsLoading(false)
       return
@@ -348,11 +310,17 @@ export default function TurnosFormulario() {
     // Validación específica para servicios que requieren fecha
     const servicesRequiringDate = [
       'Diagnóstico',
+      'Revisación técnica',
+      'Otro',
       'Overhaul completo',
       'Reparaciones mayores',
+      'Cambio de embrague',
+      'Reparación de motor',
     ]
     const serviceToCheck =
-      formData.service === 'Caja automática' && formData.subService
+      (formData.service === 'Caja automática' ||
+        formData.service === 'Mecánica general') &&
+      formData.subService
         ? formData.subService
         : formData.service
 
@@ -371,6 +339,17 @@ export default function TurnosFormulario() {
         type: 'error',
         message:
           'Para el servicio de Caja automática debes seleccionar el tipo de servicio.',
+      })
+      setIsLoading(false)
+      return
+    }
+
+    // Validación específica para mecánica general
+    if (formData.service === 'Mecánica general' && !formData.subService) {
+      setStatus({
+        type: 'error',
+        message:
+          'Para el servicio de Mecánica general debes seleccionar el tipo de servicio.',
       })
       setIsLoading(false)
       return
@@ -422,101 +401,7 @@ export default function TurnosFormulario() {
 
   return (
     <>
-      // Hero Section 
-      <section
-        className='relative min-h-[90vh] flex items-center justify-center'
-        style={{
-          backgroundImage: "url('/images/turnos/turnos.png')",
-          backgroundSize: 'cover',
-          backgroundPosition: '80% center',
-          backgroundAttachment: 'fixed',
-        }}
-        ref={sectionRef}
-      >
-        <style jsx>{`
-          @media (max-width: 768px) {
-            section {
-              background-position: right center !important;
-              background-attachment: scroll !important;
-              min-height: 81vh !important;
-              padding-top: 11rem !important;
-              padding-bottom: 5rem !important;
-              align-items: flex-start !important;
-            }
-
-            section > div {
-              max-width: 80rem !important;
-              padding-left: 1rem !important;
-              padding-right: 1rem !important;
-            }
-
-            @media (min-width: 640px) {
-              section {
-                padding-top: 12rem !important;
-              }
-
-              section > div {
-                padding-left: 1.5rem !important;
-                padding-right: 1.5rem !important;
-              }
-            }
-
-            @media (min-width: 1024px) {
-              section > div {
-                padding-left: 2rem !important;
-                padding-right: 2rem !important;
-              }
-            }
-          }
-        `}</style>
-
-        <div className='absolute inset-0 bg-black/70 z-0'></div>
-
-        <motion.div
-          variants={animations.staggerContainer}
-          initial='hidden'
-          animate={isSectionInView ? 'visible' : 'hidden'}
-          className='relative z-10 max-w-4xl mx-auto text-center px-4'
-        >
-          <motion.h1
-            variants={animations.fadeInUp}
-            className='text-5xl md:text-6xl font-extrabold mb-6 text-white'
-          >
-            RESERVA TU{' '}
-            <motion.span
-              className='text-red-600'
-              whileHover={animations.textGlow}
-            >
-              TURNO
-            </motion.span>
-          </motion.h1>
-          <motion.p
-            variants={animations.fadeInUp}
-            className='text-white text-lg mb-8 max-w-2xl mx-auto'
-          >
-            Agenda tu cita de manera rápida y sencilla. Nuestro equipo de expertos
-            está listo para atenderte con la mejor calidad y profesionalismo.
-          </motion.p>
-          <motion.div
-            variants={animations.fadeInUp}
-            className='flex flex-col sm:flex-row gap-4 justify-center items-center'
-          >
-            <a
-              href="https://wa.me/+5493364123456" // Reemplazar con el número real
-              target="_blank"
-              rel="noopener noreferrer"
-              className='bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold transition-colors duration-300 cursor-pointer'
-            >
-              📱 WhatsApp Directo
-            </a>
-            <div className='bg-gray-700 text-gray-300 px-8 py-4 rounded-lg font-semibold'>
-              ⏰ Horarios: Lun-Vie 8:00-16:00
-            </div>
-          </motion.div>
-        </motion.div>
-      </section>
-
-      // Formulario Section 
+      {/* Formulario Section */}
       <section className='py-20 bg-gray-900'>
         <motion.div
           ref={sectionRef}
@@ -551,7 +436,7 @@ export default function TurnosFormulario() {
                 onDateChange={handleDateChange}
               />
 
-              // Mensaje adicional 
+              {/* Mensaje adicional */}
               <div>
                 <label
                   htmlFor='message'
@@ -570,7 +455,7 @@ export default function TurnosFormulario() {
                 />
               </div>
 
-              // Estado del formulario 
+              {/* Estado del formulario */}
               {status.type && (
                 <div
                   className={`p-4 rounded-lg ${
@@ -583,7 +468,7 @@ export default function TurnosFormulario() {
                 </div>
               )}
 
-              // Botón de envío 
+              {/* Botón de envío */}
               <div className='text-center'>
                 <Button
                   type='submit'
@@ -596,7 +481,7 @@ export default function TurnosFormulario() {
             </form>
           </motion.div>
 
-          // Información adicional 
+          {/* Información adicional */}
           <motion.div
             variants={animations.fadeInUp}
             className='mt-8 text-center space-y-4'
@@ -618,4 +503,3 @@ export default function TurnosFormulario() {
     </>
   )
 }
-*/

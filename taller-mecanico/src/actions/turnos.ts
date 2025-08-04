@@ -35,36 +35,102 @@ const SERVICE_AVAILABILITY: Record<string, ServiceAvailabilityConfig> = {
   'Caja automática': { maxPerDay: null, requiresDate: false },
   'Mecánica general': { maxPerDay: null, requiresDate: false },
   'Programación de módulos': { maxPerDay: null, requiresDate: false },
-  'Revisación técnica': { maxPerDay: null, requiresDate: false },
-  Otro: { maxPerDay: null, requiresDate: false },
+  'Revisación técnica': {
+    maxPerDay: 1,
+    requiresDate: true,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  Otro: { maxPerDay: 1, requiresDate: true, allowedDays: [1, 2, 3, 4, 5] },
 
   // Sub-servicios de caja automática
   'Service de mantenimiento': { maxPerDay: 2, requiresDate: false }, // Hasta 2 por día, todos los días
   'Diagnóstico de caja': {
-    maxPerWeek: 3,
+    maxPerWeek: 5, // Límite global compartido con otros servicios
     requiresDate: false,
     allowedDays: [1, 2, 3],
   }, // Solo lunes a miércoles
   'Reparación de fugas': {
-    maxPerWeek: 3,
+    maxPerWeek: 5, // Límite global compartido con otros servicios
     requiresDate: false,
     allowedDays: [1, 2, 3],
   }, // Solo lunes a miércoles
   'Cambio de solenoides': {
-    maxPerWeek: 3,
+    maxPerWeek: 5, // Límite global compartido con otros servicios
     requiresDate: false,
     allowedDays: [1, 2, 3],
   }, // Solo lunes a miércoles
   'Overhaul completo': {
-    maxPerWeek: 2,
+    maxPerWeek: 5, // Límite global compartido con otros servicios
     requiresDate: true,
     allowedDays: [1, 2, 3],
   }, // Solo lunes a miércoles
   'Reparaciones mayores': {
-    maxPerWeek: 3,
+    maxPerWeek: 5, // Límite global compartido con otros servicios
     requiresDate: true,
     allowedDays: [1, 2, 3],
   }, // Solo lunes a miércoles
+
+  // Sub-servicios de mecánica general
+  'Cambio de aceite y filtros': {
+    maxPerDay: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Cambio de correas': {
+    maxPerDay: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Reparación de frenos': {
+    maxPerDay: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Cambio de embrague': {
+    maxPerDay: 3,
+    requiresDate: true,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Suspensión y amortiguadores': {
+    maxPerDay: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Reparación de motor': {
+    maxPerDay: 3,
+    requiresDate: true,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Cambio de bujías / inyectores': {
+    maxPerDay: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Cambio de batería': {
+    maxPerDay: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Diagnóstico de ruidos o vibraciones': {
+    maxPerDay: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Mantenimiento general': {
+    maxPerDay: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Reparación de sistema de escape': {
+    maxPerDay: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Reparación de dirección': {
+    maxPerDay: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
 }
 
 /**
@@ -74,16 +140,11 @@ export async function createTurno(
   turnoData: TurnoInput
 ): Promise<TurnoResponse> {
   try {
-    // Validaciones básicas
-    if (
-      !turnoData.name ||
-      !turnoData.phone ||
-      !turnoData.vehicle ||
-      !turnoData.service
-    ) {
+    // Validaciones básicas - Solo servicio obligatorio para testing
+    if (!turnoData.service) {
       return {
         success: false,
-        message: 'Por favor, completa todos los campos obligatorios.',
+        message: 'Por favor, selecciona un servicio.',
         error: 'MISSING_REQUIRED_FIELDS',
       }
     }
@@ -92,8 +153,12 @@ export async function createTurno(
     if (turnoData.date) {
       let serviceToCheck = turnoData.service
 
-      // Para caja automática, usar el sub-servicio
-      if (turnoData.service === 'Caja automática' && turnoData.subService) {
+      // Para caja automática o mecánica general, usar el sub-servicio
+      if (
+        (turnoData.service === 'Caja automática' ||
+          turnoData.service === 'Mecánica general') &&
+        turnoData.subService
+      ) {
         serviceToCheck = turnoData.subService
       }
 
@@ -167,11 +232,14 @@ export async function checkAvailability(
   service: string
 ): Promise<AvailabilityCheck> {
   try {
+    console.log(`🔍 CHECKING AVAILABILITY: ${date} para ${service}`)
+
     const serviceConfig =
       SERVICE_AVAILABILITY[service as keyof typeof SERVICE_AVAILABILITY]
 
     // Si no hay configuración para el servicio, siempre está disponible
     if (!serviceConfig) {
+      console.log(`❌ No config for service: ${service}`)
       return {
         date,
         service,
@@ -181,14 +249,24 @@ export async function checkAvailability(
       }
     }
 
+    console.log(`⚙️ Service config:`, serviceConfig)
+
     // Verificar si el día está permitido para este servicio
     if (serviceConfig.allowedDays) {
-      const dateObj = new Date(date)
+      // ✅ FIX: Crear fecha correctamente para evitar problemas de timezone
+      const [year, month, day] = date.split('-').map(Number)
+      const dateObj = new Date(year, month - 1, day)
       const dayOfWeek = dateObj.getDay() // 0 = domingo, 1 = lunes, etc.
       // Convertir a 1-7 donde 1 = lunes, 2 = martes, 3 = miércoles, etc.
       const dayNumber = dayOfWeek === 0 ? 7 : dayOfWeek
 
+      console.log(
+        `📅 Fecha: ${date}, dayOfWeek: ${dayOfWeek}, dayNumber: ${dayNumber}`
+      )
+      console.log(`✅ Días permitidos:`, serviceConfig.allowedDays)
+
       if (!serviceConfig.allowedDays.includes(dayNumber)) {
+        console.log(`❌ Día ${dayNumber} no permitido para ${service}`)
         return {
           date,
           service,
@@ -197,6 +275,7 @@ export async function checkAvailability(
           usedSlots: 0,
         }
       }
+      console.log(`✅ Día ${dayNumber} SÍ permitido para ${service}`)
     }
 
     // Si el servicio tiene restricción diaria, verificar disponibilidad diaria
@@ -204,8 +283,33 @@ export async function checkAvailability(
       const startDate = new Date(date + 'T00:00:00')
       const endDate = new Date(date + 'T23:59:59')
 
-      // Para sub-servicios de caja automática, buscar por subService
-      if (service === 'Service de mantenimiento') {
+      // Para sub-servicios de caja automática o mecánica general, buscar por subService
+      const cajaAutomaticaSubServices = [
+        'Service de mantenimiento',
+        'Diagnóstico de caja',
+        'Reparación de fugas',
+        'Cambio de solenoides',
+        'Overhaul completo',
+        'Reparaciones mayores',
+      ]
+
+      const mecanicaGeneralSubServices = [
+        'Cambio de aceite y filtros',
+        'Cambio de correas',
+        'Reparación de frenos',
+        'Cambio de embrague',
+        'Suspensión y amortiguadores',
+        'Reparación de motor',
+        'Cambio de bujías / inyectores',
+        'Cambio de batería',
+        'Diagnóstico de ruidos o vibraciones',
+        'Mantenimiento general',
+        'Reparación de sistema de escape',
+        'Reparación de dirección',
+      ]
+
+      if (cajaAutomaticaSubServices.includes(service)) {
+        // Para sub-servicios de caja automática, verificar límite individual
         const q = query(
           collection(db, COLLECTION_NAME),
           where('subService', '==', service),
@@ -216,6 +320,34 @@ export async function checkAvailability(
         const querySnapshot = await getDocs(q)
         const usedSlots = querySnapshot.size
         const totalSlots = serviceConfig.maxPerDay || 0
+
+        console.log(
+          `📊 Límite diario para ${service}: ${usedSlots}/${totalSlots}`
+        )
+
+        return {
+          date,
+          service,
+          available: usedSlots < totalSlots,
+          totalSlots,
+          usedSlots,
+        }
+      } else if (mecanicaGeneralSubServices.includes(service)) {
+        // Para sub-servicios de mecánica general, verificar límite global diario de 3
+        const q = query(
+          collection(db, COLLECTION_NAME),
+          where('subService', 'in', mecanicaGeneralSubServices),
+          where('date', '>=', Timestamp.fromDate(startDate)),
+          where('date', '<=', Timestamp.fromDate(endDate)),
+          where('status', 'in', ['pending', 'confirmed'])
+        )
+        const querySnapshot = await getDocs(q)
+        const usedSlots = querySnapshot.size
+        const totalSlots = 3 // Límite global diario para mecánica general
+
+        console.log(
+          `📊 Límite diario global para Mecánica general: ${usedSlots}/${totalSlots}`
+        )
 
         return {
           date,
@@ -235,6 +367,10 @@ export async function checkAvailability(
         const querySnapshot = await getDocs(q)
         const usedSlots = querySnapshot.size
         const totalSlots = serviceConfig.maxPerDay || 0
+
+        console.log(
+          `📊 Límite diario para ${service}: ${usedSlots}/${totalSlots}`
+        )
 
         return {
           date,
@@ -248,20 +384,26 @@ export async function checkAvailability(
 
     // Si el servicio tiene restricción semanal, verificar disponibilidad semanal
     if (serviceConfig.maxPerWeek) {
-      // Calcular inicio y fin de la semana laboral (lunes a viernes)
-      const dateObj = new Date(date)
-      const dayOfWeek = dateObj.getDay()
+      console.log(`📊 Verificando límite semanal: ${serviceConfig.maxPerWeek}`)
+
+      // ✅ FIX: Crear fecha correctamente para cálculo de semana
+      const [yearWeek, monthWeek, dayWeek] = date.split('-').map(Number)
+      const dateObjWeek = new Date(yearWeek, monthWeek - 1, dayWeek)
+      const dayOfWeek = dateObjWeek.getDay()
       const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1 // 0 = domingo
-      const monday = new Date(dateObj)
-      monday.setDate(dateObj.getDate() - daysToMonday)
+      const monday = new Date(dateObjWeek)
+      monday.setDate(dateObjWeek.getDate() - daysToMonday)
       monday.setHours(0, 0, 0, 0)
 
       const friday = new Date(monday)
       friday.setDate(monday.getDate() + 4) // Lunes + 4 días = Viernes
       friday.setHours(23, 59, 59, 999)
 
-      // Consultar turnos de la semana laboral para este servicio
-      // Para sub-servicios de caja automática, buscar por subService
+      console.log(
+        `📅 Semana laboral: ${monday.toISOString()} a ${friday.toISOString()}`
+      )
+
+      // Para sub-servicios de caja automática, verificar límite global semanal compartido
       if (
         [
           'Diagnóstico de caja',
@@ -269,18 +411,46 @@ export async function checkAvailability(
           'Cambio de solenoides',
           'Overhaul completo',
           'Reparaciones mayores',
+          'Otro',
         ].includes(service)
       ) {
+        console.log(`🔧 Verificando límite global semanal para: ${service}`)
+
         const q = query(
           collection(db, COLLECTION_NAME),
-          where('subService', '==', service),
+          where('subService', 'in', [
+            'Diagnóstico de caja',
+            'Reparación de fugas',
+            'Cambio de solenoides',
+            'Overhaul completo',
+            'Reparaciones mayores',
+            'Otro',
+          ]),
           where('date', '>=', Timestamp.fromDate(monday)),
           where('date', '<=', Timestamp.fromDate(friday)),
           where('status', 'in', ['pending', 'confirmed'])
         )
+
+        console.log(`🔍 Ejecutando query para semana...`)
         const querySnapshot = await getDocs(q)
         const usedSlots = querySnapshot.size
-        const totalSlots = serviceConfig.maxPerWeek || 0
+        const totalSlots = 5 // Límite global semanal compartido
+
+        console.log(`📊 Resultados de la semana:`)
+        console.log(`   - Slots usados: ${usedSlots}`)
+        console.log(`   - Slots totales: ${totalSlots}`)
+        console.log(`   - Disponible: ${usedSlots < totalSlots}`)
+
+        // Debug: mostrar los turnos encontrados
+        console.log(`📋 Turnos encontrados en la semana:`)
+        querySnapshot.forEach(doc => {
+          const data = doc.data()
+          const turnoDate =
+            data.date?.toDate?.()?.toISOString?.()?.split('T')[0] || 'Sin fecha'
+          console.log(
+            `   - ${data.subService} - ${turnoDate} - Status: ${data.status}`
+          )
+        })
 
         return {
           date,
@@ -290,6 +460,7 @@ export async function checkAvailability(
           usedSlots,
         }
       } else {
+        // Para otros servicios con límite semanal
         const q = query(
           collection(db, COLLECTION_NAME),
           where('service', '==', service),
@@ -301,6 +472,10 @@ export async function checkAvailability(
         const usedSlots = querySnapshot.size
         const totalSlots = serviceConfig.maxPerWeek || 0
 
+        console.log(
+          `📊 Límite semanal para ${service}: ${usedSlots}/${totalSlots}`
+        )
+
         return {
           date,
           service,
@@ -311,8 +486,11 @@ export async function checkAvailability(
       }
     }
 
-    // Si el servicio no requiere fecha y no tiene restricciones semanales
+    // Si el servicio no requiere fecha y no tiene restricciones
     if (!serviceConfig.requiresDate) {
+      console.log(
+        `✅ Servicio ${service} no requiere fecha - siempre disponible`
+      )
       return {
         date,
         service,
@@ -322,13 +500,18 @@ export async function checkAvailability(
       }
     }
 
-    // Servicios que requieren fecha específica (disponibilidad diaria)
-    const startDate = new Date(date + 'T00:00:00')
-    const endDate = new Date(date + 'T23:59:59')
+    // Para sub-servicios que requieren fecha, buscar por subService
+    const servicesRequiringDate = [
+      'Overhaul completo',
+      'Reparaciones mayores',
+      'Cambio de embrague',
+      'Reparación de motor',
+    ]
 
-    // Consultar turnos existentes para esa fecha y servicio
-    // Para sub-servicios de caja automática, buscar por subService
-    if (['Overhaul completo', 'Reparaciones mayores'].includes(service)) {
+    if (servicesRequiringDate.includes(service)) {
+      const startDate = new Date(date + 'T00:00:00')
+      const endDate = new Date(date + 'T23:59:59')
+
       const q = query(
         collection(db, COLLECTION_NAME),
         where('subService', '==', service),
@@ -340,6 +523,10 @@ export async function checkAvailability(
       const usedSlots = querySnapshot.size
       const totalSlots = serviceConfig.maxPerDay || 0
 
+      console.log(
+        `📊 Disponibilidad diaria para ${service}: ${usedSlots}/${totalSlots}`
+      )
+
       return {
         date,
         service,
@@ -348,6 +535,10 @@ export async function checkAvailability(
         usedSlots,
       }
     } else {
+      // Servicios que requieren fecha específica (disponibilidad diaria)
+      const startDate = new Date(date + 'T00:00:00')
+      const endDate = new Date(date + 'T23:59:59')
+
       const q = query(
         collection(db, COLLECTION_NAME),
         where('service', '==', service),
@@ -359,6 +550,10 @@ export async function checkAvailability(
       const usedSlots = querySnapshot.size
       const totalSlots = serviceConfig.maxPerDay || 0
 
+      console.log(
+        `📊 Disponibilidad diaria por defecto para ${service}: ${usedSlots}/${totalSlots}`
+      )
+
       return {
         date,
         service,
@@ -368,7 +563,10 @@ export async function checkAvailability(
       }
     }
   } catch (error) {
-    console.error('Error checking availability:', error)
+    console.error(
+      `❌ Error checking availability for ${date}-${service}:`,
+      error
+    )
     return {
       date,
       service,

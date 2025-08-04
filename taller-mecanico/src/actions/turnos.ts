@@ -17,6 +17,7 @@ import {
   TurnoResponse,
   AvailabilityCheck,
 } from './types/types'
+import { sendTurnoConfirmationToClient } from '@/lib/emailjs'
 
 // Tipo para configuración de disponibilidad
 type ServiceAvailabilityConfig = {
@@ -140,6 +141,22 @@ export async function createTurno(
   turnoData: TurnoInput
 ): Promise<TurnoResponse> {
   try {
+    // Validaciones básicas - Todos los campos obligatorios
+    if (
+      !turnoData.name ||
+      !turnoData.phone ||
+      !turnoData.email ||
+      !turnoData.vehicle ||
+      !turnoData.service
+    ) {
+      return {
+        success: false,
+        message:
+          'Por favor, completa todos los campos obligatorios (nombre, teléfono, email, vehículo y servicio).',
+        error: 'MISSING_REQUIRED_FIELDS',
+      }
+    }
+
     // Validaciones básicas - Solo servicio obligatorio para testing
     if (!turnoData.service) {
       return {
@@ -206,6 +223,14 @@ export async function createTurno(
     const savedTurno: Turno = {
       ...turno,
       id: docRef.id,
+    }
+
+    // Enviar email de confirmación solo al cliente (Bcc configurado en EmailJS)
+    try {
+      await sendTurnoConfirmationToClient(turnoData)
+      console.log('✅ Email de confirmación enviado correctamente')
+    } catch (emailError) {
+      console.error('❌ Error enviando email de confirmación:', emailError)
     }
 
     return {

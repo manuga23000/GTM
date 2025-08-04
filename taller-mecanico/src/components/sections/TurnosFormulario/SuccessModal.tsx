@@ -47,8 +47,8 @@ export default function SuccessModal({
 
           {/* Mensaje */}
           <p className='text-gray-300 mb-8'>
-            Tu solicitud de turno ha sido enviada correctamente. Nos pondremos
-            en contacto contigo pronto para confirmar los detalles.
+            Tu solicitud de turno ha sido enviada correctamente. Te enviamos un
+            email con los detalles de tu turno.
           </p>
 
           {/* Recordatorio de horario */}

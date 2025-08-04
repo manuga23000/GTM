@@ -74,6 +74,7 @@ export default function FormFields({
           onChange={onFieldChange}
           className='w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent'
           placeholder='Tu nombre completo'
+          required
         />
       </div>
 
@@ -93,6 +94,7 @@ export default function FormFields({
           onChange={onFieldChange}
           className='w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent'
           placeholder='Tu número de teléfono'
+          required
         />
       </div>
 
@@ -112,6 +114,7 @@ export default function FormFields({
           onChange={onFieldChange}
           className='w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent'
           placeholder='tu@email.com'
+          required
         />
       </div>
 
@@ -131,6 +134,7 @@ export default function FormFields({
           onChange={onFieldChange}
           className='w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent'
           placeholder='Marca, modelo y año'
+          required
         />
       </div>
 

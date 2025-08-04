@@ -75,41 +75,19 @@ export default function TurnosFormulario() {
           animate={isSectionInView ? 'visible' : 'hidden'}
           className='relative z-10 max-w-4xl mx-auto text-center px-4'
         >
-          <motion.h1
-            variants={animations.fadeInUp}
-            className='text-5xl md:text-6xl font-extrabold mb-6 text-white'
-          >
-            RESERVA TU{' '}
-            <motion.span
-              className='text-red-600'
-              whileHover={animations.textGlow}
-            >
-              TURNO
-            </motion.span>
-          </motion.h1>
-          <motion.p
-            variants={animations.fadeInUp}
-            className='text-white text-lg mb-8 max-w-2xl mx-auto'
-          >
-            Agenda tu cita de manera rápida y sencilla. Nuestro equipo de expertos
-            está listo para atenderte con la mejor calidad y profesionalismo.
-          </motion.p>
-          
           {/* Mensaje En Construcción - TEMPORAL */}
           <motion.div
             variants={animations.fadeInUp}
             className='bg-yellow-600/20 border border-yellow-500/30 rounded-xl p-6 mb-8 max-w-2xl mx-auto'
           >
             <div className='flex items-center justify-center mb-4'>
-              <div className='w-8 h-8 text-yellow-400 mr-3'>
-                🚧
-              </div>
+              <div className='w-8 h-8 text-yellow-400 mr-3'>🚧</div>
               <h3 className='text-yellow-400 text-xl font-bold'>
                 Sección en Construcción
               </h3>
             </div>
             <p className='text-yellow-200 text-sm'>
-              Estamos trabajando en mejorar nuestro sistema de turnos online. 
+              Estamos trabajando en mejorar nuestro sistema de turnos online.
               Mientras tanto, podés contactarnos directamente por WhatsApp.
             </p>
           </motion.div>
@@ -119,9 +97,9 @@ export default function TurnosFormulario() {
             className='flex flex-col sm:flex-row gap-4 justify-center items-center'
           >
             <a
-              href="https://wa.me/+5493364123456" // Reemplazar con el número real
-              target="_blank"
-              rel="noopener noreferrer"
+              href='https://wa.me/+5493364123456' // Reemplazar con el número real
+              target='_blank'
+              rel='noopener noreferrer'
               className='bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold transition-colors duration-300 cursor-pointer'
             >
               📱 WhatsApp Directo

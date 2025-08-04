@@ -1,3 +1,6 @@
+'use client'
+import { usePathname } from 'next/navigation'
+import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -14,6 +17,11 @@ import {
 } from 'react-icons/fa'
 
 export default function Footer() {
+  const pathname = usePathname()
+  const hideFooter = pathname.startsWith('/admin')
+
+  if (hideFooter) return null // ⛔ No mostrar nada si es /admin
+
   return (
     <footer
       className='bg-black text-white pt-16 pb-6 mt-0 relative'

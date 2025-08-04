@@ -12,17 +12,17 @@ export default function Hero() {
 
   return (
     <section
-      className='relative pt-36 pb-24 sm:pt-28 sm:min-h-screen flex items-start sm:items-center overflow-hidden'
+      className='relative pt-36 pb-24 sm:pt-28 lg:pt-48 sm:min-h-screen flex items-start sm:items-center overflow-hidden'
       style={{
-        backgroundImage: "url('/images/home/hero-engine.png')",
+        backgroundImage: "url('/images/sobrenosotros/combinadoflex.png')",
         backgroundSize: 'cover',
         backgroundPosition: 'center right',
         backgroundRepeat: 'no-repeat',
       }}
       ref={heroRef}
     >
-      {/* Overlay para legibilidad del texto */}
-      <div className='absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/50'></div>
+      {/* Overlay para legibilidad del texto - Más claro en móvil */}
+      <div className='absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/50 mobile-overlay'></div>
 
       <motion.div
         variants={animations.staggerContainer}
@@ -61,13 +61,21 @@ export default function Hero() {
 
             <motion.div
               variants={animations.fadeInUp}
-              className='flex flex-col sm:flex-row gap-4 justify-center lg:justify-start'
+              className='flex flex-col sm:flex-row lg:flex-row gap-4 justify-center lg:justify-start'
             >
-              <Button variant='primary' size='lg' className='w-full sm:w-auto'>
+              <Button
+                variant='primary'
+                size='lg'
+                className='w-full sm:w-auto lg:w-auto'
+              >
                 PROXIMAMENTE - SISTEMA DE TURNOS
               </Button>
-              <Link href='/servicios' className='w-full sm:w-auto'>
-                <Button variant='outline' size='lg' className='w-full'>
+              <Link href='/servicios' className='w-full sm:w-auto lg:w-auto'>
+                <Button
+                  variant='outline'
+                  size='lg'
+                  className='w-full lg:w-auto'
+                >
                   CONOCER MÁS
                 </Button>
               </Link>
@@ -82,10 +90,32 @@ export default function Hero() {
       <style jsx>{`
         @media (max-width: 640px) {
           section {
-            background-image: url('/images/home/hero-enginemobile.jpg') !important;
+            background-image: url('/images/sobrenosotros/combinadoflexmobile.png') !important;
             background-position: center !important;
             background-size: cover !important;
             background-repeat: no-repeat !important;
+          }
+          
+          /* Overlay más claro en móvil para que la imagen se vea mejor */
+          .mobile-overlay {
+            background: linear-gradient(
+              to right, 
+              rgba(0, 0, 0, 0.6), 
+              rgba(0, 0, 0, 0.4), 
+              rgba(0, 0, 0, 0.3)
+            ) !important;
+          }
+        }
+
+        @media (min-width: 641px) {
+          /* Overlay normal en desktop */
+          .mobile-overlay {
+            background: linear-gradient(
+              to right, 
+              rgba(0, 0, 0, 0.9), 
+              rgba(0, 0, 0, 0.7), 
+              rgba(0, 0, 0, 0.5)
+            ) !important;
           }
         }
       `}</style>

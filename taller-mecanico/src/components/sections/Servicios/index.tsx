@@ -1,0 +1,6 @@
+export { default as ServiciosHero } from './ServiciosHero'
+export { default as ServiciosBasicos } from './ServiciosBasicos'
+export { default as ServiciosPrincipales } from './ServiciosPrincipales'
+export { default as ServiciosEspecializados } from './ServiciosEspecializados'
+export { default as ProgramacionModulos } from './ProgramacionModulos'
+export { default as CapacitacionTecnica } from './CapacitacionTecnica'

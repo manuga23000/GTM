@@ -1,0 +1,5 @@
+export { default as HeroSobreNosotros } from './HeroSobreNosotros'
+export { default as ConoceLoQueNosDestaca } from './ConoceLoQueNosDestaca'
+export { default as CarruselImagenes } from './CarruselImagenes'
+export { default as TrabajaConNosotros } from './TrabajaConNosotros'
+export { default as MartinGrandoli } from './MartinGrandoli'

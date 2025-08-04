@@ -16,7 +16,7 @@ export default function ServiciosPrincipales() {
     {
       titulo: 'CAJAS AUTOMÁTICAS',
       descripcion:
-        'En Mecánica Grandoli, somos expertos en diagnosticar y reparar cajas automáticas para vehículos de todas las marcas. Realizamos mantenimiento preventivo y correctivo para asegurar el óptimo desempeño de tu transmisión, prolongando su vida útil. También llevamos a cabo reprogramaciones y ajustes personalizados, utilizando tecnología de punta para garantizar un funcionamiento suave y eficiente.',
+        'En GTM, somos expertos en diagnosticar y reparar cajas automáticas para vehículos de todas las marcas. Realizamos mantenimiento preventivo y correctivo para asegurar el óptimo desempeño de tu transmisión, prolongando su vida útil. También llevamos a cabo reprogramaciones y ajustes personalizados, utilizando tecnología de punta para garantizar un funcionamiento suave y eficiente.',
       imagen: '/images/servicios/caja.jpg',
       lado: 'izquierda',
     },

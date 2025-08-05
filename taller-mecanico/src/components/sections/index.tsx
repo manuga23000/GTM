@@ -15,3 +15,6 @@ export * from './Shared'
 
 // Turnos components
 export * from './Turnos'
+
+// Admin components
+// export * from './Admin'

@@ -9,7 +9,7 @@ export interface Turno {
   date: Date | null
   time: string
   message: string
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+  status: 'pending' | 'cancelled' | 'completed' | 'reprogrammed'
   createdAt: Date
   updatedAt: Date
 }

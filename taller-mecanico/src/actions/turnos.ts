@@ -603,7 +603,7 @@ export async function checkAvailability(
 }
 
 /**
- * Obtener todos los turnos (para admin)
+ * Obtener todos los turnos ordenados por fecha de creación
  */
 export async function getAllTurnos(): Promise<Turno[]> {
   try {
@@ -611,13 +611,12 @@ export async function getAllTurnos(): Promise<Turno[]> {
       collection(db, COLLECTION_NAME),
       orderBy('createdAt', 'desc')
     )
-
     const querySnapshot = await getDocs(q)
-    const turnos: Turno[] = []
 
+    const turnos: Turno[] = []
     querySnapshot.forEach(doc => {
       const data = doc.data()
-      const turno: Turno = {
+      turnos.push({
         id: doc.id,
         name: data.name,
         email: data.email,
@@ -631,14 +630,13 @@ export async function getAllTurnos(): Promise<Turno[]> {
         status: data.status,
         createdAt: data.createdAt.toDate(),
         updatedAt: data.updatedAt.toDate(),
-      }
-      turnos.push(turno)
+      })
     })
 
     return turnos
   } catch (error) {
     console.error('Error getting turnos:', error)
-    return []
+    throw error
   }
 }
 
@@ -647,7 +645,7 @@ export async function getAllTurnos(): Promise<Turno[]> {
  */
 export async function updateTurnoStatus(
   turnoId: string,
-  status: Turno['status']
+  status: 'pending' | 'cancelled' | 'completed' | 'reprogrammed'
 ): Promise<TurnoResponse> {
   try {
     const turnoRef = doc(db, COLLECTION_NAME, turnoId)
@@ -658,14 +656,22 @@ export async function updateTurnoStatus(
 
     return {
       success: true,
-      message: `Turno ${status} exitosamente.`,
+      message: `Turno ${
+        status === 'cancelled'
+          ? 'cancelado'
+          : status === 'completed'
+          ? 'completado'
+          : status === 'reprogrammed'
+          ? 'reprogramado'
+          : 'pendiente'
+      } exitosamente.`,
     }
   } catch (error) {
     console.error('Error updating turno status:', error)
     return {
       success: false,
-      message: 'Error al actualizar el turno.',
-      error: 'INTERNAL_ERROR',
+      message: 'Error al actualizar el estado del turno.',
+      error: 'UPDATE_ERROR',
     }
   }
 }
@@ -686,7 +692,7 @@ export async function deleteTurno(turnoId: string): Promise<TurnoResponse> {
     return {
       success: false,
       message: 'Error al eliminar el turno.',
-      error: 'INTERNAL_ERROR',
+      error: 'DELETE_ERROR',
     }
   }
 }

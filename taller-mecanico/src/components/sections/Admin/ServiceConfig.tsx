@@ -16,30 +16,13 @@ const DAYS = [
   { value: 5, label: 'Viernes' },
 ]
 
-// Configuración inicial hardcodeada
+// Configuración inicial organizada jerárquicamente
 const INITIAL_CONFIG: Record<string, ServiceConfig> = {
+  // SERVICIOS PRINCIPALES
   Diagnóstico: {
     maxPerDay: 2,
     maxPerWeek: null,
     requiresDate: true,
-    allowedDays: [1, 2, 3, 4, 5],
-  },
-  'Caja automática': {
-    maxPerDay: null,
-    maxPerWeek: null,
-    requiresDate: false,
-    allowedDays: [1, 2, 3, 4, 5],
-  },
-  'Mecánica general': {
-    maxPerDay: null,
-    maxPerWeek: null,
-    requiresDate: false,
-    allowedDays: [1, 2, 3, 4, 5],
-  },
-  'Programación de módulos': {
-    maxPerDay: null,
-    maxPerWeek: null,
-    requiresDate: false,
     allowedDays: [1, 2, 3, 4, 5],
   },
   'Revisación técnica': {
@@ -48,6 +31,20 @@ const INITIAL_CONFIG: Record<string, ServiceConfig> = {
     requiresDate: true,
     allowedDays: [1, 2, 3, 4, 5],
   },
+  'Programación de módulos': {
+    maxPerDay: null,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  Otro: {
+    maxPerDay: 1,
+    maxPerWeek: null,
+    requiresDate: true,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+
+  // SUB-SERVICIOS DE CAJA AUTOMÁTICA
   'Service de mantenimiento': {
     maxPerDay: 2,
     maxPerWeek: null,
@@ -84,36 +81,114 @@ const INITIAL_CONFIG: Record<string, ServiceConfig> = {
     requiresDate: true,
     allowedDays: [1, 2, 3],
   },
-  'Cambio de aceite y filtros': {
+
+  // SUB-SERVICIOS DE MECÁNICA GENERAL
+  'Correa de distribución': {
     maxPerDay: 3,
     maxPerWeek: null,
     requiresDate: false,
     allowedDays: [1, 2, 3, 4, 5],
   },
-  'Cambio de correas': {
+  Frenos: {
     maxPerDay: 3,
     maxPerWeek: null,
     requiresDate: false,
     allowedDays: [1, 2, 3, 4, 5],
   },
-  'Reparación de frenos': {
-    maxPerDay: 2,
-    maxPerWeek: null,
-    requiresDate: false,
-    allowedDays: [1, 2, 3, 4, 5],
-  },
-  Otro: {
-    maxPerDay: 1,
+  Embrague: {
+    maxPerDay: 3,
     maxPerWeek: null,
     requiresDate: true,
     allowedDays: [1, 2, 3, 4, 5],
   },
+  Suspensión: {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  Motor: {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: true,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Bujías / Inyectores': {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  Batería: {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Ruidos o vibraciones': {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Mantenimiento general': {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  Dirección: {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Otro / No estoy seguro': {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+}
+
+const MAIN_SERVICES = [
+  'Diagnóstico',
+  'Caja automática',
+  'Mecánica general',
+  'Revisación técnica',
+  'Programación de módulos',
+  'Otro',
+]
+
+const SUB_SERVICES: Record<string, string[]> = {
+  'Caja automática': [
+    'Service de mantenimiento',
+    'Diagnóstico de caja',
+    'Reparación de fugas',
+    'Cambio de solenoides',
+    'Overhaul completo',
+    'Reparaciones mayores',
+  ],
+  'Mecánica general': [
+    'Correa de distribución',
+    'Frenos',
+    'Embrague',
+    'Suspensión',
+    'Motor',
+    'Bujías / Inyectores',
+    'Batería',
+    'Ruidos o vibraciones',
+    'Mantenimiento general',
+    'Dirección',
+    'Otro / No estoy seguro',
+  ],
 }
 
 export default function ServiceConfig() {
   const [config, setConfig] =
     useState<Record<string, ServiceConfig>>(INITIAL_CONFIG)
   const [message, setMessage] = useState('')
+  const [selectedMain, setSelectedMain] = useState<string>(MAIN_SERVICES[0])
 
   const updateServiceConfig = (
     serviceName: string,
@@ -134,14 +209,99 @@ export default function ServiceConfig() {
     const newDays = currentDays.includes(dayValue)
       ? currentDays.filter(d => d !== dayValue)
       : [...currentDays, dayValue].sort()
-
     updateServiceConfig(serviceName, 'allowedDays', newDays)
   }
 
   const handleSave = () => {
-    // Aquí se guardaría en Firebase o localStorage
     setMessage('Configuración guardada exitosamente')
     setTimeout(() => setMessage(''), 3000)
+  }
+
+  // Renderiza la configuración de un servicio
+  const renderServiceConfig = (serviceName: string) => (
+    <div
+      key={serviceName}
+      className='bg-gray-800 p-6 rounded-xl border-l-4 border-blue-500 mb-6'
+    >
+      <h3 className='text-lg font-semibold text-white mb-4'>{serviceName}</h3>
+      <div className='space-y-4'>
+        <div className='grid grid-cols-2 gap-4'>
+          <div>
+            <label className='block text-sm font-medium text-gray-300 mb-2'>
+              Máximo por día
+            </label>
+            <input
+              type='number'
+              min='0'
+              value={config[serviceName]?.maxPerDay || ''}
+              onChange={e =>
+                updateServiceConfig(
+                  serviceName,
+                  'maxPerDay',
+                  e.target.value ? parseInt(e.target.value) : null
+                )
+              }
+              className='w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-text'
+              placeholder='Sin límite'
+            />
+          </div>
+          <div>
+            <label className='block text-sm font-medium text-gray-300 mb-2'>
+              Máximo por semana
+            </label>
+            <input
+              type='number'
+              min='0'
+              value={config[serviceName]?.maxPerWeek || ''}
+              onChange={e =>
+                updateServiceConfig(
+                  serviceName,
+                  'maxPerWeek',
+                  e.target.value ? parseInt(e.target.value) : null
+                )
+              }
+              className='w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-text'
+              placeholder='Sin límite'
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className='block text-sm font-medium text-gray-300 mb-2'>
+            Días permitidos
+          </label>
+          <div className='flex flex-wrap gap-2'>
+            {DAYS.map(day => (
+              <button
+                key={day.value}
+                onClick={() => toggleDay(serviceName, day.value)}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors cursor-pointer ${
+                  config[serviceName]?.allowedDays.includes(day.value)
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                {day.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Renderiza los sub-servicios si existen
+  const renderSubServices = (main: string) => {
+    const subs = SUB_SERVICES[main]
+    if (!subs) return renderServiceConfig(main)
+    return (
+      <>
+        <div className='mb-8'>{renderServiceConfig(main)}</div>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          {subs.map(sub => renderServiceConfig(sub))}
+        </div>
+      </>
+    )
   }
 
   return (
@@ -157,112 +317,26 @@ export default function ServiceConfig() {
           💾 Guardar Configuración
         </button>
       </div>
-
       {message && (
         <div className='p-4 bg-green-600 text-white rounded-lg'>{message}</div>
       )}
-
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-        {Object.entries(config).map(([serviceName, serviceConfig]) => (
-          <div key={serviceName} className='bg-gray-800 p-6 rounded-xl'>
-            <h3 className='text-lg font-semibold text-white mb-4'>
-              {serviceName}
-            </h3>
-
-            <div className='space-y-4'>
-              {/* Límites */}
-              <div className='grid grid-cols-2 gap-4'>
-                <div>
-                  <label className='block text-sm font-medium text-gray-300 mb-2'>
-                    Máximo por día
-                  </label>
-                  <input
-                    type='number'
-                    min='0'
-                    value={serviceConfig.maxPerDay || ''}
-                    onChange={e =>
-                      updateServiceConfig(
-                        serviceName,
-                        'maxPerDay',
-                        e.target.value ? parseInt(e.target.value) : null
-                      )
-                    }
-                    className='w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-text'
-                    placeholder='Sin límite'
-                  />
-                </div>
-                <div>
-                  <label className='block text-sm font-medium text-gray-300 mb-2'>
-                    Máximo por semana
-                  </label>
-                  <input
-                    type='number'
-                    min='0'
-                    value={serviceConfig.maxPerWeek || ''}
-                    onChange={e =>
-                      updateServiceConfig(
-                        serviceName,
-                        'maxPerWeek',
-                        e.target.value ? parseInt(e.target.value) : null
-                      )
-                    }
-                    className='w-full p-2 rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-text'
-                    placeholder='Sin límite'
-                  />
-                </div>
-              </div>
-
-              {/* Requiere fecha */}
-              <div className='flex items-center space-x-3'>
-                <input
-                  type='checkbox'
-                  id={`requiresDate-${serviceName}`}
-                  checked={serviceConfig.requiresDate}
-                  onChange={e =>
-                    updateServiceConfig(
-                      serviceName,
-                      'requiresDate',
-                      e.target.checked
-                    )
-                  }
-                  className='w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 cursor-pointer'
-                />
-                <label
-                  htmlFor={`requiresDate-${serviceName}`}
-                  className='text-sm font-medium text-gray-300 cursor-pointer'
-                >
-                  Requiere fecha específica
-                </label>
-              </div>
-
-              {/* Días permitidos */}
-              <div>
-                <label className='block text-sm font-medium text-gray-300 mb-2'>
-                  Días permitidos
-                </label>
-                <div className='flex flex-wrap gap-2'>
-                  {DAYS.map(day => (
-                    <button
-                      key={day.value}
-                      onClick={() => toggleDay(serviceName, day.value)}
-                      className={`px-3 py-1 rounded text-sm font-medium transition-colors cursor-pointer ${
-                        serviceConfig.allowedDays.includes(day.value)
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      }`}
-                    >
-                      {day.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+      <div className='flex flex-wrap gap-2 mb-8'>
+        {MAIN_SERVICES.map(main => (
+          <button
+            key={main}
+            onClick={() => setSelectedMain(main)}
+            className={`px-4 py-2 rounded-lg font-semibold transition-colors duration-200 border-2 ${
+              selectedMain === main
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700'
+            }`}
+          >
+            {main}
+          </button>
         ))}
       </div>
-
-      {/* Información adicional */}
-      <div className='bg-gray-800 p-6 rounded-xl'>
+      {renderSubServices(selectedMain)}
+      <div className='bg-gray-800 p-6 rounded-xl mt-8'>
         <h3 className='text-lg font-semibold text-white mb-4'>
           Información de Configuración
         </h3>
@@ -275,10 +349,7 @@ export default function ServiceConfig() {
             • <strong>Máximo por semana:</strong> Número máximo de turnos que se
             pueden agendar por semana para este servicio.
           </p>
-          <p>
-            • <strong>Requiere fecha:</strong> Si está activado, el cliente debe
-            seleccionar una fecha específica.
-          </p>
+
           <p>
             • <strong>Días permitidos:</strong> Días de la semana en los que se
             puede agendar este servicio.

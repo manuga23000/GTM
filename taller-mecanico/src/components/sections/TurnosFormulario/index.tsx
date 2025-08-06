@@ -11,11 +11,9 @@ import FormFields from './FormFields'
 import SuccessModal from './SuccessModal'
 import DatePickerStyles from './DatePickerStyles'
 
-interface FormData extends TurnoInput {}
-
 export default function TurnosFormulario() {
   const router = useRouter()
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<TurnoInput>({
     name: '',
     email: '',
     phone: '',
@@ -170,18 +168,17 @@ export default function TurnosFormulario() {
         // Para cada fecha, verificar todos los sub-servicios de mecánica general
         datesToCheck.forEach(dateString => {
           const mecanicaGeneralSubServices = [
-            'Cambio de aceite y filtros',
-            'Cambio de correas',
-            'Reparación de frenos',
-            'Cambio de embrague',
-            'Suspensión y amortiguadores',
-            'Reparación de motor',
-            'Cambio de bujías / inyectores',
-            'Cambio de batería',
-            'Diagnóstico de ruidos o vibraciones',
+            'Correa de distribución',
+            'Frenos',
+            'Embrague',
+            'Suspensión',
+            'Motor',
+            'Bujías / Inyectores',
+            'Batería',
+            'Ruidos o vibraciones',
             'Mantenimiento general',
-            'Reparación de sistema de escape',
-            'Reparación de dirección',
+            'Dirección',
+            'Otro / No estoy seguro',
           ]
           mecanicaGeneralSubServices.forEach(service => {
             availabilityPromises.push(
@@ -380,7 +377,7 @@ export default function TurnosFormulario() {
           message: result.message,
         })
       }
-    } catch (error) {
+    } catch {
       setStatus({
         type: 'error',
         message: 'Error al enviar la solicitud. Intenta nuevamente.',

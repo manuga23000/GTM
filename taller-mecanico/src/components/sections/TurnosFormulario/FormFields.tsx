@@ -215,31 +215,21 @@ export default function FormFields({
             required
           >
             <option value=''>Selecciona el tipo de servicio</option>
-            <option value='Cambio de aceite y filtros'>
-              Cambio de aceite y filtros
+            <option value='Correa de distribución'>
+              Correa de distribución
             </option>
-            <option value='Cambio de correas'>Cambio de correas</option>
-            <option value='Reparación de frenos'>Reparación de frenos</option>
-            <option value='Cambio de embrague'>Cambio de embrague</option>
-            <option value='Suspensión y amortiguadores'>
-              Suspensión y amortiguadores
-            </option>
-            <option value='Reparación de motor'>Reparación de motor</option>
-            <option value='Cambio de bujías / inyectores'>
-              Cambio de bujías / inyectores
-            </option>
-            <option value='Cambio de batería'>Cambio de batería</option>
-            <option value='Diagnóstico de ruidos o vibraciones'>
-              Diagnóstico de ruidos o vibraciones
-            </option>
+            <option value='Frenos'>Frenos</option>
+            <option value='Embrague'>Embrague</option>
+            <option value='Suspensión'>Suspensión</option>
+            <option value='Motor'>Motor</option>
+            <option value='Bujías / Inyectores'>Bujías / Inyectores</option>
+            <option value='Batería'>Batería</option>
+            <option value='Ruidos o vibraciones'>Ruidos o vibraciones</option>
             <option value='Mantenimiento general'>Mantenimiento general</option>
-            <option value='Reparación de sistema de escape'>
-              Reparación de sistema de escape
+            <option value='Dirección'>Dirección</option>
+            <option value='Otro / No estoy seguro'>
+              Otro / No estoy seguro
             </option>
-            <option value='Reparación de dirección'>
-              Reparación de dirección
-            </option>
-            <option value='Otro'>Otro</option>
           </select>
         </div>
       )}

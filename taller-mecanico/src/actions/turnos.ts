@@ -72,47 +72,42 @@ const SERVICE_AVAILABILITY: Record<string, ServiceAvailabilityConfig> = {
   }, // Solo lunes a miércoles
 
   // Sub-servicios de mecánica general
-  'Cambio de aceite y filtros': {
+  'Correa de distribución': {
     maxPerDay: 3,
     requiresDate: false,
     allowedDays: [1, 2, 3, 4, 5],
   },
-  'Cambio de correas': {
+  Frenos: {
     maxPerDay: 3,
     requiresDate: false,
     allowedDays: [1, 2, 3, 4, 5],
   },
-  'Reparación de frenos': {
-    maxPerDay: 3,
-    requiresDate: false,
-    allowedDays: [1, 2, 3, 4, 5],
-  },
-  'Cambio de embrague': {
+  Embrague: {
     maxPerDay: 3,
     requiresDate: true,
     allowedDays: [1, 2, 3, 4, 5],
   },
-  'Suspensión y amortiguadores': {
+  Suspensión: {
     maxPerDay: 3,
     requiresDate: false,
     allowedDays: [1, 2, 3, 4, 5],
   },
-  'Reparación de motor': {
+  Motor: {
     maxPerDay: 3,
     requiresDate: true,
     allowedDays: [1, 2, 3, 4, 5],
   },
-  'Cambio de bujías / inyectores': {
+  'Bujías / Inyectores': {
     maxPerDay: 3,
     requiresDate: false,
     allowedDays: [1, 2, 3, 4, 5],
   },
-  'Cambio de batería': {
+  Batería: {
     maxPerDay: 3,
     requiresDate: false,
     allowedDays: [1, 2, 3, 4, 5],
   },
-  'Diagnóstico de ruidos o vibraciones': {
+  'Ruidos o vibraciones': {
     maxPerDay: 3,
     requiresDate: false,
     allowedDays: [1, 2, 3, 4, 5],
@@ -122,12 +117,12 @@ const SERVICE_AVAILABILITY: Record<string, ServiceAvailabilityConfig> = {
     requiresDate: false,
     allowedDays: [1, 2, 3, 4, 5],
   },
-  'Reparación de sistema de escape': {
+  Dirección: {
     maxPerDay: 3,
     requiresDate: false,
     allowedDays: [1, 2, 3, 4, 5],
   },
-  'Reparación de dirección': {
+  'Otro / No estoy seguro': {
     maxPerDay: 3,
     requiresDate: false,
     allowedDays: [1, 2, 3, 4, 5],
@@ -319,18 +314,17 @@ export async function checkAvailability(
       ]
 
       const mecanicaGeneralSubServices = [
-        'Cambio de aceite y filtros',
-        'Cambio de correas',
-        'Reparación de frenos',
-        'Cambio de embrague',
-        'Suspensión y amortiguadores',
-        'Reparación de motor',
-        'Cambio de bujías / inyectores',
-        'Cambio de batería',
-        'Diagnóstico de ruidos o vibraciones',
+        'Correa de distribución',
+        'Frenos',
+        'Embrague',
+        'Suspensión',
+        'Motor',
+        'Bujías / Inyectores',
+        'Batería',
+        'Ruidos o vibraciones',
         'Mantenimiento general',
-        'Reparación de sistema de escape',
-        'Reparación de dirección',
+        'Dirección',
+        'Otro / No estoy seguro',
       ]
 
       if (cajaAutomaticaSubServices.includes(service)) {

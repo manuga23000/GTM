@@ -347,11 +347,6 @@ export default function FormFields({
                     const cacheKey = `${dateString}-${formData.subService}`
                     const isAvailable = availabilityCache[cacheKey] === true
 
-                    // Console log para debugging
-                    console.log(
-                      `Fecha: ${dateString}, Día: ${day}, Sub-servicio: ${formData.subService}, Cache Key: ${cacheKey}, Disponible: ${isAvailable}`
-                    )
-
                     return isAvailable
                   }
 
@@ -371,11 +366,6 @@ export default function FormFields({
                     // Luego verificar disponibilidad en el cache
                     const cacheKey = `${dateString}-${formData.subService}`
                     const isAvailable = availabilityCache[cacheKey] === true
-
-                    // Console log para debugging
-                    console.log(
-                      `Fecha: ${dateString}, Día: ${day}, Sub-servicio: ${formData.subService}, Cache Key: ${cacheKey}, Disponible: ${isAvailable}`
-                    )
 
                     return isAvailable
                   }

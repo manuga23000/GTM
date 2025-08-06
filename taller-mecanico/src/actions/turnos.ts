@@ -18,6 +18,7 @@ import {
   AvailabilityCheck,
 } from './types/types'
 import { sendTurnoConfirmationToClient } from '@/lib/emailjs'
+import { getServiceConfig } from './serviceconfig'
 
 // Tipo para configuración de disponibilidad
 type ServiceAvailabilityConfig = {
@@ -127,6 +128,63 @@ const SERVICE_AVAILABILITY: Record<string, ServiceAvailabilityConfig> = {
     requiresDate: false,
     allowedDays: [1, 2, 3, 4, 5],
   },
+}
+
+// Y agrega esta función después de las importaciones:
+/**
+ * Obtener configuración de un servicio (dinámico desde Firebase o estático)
+ */
+async function getServiceAvailabilityConfig(
+  serviceName: string
+): Promise<ServiceAvailabilityConfig | null> {
+  // Para servicios con configuración dinámica, intentar obtener desde Firebase
+  const servicesWithDynamicConfig = [
+    'Diagnóstico',
+    'Revisación técnica',
+    'Otro',
+    // Sub-servicios de Caja automática
+    'Service de mantenimiento',
+    'Diagnóstico de caja',
+    'Reparación de fugas',
+    'Cambio de solenoides',
+    'Overhaul completo',
+    'Reparaciones mayores',
+  ]
+
+  if (servicesWithDynamicConfig.includes(serviceName)) {
+    try {
+      const dynamicConfig = await getServiceConfig(serviceName)
+      if (dynamicConfig && dynamicConfig.isActive) {
+        console.log(
+          `🔄 Usando configuración dinámica para ${serviceName}:`,
+          dynamicConfig
+        )
+        return {
+          maxPerDay: dynamicConfig.maxPerDay,
+          maxPerWeek: dynamicConfig.maxPerWeek,
+          requiresDate: dynamicConfig.requiresDate,
+          allowedDays: dynamicConfig.allowedDays,
+        }
+      }
+    } catch (error) {
+      console.error(
+        `❌ Error obteniendo configuración dinámica para ${serviceName}:`,
+        error
+      )
+    }
+  }
+
+  // Fallback a configuración estática
+  const staticConfig = SERVICE_AVAILABILITY[serviceName]
+  if (staticConfig) {
+    console.log(
+      `📋 Usando configuración estática para ${serviceName}:`,
+      staticConfig
+    )
+    return staticConfig
+  }
+
+  return null
 }
 
 /**
@@ -254,8 +312,8 @@ export async function checkAvailability(
   try {
     console.log(`🔍 CHECKING AVAILABILITY: ${date} para ${service}`)
 
-    const serviceConfig =
-      SERVICE_AVAILABILITY[service as keyof typeof SERVICE_AVAILABILITY]
+    // Obtener configuración del servicio (dinámico o estático)
+    const serviceConfig = await getServiceAvailabilityConfig(service)
 
     // Si no hay configuración para el servicio, siempre está disponible
     if (!serviceConfig) {
@@ -273,17 +331,10 @@ export async function checkAvailability(
 
     // Verificar si el día está permitido para este servicio
     if (serviceConfig.allowedDays) {
-      // ✅ FIX: Crear fecha correctamente para evitar problemas de timezone
       const [year, month, day] = date.split('-').map(Number)
       const dateObj = new Date(year, month - 1, day)
-      const dayOfWeek = dateObj.getDay() // 0 = domingo, 1 = lunes, etc.
-      // Convertir a 1-7 donde 1 = lunes, 2 = martes, 3 = miércoles, etc.
+      const dayOfWeek = dateObj.getDay()
       const dayNumber = dayOfWeek === 0 ? 7 : dayOfWeek
-
-      console.log(
-        `📅 Fecha: ${date}, dayOfWeek: ${dayOfWeek}, dayNumber: ${dayNumber}`
-      )
-      console.log(`✅ Días permitidos:`, serviceConfig.allowedDays)
 
       if (!serviceConfig.allowedDays.includes(dayNumber)) {
         console.log(`❌ Día ${dayNumber} no permitido para ${service}`)
@@ -295,15 +346,26 @@ export async function checkAvailability(
           usedSlots: 0,
         }
       }
-      console.log(`✅ Día ${dayNumber} SÍ permitido para ${service}`)
     }
 
-    // Si el servicio tiene restricción diaria, verificar disponibilidad diaria
-    if (serviceConfig.maxPerDay) {
-      const startDate = new Date(date + 'T00:00:00')
-      const endDate = new Date(date + 'T23:59:59')
+    // 🎯 NUEVA LÓGICA: Verificar AMBOS límites (diario Y semanal)
+    let dailyAvailable = true
+    let weeklyAvailable = true
+    let dailyUsed = 0
+    let dailyTotal = 0
+    let weeklyUsed = 0
+    let weeklyTotal = 0
 
-      // Para sub-servicios de caja automática o mecánica general, buscar por subService
+    const startDate = new Date(date + 'T00:00:00')
+    const endDate = new Date(date + 'T23:59:59')
+
+    // 1. VERIFICAR LÍMITE DIARIO
+    if (serviceConfig.maxPerDay) {
+      dailyTotal = serviceConfig.maxPerDay
+
+      // Determinar cómo buscar según el tipo de servicio
+      let dailyQuery
+
       const cajaAutomaticaSubServices = [
         'Service de mantenimiento',
         'Diagnóstico de caja',
@@ -328,101 +390,62 @@ export async function checkAvailability(
       ]
 
       if (cajaAutomaticaSubServices.includes(service)) {
-        // Para sub-servicios de caja automática, verificar límite individual
-        const q = query(
-          collection(db, COLLECTION_NAME),
+        dailyQuery = query(
+          collection(db, 'turnos'),
           where('subService', '==', service),
           where('date', '>=', Timestamp.fromDate(startDate)),
           where('date', '<=', Timestamp.fromDate(endDate)),
           where('status', 'in', ['pending', 'confirmed'])
         )
-        const querySnapshot = await getDocs(q)
-        const usedSlots = querySnapshot.size
-        const totalSlots = serviceConfig.maxPerDay || 0
-
-        console.log(
-          `📊 Límite diario para ${service}: ${usedSlots}/${totalSlots}`
-        )
-
-        return {
-          date,
-          service,
-          available: usedSlots < totalSlots,
-          totalSlots,
-          usedSlots,
-        }
       } else if (mecanicaGeneralSubServices.includes(service)) {
-        // Para sub-servicios de mecánica general, verificar límite global diario de 3
-        const q = query(
-          collection(db, COLLECTION_NAME),
+        // Para mecánica general, verificar límite global de 3
+        dailyQuery = query(
+          collection(db, 'turnos'),
           where('subService', 'in', mecanicaGeneralSubServices),
           where('date', '>=', Timestamp.fromDate(startDate)),
           where('date', '<=', Timestamp.fromDate(endDate)),
           where('status', 'in', ['pending', 'confirmed'])
         )
-        const querySnapshot = await getDocs(q)
-        const usedSlots = querySnapshot.size
-        const totalSlots = 3 // Límite global diario para mecánica general
-
-        console.log(
-          `📊 Límite diario global para Mecánica general: ${usedSlots}/${totalSlots}`
-        )
-
-        return {
-          date,
-          service,
-          available: usedSlots < totalSlots,
-          totalSlots,
-          usedSlots,
-        }
+        dailyTotal = 3 // Límite global para mecánica general
       } else {
-        const q = query(
-          collection(db, COLLECTION_NAME),
+        // Para servicios principales
+        dailyQuery = query(
+          collection(db, 'turnos'),
           where('service', '==', service),
           where('date', '>=', Timestamp.fromDate(startDate)),
           where('date', '<=', Timestamp.fromDate(endDate)),
           where('status', 'in', ['pending', 'confirmed'])
         )
-        const querySnapshot = await getDocs(q)
-        const usedSlots = querySnapshot.size
-        const totalSlots = serviceConfig.maxPerDay || 0
-
-        console.log(
-          `📊 Límite diario para ${service}: ${usedSlots}/${totalSlots}`
-        )
-
-        return {
-          date,
-          service,
-          available: usedSlots < totalSlots,
-          totalSlots,
-          usedSlots,
-        }
       }
+
+      const dailySnapshot = await getDocs(dailyQuery)
+      dailyUsed = dailySnapshot.size
+      dailyAvailable = dailyUsed < dailyTotal
+
+      console.log(
+        `📊 Límite DIARIO: ${dailyUsed}/${dailyTotal} - Disponible: ${dailyAvailable}`
+      )
     }
 
-    // Si el servicio tiene restricción semanal, verificar disponibilidad semanal
+    // 2. VERIFICAR LÍMITE SEMANAL
     if (serviceConfig.maxPerWeek) {
-      console.log(`📊 Verificando límite semanal: ${serviceConfig.maxPerWeek}`)
+      weeklyTotal = serviceConfig.maxPerWeek
 
-      // ✅ FIX: Crear fecha correctamente para cálculo de semana
+      // Calcular inicio y fin de semana laboral (lunes a viernes)
       const [yearWeek, monthWeek, dayWeek] = date.split('-').map(Number)
       const dateObjWeek = new Date(yearWeek, monthWeek - 1, dayWeek)
       const dayOfWeek = dateObjWeek.getDay()
-      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1 // 0 = domingo
+      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
       const monday = new Date(dateObjWeek)
       monday.setDate(dateObjWeek.getDate() - daysToMonday)
       monday.setHours(0, 0, 0, 0)
 
       const friday = new Date(monday)
-      friday.setDate(monday.getDate() + 4) // Lunes + 4 días = Viernes
+      friday.setDate(monday.getDate() + 4)
       friday.setHours(23, 59, 59, 999)
 
-      console.log(
-        `📅 Semana laboral: ${monday.toISOString()} a ${friday.toISOString()}`
-      )
-
-      // Para sub-servicios de caja automática, verificar límite global semanal compartido
+      // Para servicios con límite semanal global compartido
+      let weeklyQuery
       if (
         [
           'Diagnóstico de caja',
@@ -433,10 +456,8 @@ export async function checkAvailability(
           'Otro',
         ].includes(service)
       ) {
-        console.log(`🔧 Verificando límite global semanal para: ${service}`)
-
-        const q = query(
-          collection(db, COLLECTION_NAME),
+        weeklyQuery = query(
+          collection(db, 'turnos'),
           where('subService', 'in', [
             'Diagnóstico de caja',
             'Reparación de fugas',
@@ -449,137 +470,46 @@ export async function checkAvailability(
           where('date', '<=', Timestamp.fromDate(friday)),
           where('status', 'in', ['pending', 'confirmed'])
         )
-
-        console.log(`🔍 Ejecutando query para semana...`)
-        const querySnapshot = await getDocs(q)
-        const usedSlots = querySnapshot.size
-        const totalSlots = 5 // Límite global semanal compartido
-
-        console.log(`📊 Resultados de la semana:`)
-        console.log(`   - Slots usados: ${usedSlots}`)
-        console.log(`   - Slots totales: ${totalSlots}`)
-        console.log(`   - Disponible: ${usedSlots < totalSlots}`)
-
-        // Debug: mostrar los turnos encontrados
-        console.log(`📋 Turnos encontrados en la semana:`)
-        querySnapshot.forEach(doc => {
-          const data = doc.data()
-          const turnoDate =
-            data.date?.toDate?.()?.toISOString?.()?.split('T')[0] || 'Sin fecha'
-          console.log(
-            `   - ${data.subService} - ${turnoDate} - Status: ${data.status}`
-          )
-        })
-
-        return {
-          date,
-          service,
-          available: usedSlots < totalSlots,
-          totalSlots,
-          usedSlots,
-        }
+        weeklyTotal = 5 // Límite global semanal compartido
       } else {
-        // Para otros servicios con límite semanal
-        const q = query(
-          collection(db, COLLECTION_NAME),
+        // Para otros servicios con límite semanal individual
+        weeklyQuery = query(
+          collection(db, 'turnos'),
           where('service', '==', service),
           where('date', '>=', Timestamp.fromDate(monday)),
           where('date', '<=', Timestamp.fromDate(friday)),
           where('status', 'in', ['pending', 'confirmed'])
         )
-        const querySnapshot = await getDocs(q)
-        const usedSlots = querySnapshot.size
-        const totalSlots = serviceConfig.maxPerWeek || 0
-
-        console.log(
-          `📊 Límite semanal para ${service}: ${usedSlots}/${totalSlots}`
-        )
-
-        return {
-          date,
-          service,
-          available: usedSlots < totalSlots,
-          totalSlots,
-          usedSlots,
-        }
       }
+
+      const weeklySnapshot = await getDocs(weeklyQuery)
+      weeklyUsed = weeklySnapshot.size
+      weeklyAvailable = weeklyUsed < weeklyTotal
+
+      console.log(
+        `📊 Límite SEMANAL: ${weeklyUsed}/${weeklyTotal} - Disponible: ${weeklyAvailable}`
+      )
     }
 
-    // Si el servicio no requiere fecha y no tiene restricciones
-    if (!serviceConfig.requiresDate) {
-      console.log(
-        `✅ Servicio ${service} no requiere fecha - siempre disponible`
-      )
-      return {
-        date,
-        service,
-        available: true,
-        totalSlots: 0,
-        usedSlots: 0,
-      }
-    }
+    // 3. RESULTADO FINAL: Ambos límites deben cumplirse
+    const finalAvailable = dailyAvailable && weeklyAvailable
 
-    // Para sub-servicios que requieren fecha, buscar por subService
-    const servicesRequiringDate = [
-      'Overhaul completo',
-      'Reparaciones mayores',
-      'Cambio de embrague',
-      'Reparación de motor',
-    ]
+    console.log(`✅ DISPONIBILIDAD FINAL: ${finalAvailable}`)
+    console.log(`   - Diario: ${dailyAvailable} (${dailyUsed}/${dailyTotal})`)
+    console.log(
+      `   - Semanal: ${weeklyAvailable} (${weeklyUsed}/${weeklyTotal})`
+    )
 
-    if (servicesRequiringDate.includes(service)) {
-      const startDate = new Date(date + 'T00:00:00')
-      const endDate = new Date(date + 'T23:59:59')
+    // Devolver el límite más restrictivo en la respuesta
+    const isWeeklyMoreRestrictive =
+      weeklyTotal > 0 && weeklyTotal - weeklyUsed < dailyTotal - dailyUsed
 
-      const q = query(
-        collection(db, COLLECTION_NAME),
-        where('subService', '==', service),
-        where('date', '>=', Timestamp.fromDate(startDate)),
-        where('date', '<=', Timestamp.fromDate(endDate)),
-        where('status', 'in', ['pending', 'confirmed'])
-      )
-      const querySnapshot = await getDocs(q)
-      const usedSlots = querySnapshot.size
-      const totalSlots = serviceConfig.maxPerDay || 0
-
-      console.log(
-        `📊 Disponibilidad diaria para ${service}: ${usedSlots}/${totalSlots}`
-      )
-
-      return {
-        date,
-        service,
-        available: usedSlots < totalSlots,
-        totalSlots,
-        usedSlots,
-      }
-    } else {
-      // Servicios que requieren fecha específica (disponibilidad diaria)
-      const startDate = new Date(date + 'T00:00:00')
-      const endDate = new Date(date + 'T23:59:59')
-
-      const q = query(
-        collection(db, COLLECTION_NAME),
-        where('service', '==', service),
-        where('date', '>=', Timestamp.fromDate(startDate)),
-        where('date', '<=', Timestamp.fromDate(endDate)),
-        where('status', 'in', ['pending', 'confirmed'])
-      )
-      const querySnapshot = await getDocs(q)
-      const usedSlots = querySnapshot.size
-      const totalSlots = serviceConfig.maxPerDay || 0
-
-      console.log(
-        `📊 Disponibilidad diaria por defecto para ${service}: ${usedSlots}/${totalSlots}`
-      )
-
-      return {
-        date,
-        service,
-        available: usedSlots < totalSlots,
-        totalSlots,
-        usedSlots,
-      }
+    return {
+      date,
+      service,
+      available: finalAvailable,
+      totalSlots: isWeeklyMoreRestrictive ? weeklyTotal : dailyTotal,
+      usedSlots: isWeeklyMoreRestrictive ? weeklyUsed : dailyUsed,
     }
   } catch (error) {
     console.error(

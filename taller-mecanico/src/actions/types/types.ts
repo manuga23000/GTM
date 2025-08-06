@@ -1,3 +1,4 @@
+// actions/types/types.ts
 export interface Turno {
   id?: string
   name: string
@@ -26,17 +27,46 @@ export interface TurnoInput {
   message: string
 }
 
+export interface TurnoResponse {
+  success: boolean
+  message: string
+  error?: string
+  turno?: Turno
+}
+
 export interface AvailabilityCheck {
-  date: string // YYYY-MM-DD format
+  date: string
   service: string
   available: boolean
   totalSlots: number
   usedSlots: number
 }
 
-export interface TurnoResponse {
+// NUEVOS TIPOS PARA CONFIGURACIÓN DE SERVICIOS
+export interface ServiceConfig {
+  id?: string
+  serviceName: string
+  maxPerDay: number | null
+  maxPerWeek: number | null
+  requiresDate: boolean
+  allowedDays: number[] // 1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface ServiceConfigInput {
+  serviceName: string
+  maxPerDay: number | null
+  maxPerWeek: number | null
+  requiresDate: boolean
+  allowedDays: number[]
+  isActive: boolean
+}
+
+export interface ServiceConfigResponse {
   success: boolean
   message: string
-  turno?: Turno
   error?: string
+  config?: ServiceConfig
 }

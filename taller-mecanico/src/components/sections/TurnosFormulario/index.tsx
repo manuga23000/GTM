@@ -84,10 +84,6 @@ export default function TurnosFormulario() {
         available: boolean
       }>[] = []
 
-      // Debug: Ver qué fechas estamos verificando
-      console.log('🗓️ Fechas a verificar:', datesToCheck)
-      console.log('🔧 Servicio específico:', specificService)
-
       // Si se especifica un servicio específico, solo cargar ese
       if (specificService) {
         // Verificar cada fecha individualmente
@@ -95,16 +91,9 @@ export default function TurnosFormulario() {
           const date = new Date(dateString + 'T00:00:00.000Z')
           const dayOfWeek = date.getDay() // 0=domingo, 1=lunes, 2=martes, etc.
 
-          console.log(
-            `📅 Verificando: ${dateString} (Día ${dayOfWeek}) para servicio: ${specificService}`
-          )
-
           availabilityPromises.push(
             checkAvailability(dateString, specificService)
               .then(result => {
-                console.log(
-                  `✅ Resultado para ${dateString}: ${result.available}`
-                )
                 return {
                   dateString,
                   service: specificService,
@@ -196,17 +185,12 @@ export default function TurnosFormulario() {
 
       const results = await Promise.all(availabilityPromises)
 
-      // Guardar resultados en cache usando una clave compuesta
-      console.log('📊 Resultados completos de disponibilidad:')
       results.forEach(({ dateString, service, available }) => {
         const date = new Date(dateString + 'T00:00:00.000Z')
         const dayOfWeek = date.getDay()
         const dayName = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][
           dayOfWeek
         ]
-        console.log(
-          `${dayName} ${dateString}: ${available ? '✅' : '❌'} (${service})`
-        )
       })
 
       // Guardar resultados en cache usando una clave compuesta

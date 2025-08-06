@@ -1,0 +1,289 @@
+// src/actions/admin.ts
+import { doc, setDoc, getDoc, Timestamp } from 'firebase/firestore'
+import { db } from '../lib/firebase'
+
+// Tipos para la configuración
+export interface ServiceConfig {
+  maxPerDay: number | null
+  maxPerWeek: number | null
+  requiresDate: boolean
+  allowedDays: number[] // 1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes
+}
+
+export interface AdminResponse {
+  success: boolean
+  message: string
+  error?: string
+}
+
+const CONFIG_COLLECTION = 'admin'
+const CONFIG_DOC_ID = 'serviceConfig'
+
+// Configuración por defecto (la misma que tienes en turnos.ts)
+const DEFAULT_SERVICE_CONFIG: Record<string, ServiceConfig> = {
+  // SERVICIOS PRINCIPALES
+  Diagnóstico: {
+    maxPerDay: 2,
+    maxPerWeek: null,
+    requiresDate: true,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Caja automática': {
+    maxPerDay: null,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Mecánica general': {
+    maxPerDay: null,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Revisación técnica': {
+    maxPerDay: 1,
+    maxPerWeek: null,
+    requiresDate: true,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Programación de módulos': {
+    maxPerDay: null,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  Otro: {
+    maxPerDay: 1,
+    maxPerWeek: null,
+    requiresDate: true,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+
+  // SUB-SERVICIOS DE CAJA AUTOMÁTICA
+  'Service de mantenimiento': {
+    maxPerDay: 2,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Diagnóstico de caja': {
+    maxPerDay: null,
+    maxPerWeek: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3],
+  },
+  'Reparación de fugas': {
+    maxPerDay: null,
+    maxPerWeek: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3],
+  },
+  'Cambio de solenoides': {
+    maxPerDay: null,
+    maxPerWeek: 3,
+    requiresDate: false,
+    allowedDays: [1, 2, 3],
+  },
+  'Overhaul completo': {
+    maxPerDay: null,
+    maxPerWeek: 2,
+    requiresDate: true,
+    allowedDays: [1, 2, 3],
+  },
+  'Reparaciones mayores': {
+    maxPerDay: null,
+    maxPerWeek: 3,
+    requiresDate: true,
+    allowedDays: [1, 2, 3],
+  },
+
+  // SUB-SERVICIOS DE MECÁNICA GENERAL
+  'Correa de distribución': {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  Frenos: {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  Embrague: {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: true,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  Suspensión: {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  Motor: {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: true,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Bujías / Inyectores': {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  Batería: {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Ruidos o vibraciones': {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Mantenimiento general': {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  Dirección: {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+  'Otro / No estoy seguro': {
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5],
+  },
+}
+
+// Cache para evitar consultas innecesarias
+let configCache: Record<string, ServiceConfig> | null = null
+let cacheExpiry: number = 0
+
+/**
+ * Cargar configuración de servicios
+ */
+export async function loadServiceConfig(): Promise<
+  Record<string, ServiceConfig>
+> {
+  try {
+    // Si el cache es válido (5 minutos), usarlo
+    const now = Date.now()
+    if (configCache && now < cacheExpiry) {
+      return configCache
+    }
+
+    const docRef = doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID)
+    const docSnap = await getDoc(docRef)
+
+    let loadedConfig: Record<string, ServiceConfig>
+
+    if (docSnap.exists()) {
+      const data = docSnap.data()
+      loadedConfig = data.services || DEFAULT_SERVICE_CONFIG
+    } else {
+      // Si no existe, crear con configuración por defecto
+      await saveServiceConfig(DEFAULT_SERVICE_CONFIG)
+      loadedConfig = DEFAULT_SERVICE_CONFIG
+    }
+
+    // Actualizar cache
+    configCache = loadedConfig
+    cacheExpiry = now + 5 * 60 * 1000 // Cache válido por 5 minutos
+
+    return loadedConfig
+  } catch (error) {
+    console.error('Error loading service config:', error)
+    return DEFAULT_SERVICE_CONFIG
+  }
+}
+
+/**
+ * Guardar configuración de servicios
+ */
+export async function saveServiceConfig(
+  services: Record<string, ServiceConfig>
+): Promise<AdminResponse> {
+  try {
+    const docRef = doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID)
+    await setDoc(
+      docRef,
+      {
+        services,
+        updatedAt: Timestamp.fromDate(new Date()),
+        version: 1,
+      },
+      { merge: true }
+    )
+
+    // Invalidar cache
+    configCache = null
+    cacheExpiry = 0
+
+    return {
+      success: true,
+      message: 'Configuración guardada exitosamente',
+    }
+  } catch (error) {
+    console.error('Error saving service config:', error)
+    return {
+      success: false,
+      message: 'Error al guardar la configuración',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
+  }
+}
+
+/**
+ * Obtener configuración de un servicio específico
+ */
+export async function getServiceConfig(
+  serviceName: string
+): Promise<ServiceConfig | null> {
+  const allConfigs = await loadServiceConfig()
+  return allConfigs[serviceName] || null
+}
+
+/**
+ * Invalidar cache (útil para testing o actualizaciones forzadas)
+ */
+export function invalidateConfigCache(): void {
+  configCache = null
+  cacheExpiry = 0
+}
+
+/**
+ * Resetear configuración a valores por defecto
+ */
+export async function resetServiceConfig(): Promise<AdminResponse> {
+  try {
+    const result = await saveServiceConfig(DEFAULT_SERVICE_CONFIG)
+    return result
+  } catch (error) {
+    console.error('Error resetting service config:', error)
+    return {
+      success: false,
+      message: 'Error al resetear la configuración',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
+  }
+}
+
+/**
+ * Exportar configuración (para backup)
+ */
+export async function exportServiceConfig(): Promise<
+  Record<string, ServiceConfig>
+> {
+  return await loadServiceConfig()
+}

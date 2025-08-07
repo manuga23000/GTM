@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import Button from '@/components/ui/Button'
@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 import FormFields from './FormFields'
 import SuccessModal from './SuccessModal'
 import DatePickerStyles from './DatePickerStyles'
-import { getAllServiceConfigs } from '@/actions/serviceconfig' // Nueva importación
+import { getAllServiceConfigs } from '@/actions/serviceconfig'
 
 export default function TurnosFormulario() {
   const router = useRouter()
@@ -36,7 +36,7 @@ export default function TurnosFormulario() {
   const [availabilityCache, setAvailabilityCache] = useState<
     Record<string, boolean>
   >({})
-  const [serviceConfigs, setServiceConfigs] = useState<ServiceConfig[]>([]) // Nueva state
+  const [serviceConfigs, setServiceConfigs] = useState<ServiceConfig[]>([])
 
   const sectionRef = useRef(null)
   const isSectionInView = useInView(sectionRef, {
@@ -61,157 +61,160 @@ export default function TurnosFormulario() {
     )
   }
 
-  // Función para cargar disponibilidad
-  const loadAvailability = async (specificService?: string) => {
-    setIsLoadingDates(true)
-    const newCache: Record<string, boolean> = { ...availabilityCache }
+  // Función para cargar disponibilidad - ahora con useCallback
+  const loadAvailability = useCallback(
+    async (specificService?: string) => {
+      setIsLoadingDates(true)
+      const newCache: Record<string, boolean> = { ...availabilityCache }
 
-    // Generar fechas para los próximos 15 días laborables
-    const datesToCheck: string[] = []
-    const now = new Date()
-    const today8AM = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      8,
-      10,
-      0
-    )
+      // Generar fechas para los próximos 15 días laborables
+      const datesToCheck: string[] = []
+      const now = new Date()
+      const today8AM = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        8,
+        10,
+        0
+      )
 
-    // Determinar desde qué día empezar
-    let startDay = 0 // Empezar desde hoy
-    if (now >= today8AM) {
-      startDay = 1 // Empezar desde mañana
-    }
-
-    for (let i = startDay; i < 15; i++) {
-      const date = new Date()
-      date.setDate(date.getDate() + i)
-
-      // Solo verificar días laborables (lunes a viernes por defecto, pero cada servicio puede tener sus propios días)
-      const day = date.getDay()
-      if (day >= 1 && day <= 5) {
-        const dateString = date.toISOString().split('T')[0]
-        datesToCheck.push(dateString)
-      }
-    }
-
-    try {
-      const availabilityPromises: Promise<{
-        dateString: string
-        service: string
-        available: boolean
-      }>[] = []
-
-      // Si se especifica un servicio específico, solo cargar ese
-      if (specificService) {
-        datesToCheck.forEach(dateString => {
-          availabilityPromises.push(
-            checkAvailability(dateString, specificService)
-              .then(result => {
-                return {
-                  dateString,
-                  service: specificService,
-                  available: result.available,
-                }
-              })
-              .catch(error => {
-                console.error(`❌ Error para ${dateString}:`, error)
-                return {
-                  dateString,
-                  service: specificService,
-                  available: false,
-                }
-              })
-          )
-        })
-      } else {
-        // Para cada fecha, verificar todos los servicios que requieren fecha
-        datesToCheck.forEach(dateString => {
-          const servicesRequiringDate = [
-            'Diagnóstico',
-            'Revisación técnica',
-            'Otro',
-          ]
-          servicesRequiringDate.forEach(service => {
-            availabilityPromises.push(
-              checkAvailability(dateString, service)
-                .then(result => ({
-                  dateString,
-                  service,
-                  available: result.available,
-                }))
-                .catch(() => ({ dateString, service, available: false }))
-            )
-          })
-        })
-
-        // Para cada fecha, verificar todos los sub-servicios de caja automática
-        datesToCheck.forEach(dateString => {
-          const cajaAutomaticaSubServices = [
-            'Service de mantenimiento',
-            'Diagnóstico de caja',
-            'Reparación de fugas',
-            'Cambio de solenoides',
-            'Overhaul completo',
-            'Reparaciones mayores',
-          ]
-          cajaAutomaticaSubServices.forEach(service => {
-            availabilityPromises.push(
-              checkAvailability(dateString, service)
-                .then(result => ({
-                  dateString,
-                  service,
-                  available: result.available,
-                }))
-                .catch(() => ({ dateString, service, available: false }))
-            )
-          })
-        })
-
-        // Para cada fecha, verificar todos los sub-servicios de mecánica general
-        datesToCheck.forEach(dateString => {
-          const mecanicaGeneralSubServices = [
-            'Correa de distribución',
-            'Frenos',
-            'Embrague',
-            'Suspensión',
-            'Motor',
-            'Bujías / Inyectores',
-            'Batería',
-            'Ruidos o vibraciones',
-            'Mantenimiento general',
-            'Dirección',
-            'Otro / No estoy seguro',
-          ]
-          mecanicaGeneralSubServices.forEach(service => {
-            availabilityPromises.push(
-              checkAvailability(dateString, service)
-                .then(result => ({
-                  dateString,
-                  service,
-                  available: result.available,
-                }))
-                .catch(() => ({ dateString, service, available: false }))
-            )
-          })
-        })
+      // Determinar desde qué día empezar
+      let startDay = 0 // Empezar desde hoy
+      if (now >= today8AM) {
+        startDay = 1 // Empezar desde mañana
       }
 
-      const results = await Promise.all(availabilityPromises)
+      for (let i = startDay; i < 15; i++) {
+        const date = new Date()
+        date.setDate(date.getDate() + i)
 
-      // Guardar resultados en cache usando una clave compuesta
-      results.forEach(({ dateString, service, available }) => {
-        const cacheKey = `${dateString}-${service}`
-        newCache[cacheKey] = available
-      })
-    } catch (error) {
-      console.error('❌ Error loading availability:', error)
-    }
+        // Solo verificar días laborables (lunes a viernes por defecto, pero cada servicio puede tener sus propios días)
+        const day = date.getDay()
+        if (day >= 1 && day <= 5) {
+          const dateString = date.toISOString().split('T')[0]
+          datesToCheck.push(dateString)
+        }
+      }
 
-    setAvailabilityCache(newCache)
-    setIsLoadingDates(false)
-  }
+      try {
+        const availabilityPromises: Promise<{
+          dateString: string
+          service: string
+          available: boolean
+        }>[] = []
+
+        // Si se especifica un servicio específico, solo cargar ese
+        if (specificService) {
+          datesToCheck.forEach(dateString => {
+            availabilityPromises.push(
+              checkAvailability(dateString, specificService)
+                .then(result => {
+                  return {
+                    dateString,
+                    service: specificService,
+                    available: result.available,
+                  }
+                })
+                .catch(error => {
+                  console.error(`❌ Error para ${dateString}:`, error)
+                  return {
+                    dateString,
+                    service: specificService,
+                    available: false,
+                  }
+                })
+            )
+          })
+        } else {
+          // Para cada fecha, verificar todos los servicios que requieren fecha
+          datesToCheck.forEach(dateString => {
+            const servicesRequiringDate = [
+              'Diagnóstico',
+              'Revisación técnica',
+              'Otro',
+            ]
+            servicesRequiringDate.forEach(service => {
+              availabilityPromises.push(
+                checkAvailability(dateString, service)
+                  .then(result => ({
+                    dateString,
+                    service,
+                    available: result.available,
+                  }))
+                  .catch(() => ({ dateString, service, available: false }))
+              )
+            })
+          })
+
+          // Para cada fecha, verificar todos los sub-servicios de caja automática
+          datesToCheck.forEach(dateString => {
+            const cajaAutomaticaSubServices = [
+              'Service de mantenimiento',
+              'Diagnóstico de caja',
+              'Reparación de fugas',
+              'Cambio de solenoides',
+              'Overhaul completo',
+              'Reparaciones mayores',
+            ]
+            cajaAutomaticaSubServices.forEach(service => {
+              availabilityPromises.push(
+                checkAvailability(dateString, service)
+                  .then(result => ({
+                    dateString,
+                    service,
+                    available: result.available,
+                  }))
+                  .catch(() => ({ dateString, service, available: false }))
+              )
+            })
+          })
+
+          // Para cada fecha, verificar todos los sub-servicios de mecánica general
+          datesToCheck.forEach(dateString => {
+            const mecanicaGeneralSubServices = [
+              'Correa de distribución',
+              'Frenos',
+              'Embrague',
+              'Suspensión',
+              'Motor',
+              'Bujías / Inyectores',
+              'Batería',
+              'Ruidos o vibraciones',
+              'Mantenimiento general',
+              'Dirección',
+              'Otro / No estoy seguro',
+            ]
+            mecanicaGeneralSubServices.forEach(service => {
+              availabilityPromises.push(
+                checkAvailability(dateString, service)
+                  .then(result => ({
+                    dateString,
+                    service,
+                    available: result.available,
+                  }))
+                  .catch(() => ({ dateString, service, available: false }))
+              )
+            })
+          })
+        }
+
+        const results = await Promise.all(availabilityPromises)
+
+        // Guardar resultados en cache usando una clave compuesta
+        results.forEach(({ dateString, service, available }) => {
+          const cacheKey = `${dateString}-${service}`
+          newCache[cacheKey] = available
+        })
+      } catch (error) {
+        console.error('❌ Error loading availability:', error)
+      }
+
+      setAvailabilityCache(newCache)
+      setIsLoadingDates(false)
+    },
+    [availabilityCache]
+  )
 
   // Cargar configuraciones y disponibilidad al montar el componente
   useEffect(() => {
@@ -220,7 +223,7 @@ export default function TurnosFormulario() {
       await loadAvailability()
     }
     initializeData()
-  }, [])
+  }, [loadAvailability])
 
   // Recargar disponibilidad cuando cambie el servicio principal
   useEffect(() => {
@@ -240,7 +243,7 @@ export default function TurnosFormulario() {
       // Para otros servicios, limpiar cache
       setAvailabilityCache({})
     }
-  }, [formData.service, formData.subService])
+  }, [formData.service, formData.subService, loadAvailability])
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -373,7 +376,8 @@ export default function TurnosFormulario() {
           message: result.message,
         })
       }
-    } catch {
+    } catch (error) {
+      console.error('Error creating turno:', error)
       setStatus({
         type: 'error',
         message: 'Error al enviar la solicitud. Intenta nuevamente.',
@@ -427,7 +431,7 @@ export default function TurnosFormulario() {
                 isLoadingDates={isLoadingDates}
                 onFieldChange={handleChange}
                 onDateChange={handleDateChange}
-                getServiceConfig={getServiceConfig} // Pasar función para obtener configuración
+                getServiceConfig={getServiceConfig}
               />
 
               {/* Mensaje adicional */}

@@ -3,7 +3,7 @@ import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { registerLocale } from 'react-datepicker'
 import { es } from 'date-fns/locale/es'
-import { TurnoInput } from '../../../actions/types/types'
+import { TurnoInput, ServiceConfig } from '../../../actions/types/types'
 
 // Crear localización personalizada en español con días en mayúsculas sin acentos
 const esCustom = {
@@ -47,6 +47,7 @@ interface FormFieldsProps {
     >
   ) => void
   onDateChange: (date: Date | null) => void
+  getServiceConfig: (serviceName: string) => ServiceConfig | null // Nueva prop
 }
 
 export default function FormFields({
@@ -55,7 +56,19 @@ export default function FormFields({
   isLoadingDates,
   onFieldChange,
   onDateChange,
+  getServiceConfig, // Nueva prop
 }: FormFieldsProps) {
+  // Función para verificar si un día está permitido para un servicio
+  const isDayAllowedForService = (date: Date, serviceName: string): boolean => {
+    const config = getServiceConfig(serviceName)
+    if (!config || !config.isActive) return false
+
+    const dayOfWeek = date.getDay()
+    const dayNumber = dayOfWeek === 0 ? 7 : dayOfWeek // Convertir domingo (0) a 7
+
+    return config.allowedDays.includes(dayNumber)
+  }
+
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
       {/* Nombre */}
@@ -234,7 +247,7 @@ export default function FormFields({
         </div>
       )}
 
-      {/* Fecha preferida - Solo disponible para diagnóstico */}
+      {/* Fecha preferida - Con días personalizables */}
       <div>
         <label
           htmlFor='preferredDate'
@@ -301,23 +314,37 @@ export default function FormFields({
                 locale='es-custom'
                 calendarStartDay={0}
                 filterDate={date => {
-                  const day = date.getDay()
                   const dateString = date.toISOString().split('T')[0]
 
                   // Para Diagnóstico, verificar disponibilidad específica
                   if (formData.service === 'Diagnóstico') {
+                    // Verificar si el día está permitido según configuración dinámica
+                    if (!isDayAllowedForService(date, 'Diagnóstico')) {
+                      return false
+                    }
+
                     const cacheKey = `${dateString}-Diagnóstico`
                     return availabilityCache[cacheKey] === true
                   }
 
                   // Para Revisación técnica, verificar disponibilidad específica
                   if (formData.service === 'Revisación técnica') {
+                    // Verificar si el día está permitido según configuración dinámica
+                    if (!isDayAllowedForService(date, 'Revisación técnica')) {
+                      return false
+                    }
+
                     const cacheKey = `${dateString}-Revisación técnica`
                     return availabilityCache[cacheKey] === true
                   }
 
                   // Para Otro, verificar disponibilidad específica
                   if (formData.service === 'Otro') {
+                    // Verificar si el día está permitido según configuración dinámica
+                    if (!isDayAllowedForService(date, 'Otro')) {
+                      return false
+                    }
+
                     const cacheKey = `${dateString}-Otro`
                     return availabilityCache[cacheKey] === true
                   }
@@ -327,27 +354,14 @@ export default function FormFields({
                     formData.service === 'Caja automática' &&
                     formData.subService
                   ) {
-                    // Primero verificar si es un día permitido
-                    let allowedDays: number[] = []
-
-                    if (formData.subService === 'Service de mantenimiento') {
-                      // Service de mantenimiento: lunes a viernes (1-5)
-                      allowedDays = [1, 2, 3, 4, 5]
-                    } else {
-                      // Todos los demás sub-servicios: lunes, martes y miércoles (1-3)
-                      allowedDays = [1, 2, 3]
-                    }
-
-                    // Si no es un día permitido, retornar false
-                    if (!allowedDays.includes(day)) {
+                    // ✅ USAR CONFIGURACIÓN DINÁMICA EN LUGAR DE HARDCODE
+                    if (!isDayAllowedForService(date, formData.subService)) {
                       return false
                     }
 
-                    // Luego verificar disponibilidad en el cache
+                    // Verificar disponibilidad en el cache
                     const cacheKey = `${dateString}-${formData.subService}`
-                    const isAvailable = availabilityCache[cacheKey] === true
-
-                    return isAvailable
+                    return availabilityCache[cacheKey] === true
                   }
 
                   // Para Mecánica general con sub-servicio seleccionado
@@ -355,35 +369,33 @@ export default function FormFields({
                     formData.service === 'Mecánica general' &&
                     formData.subService
                   ) {
-                    // Todos los sub-servicios de mecánica general: lunes a viernes (1-5)
-                    const allowedDays = [1, 2, 3, 4, 5]
-
-                    // Si no es un día permitido, retornar false
-                    if (!allowedDays.includes(day)) {
+                    // ✅ USAR CONFIGURACIÓN DINÁMICA EN LUGAR DE HARDCODE
+                    if (!isDayAllowedForService(date, formData.subService)) {
                       return false
                     }
 
-                    // Luego verificar disponibilidad en el cache
+                    // Verificar disponibilidad en el cache
                     const cacheKey = `${dateString}-${formData.subService}`
-                    const isAvailable = availabilityCache[cacheKey] === true
-
-                    return isAvailable
+                    return availabilityCache[cacheKey] === true
                   }
 
-                  // Para Caja automática sin sub-servicio seleccionado, solo permitir lunes a miércoles
+                  // Para Caja automática sin sub-servicio seleccionado, mostrar días según configuración por defecto
                   if (
                     formData.service === 'Caja automática' &&
                     !formData.subService
                   ) {
-                    return day >= 1 && day <= 3
+                    // Mostrar solo días laborables hasta que se seleccione un sub-servicio
+                    const day = date.getDay()
+                    return day >= 1 && day <= 5 // Lunes a viernes
                   }
 
-                  // Para Mecánica general sin sub-servicio seleccionado, permitir lunes a viernes
+                  // Para Mecánica general sin sub-servicio seleccionado, mostrar días laborables
                   if (
                     formData.service === 'Mecánica general' &&
                     !formData.subService
                   ) {
-                    return day >= 1 && day <= 5
+                    const day = date.getDay()
+                    return day >= 1 && day <= 5 // Lunes a viernes
                   }
 
                   // Para otros servicios, bloquear todas las fechas

@@ -5,11 +5,12 @@ import { useRef } from 'react'
 import Button from '@/components/ui/Button'
 import { animations } from '@/lib/animations'
 import { createTurno, checkAvailability } from '@/actions/turnos'
-import { TurnoInput } from '../../../actions/types/types'
+import { TurnoInput, ServiceConfig } from '../../../actions/types/types'
 import { useRouter } from 'next/navigation'
 import FormFields from './FormFields'
 import SuccessModal from './SuccessModal'
 import DatePickerStyles from './DatePickerStyles'
+import { getAllServiceConfigs } from '@/actions/serviceconfig' // Nueva importación
 
 export default function TurnosFormulario() {
   const router = useRouter()
@@ -34,12 +35,30 @@ export default function TurnosFormulario() {
   const [availabilityCache, setAvailabilityCache] = useState<
     Record<string, boolean>
   >({})
+  const [serviceConfigs, setServiceConfigs] = useState<ServiceConfig[]>([]) // Nueva state
 
   const sectionRef = useRef(null)
   const isSectionInView = useInView(sectionRef, {
     once: true,
     margin: '-100px',
   })
+
+  // Cargar configuraciones de servicios
+  const loadServiceConfigs = async () => {
+    try {
+      const configs = await getAllServiceConfigs()
+      setServiceConfigs(configs)
+    } catch (error) {
+      console.error('Error loading service configs:', error)
+    }
+  }
+
+  // Obtener configuración de un servicio específico
+  const getServiceConfig = (serviceName: string): ServiceConfig | null => {
+    return (
+      serviceConfigs.find(config => config.serviceName === serviceName) || null
+    )
+  }
 
   // Función para cargar disponibilidad
   const loadAvailability = async (specificService?: string) => {
@@ -68,10 +87,9 @@ export default function TurnosFormulario() {
       const date = new Date()
       date.setDate(date.getDate() + i)
 
-      // Solo verificar días laborables
+      // Solo verificar días laborables (lunes a viernes por defecto, pero cada servicio puede tener sus propios días)
       const day = date.getDay()
       if (day >= 1 && day <= 5) {
-        // Lunes a viernes
         const dateString = date.toISOString().split('T')[0]
         datesToCheck.push(dateString)
       }
@@ -86,11 +104,7 @@ export default function TurnosFormulario() {
 
       // Si se especifica un servicio específico, solo cargar ese
       if (specificService) {
-        // Verificar cada fecha individualmente
         datesToCheck.forEach(dateString => {
-          const date = new Date(dateString + 'T00:00:00.000Z')
-          const dayOfWeek = date.getDay() // 0=domingo, 1=lunes, 2=martes, etc.
-
           availabilityPromises.push(
             checkAvailability(dateString, specificService)
               .then(result => {
@@ -185,14 +199,6 @@ export default function TurnosFormulario() {
 
       const results = await Promise.all(availabilityPromises)
 
-      results.forEach(({ dateString, service, available }) => {
-        const date = new Date(dateString + 'T00:00:00.000Z')
-        const dayOfWeek = date.getDay()
-        const dayName = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][
-          dayOfWeek
-        ]
-      })
-
       // Guardar resultados en cache usando una clave compuesta
       results.forEach(({ dateString, service, available }) => {
         const cacheKey = `${dateString}-${service}`
@@ -206,10 +212,14 @@ export default function TurnosFormulario() {
     setIsLoadingDates(false)
   }
 
-  // Precargar disponibilidad cuando se monta el componente
+  // Cargar configuraciones y disponibilidad al montar el componente
   useEffect(() => {
-    loadAvailability()
-  }, []) // Se ejecuta solo al montar el componente
+    const initializeData = async () => {
+      await loadServiceConfigs()
+      await loadAvailability()
+    }
+    initializeData()
+  }, [])
 
   // Recargar disponibilidad cuando cambie el servicio principal
   useEffect(() => {
@@ -415,6 +425,7 @@ export default function TurnosFormulario() {
                 isLoadingDates={isLoadingDates}
                 onFieldChange={handleChange}
                 onDateChange={handleDateChange}
+                getServiceConfig={getServiceConfig} // Pasar función para obtener configuración
               />
 
               {/* Mensaje adicional */}

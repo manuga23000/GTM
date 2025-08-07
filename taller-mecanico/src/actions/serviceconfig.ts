@@ -22,6 +22,7 @@ const COLLECTION_NAME = 'service_config'
 
 // Configuración inicial para servicios con configuración dinámica
 const INITIAL_CONFIGS: ServiceConfigInput[] = [
+  // SERVICIOS PRINCIPALES
   {
     serviceName: 'Diagnóstico',
     maxPerDay: 2,
@@ -46,7 +47,8 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
     isActive: true,
   },
-  // Sub-servicios de Caja automática
+
+  // SUB-SERVICIOS DE CAJA AUTOMÁTICA
   {
     serviceName: 'Service de mantenimiento',
     maxPerDay: 2,
@@ -58,7 +60,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
   {
     serviceName: 'Diagnóstico de caja',
     maxPerDay: null,
-    maxPerWeek: 5,
+    maxPerWeek: 1,
     requiresDate: false,
     allowedDays: [1, 2, 3], // Lunes a miércoles
     isActive: true,
@@ -66,7 +68,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
   {
     serviceName: 'Reparación de fugas',
     maxPerDay: null,
-    maxPerWeek: 5,
+    maxPerWeek: 3,
     requiresDate: false,
     allowedDays: [1, 2, 3], // Lunes a miércoles
     isActive: true,
@@ -74,7 +76,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
   {
     serviceName: 'Cambio de solenoides',
     maxPerDay: null,
-    maxPerWeek: 5,
+    maxPerWeek: 3,
     requiresDate: false,
     allowedDays: [1, 2, 3], // Lunes a miércoles
     isActive: true,
@@ -82,7 +84,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
   {
     serviceName: 'Overhaul completo',
     maxPerDay: null,
-    maxPerWeek: 5,
+    maxPerWeek: 1,
     requiresDate: true,
     allowedDays: [1, 2, 3], // Lunes a miércoles
     isActive: true,
@@ -90,9 +92,99 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
   {
     serviceName: 'Reparaciones mayores',
     maxPerDay: null,
-    maxPerWeek: 5,
+    maxPerWeek: 2,
     requiresDate: true,
     allowedDays: [1, 2, 3], // Lunes a miércoles
+    isActive: true,
+  },
+
+  // SUB-SERVICIOS DE MECÁNICA GENERAL
+  {
+    serviceName: 'Correa de distribución',
+    maxPerDay: 2,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    isActive: true,
+  },
+  {
+    serviceName: 'Frenos',
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    isActive: true,
+  },
+  {
+    serviceName: 'Embrague',
+    maxPerDay: 1,
+    maxPerWeek: null,
+    requiresDate: true,
+    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    isActive: true,
+  },
+  {
+    serviceName: 'Suspensión',
+    maxPerDay: 2,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    isActive: true,
+  },
+  {
+    serviceName: 'Motor',
+    maxPerDay: 1,
+    maxPerWeek: null,
+    requiresDate: true,
+    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    isActive: true,
+  },
+  {
+    serviceName: 'Bujías / Inyectores',
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    isActive: true,
+  },
+  {
+    serviceName: 'Batería',
+    maxPerDay: 4,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    isActive: true,
+  },
+  {
+    serviceName: 'Ruidos o vibraciones',
+    maxPerDay: 2,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    isActive: true,
+  },
+  {
+    serviceName: 'Mantenimiento general',
+    maxPerDay: 3,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    isActive: true,
+  },
+  {
+    serviceName: 'Dirección',
+    maxPerDay: 2,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    isActive: true,
+  },
+  {
+    serviceName: 'Otro / No estoy seguro',
+    maxPerDay: 2,
+    maxPerWeek: null,
+    requiresDate: false,
+    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
     isActive: true,
   },
 ]

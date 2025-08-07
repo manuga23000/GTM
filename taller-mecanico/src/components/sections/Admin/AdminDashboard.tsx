@@ -2,6 +2,7 @@
 import { getAuth, signOut, User } from 'firebase/auth'
 import { app } from '@/lib/firebase'
 import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Turno } from '@/actions/types/types'
 import { getAllTurnos, updateTurnoStatus, deleteTurno } from '@/actions/turnos'
 import TurnosTable from './TurnosTable'
@@ -46,7 +47,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       const result = await updateTurnoStatus(turnoId, status)
       if (result.success) {
         setMessage(result.message)
-        await loadTurnos() // Recargar turnos
+        await loadTurnos()
         setTimeout(() => setMessage(''), 3000)
       } else {
         setMessage(result.message)
@@ -62,7 +63,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
         const result = await deleteTurno(turnoId)
         if (result.success) {
           setMessage(result.message)
-          await loadTurnos() // Recargar turnos
+          await loadTurnos()
           setTimeout(() => setMessage(''), 3000)
         } else {
           setMessage(result.message)
@@ -77,76 +78,219 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     loadTurnos()
   }, [])
 
+  // Configuración de animaciones
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.3,
+        ease: 'easeInOut',
+      },
+    },
+  }
+
+  const tabContentVariants = {
+    hidden: {
+      opacity: 0,
+      y: 20,
+      scale: 0.95,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.4,
+        ease: 'easeOut',
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -20,
+      scale: 0.95,
+      transition: {
+        duration: 0.2,
+        ease: 'easeIn',
+      },
+    },
+  }
+
+  const messageVariants = {
+    hidden: {
+      opacity: 0,
+      y: -30,
+      scale: 0.9,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        type: 'spring',
+        stiffness: 400,
+        damping: 25,
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -30,
+      scale: 0.9,
+      transition: {
+        duration: 0.3,
+      },
+    },
+  }
+
   return (
-    <div className='w-full max-w-7xl mx-auto p-8 rounded-xl shadow-2xl bg-black/70 backdrop-blur-md'>
+    <motion.div
+      variants={containerVariants}
+      initial='hidden'
+      animate='visible'
+      className='w-full max-w-7xl mx-auto p-8 rounded-xl shadow-2xl bg-black/70 backdrop-blur-md'
+    >
       {/* Header */}
-      <div className='flex justify-between items-center mb-8'>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className='flex justify-between items-center mb-8'
+      >
         <h1 className='text-4xl font-extrabold text-white drop-shadow-lg'>
           Panel de Administración
         </h1>
-        <button
+        <motion.button
+          whileHover={{
+            scale: 1.05,
+            boxShadow: '0 10px 25px rgba(239, 68, 68, 0.4)',
+          }}
+          whileTap={{ scale: 0.95 }}
           onClick={handleLogout}
           className='bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 cursor-pointer'
         >
           Cerrar sesión
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       {/* Message */}
-      {message && (
-        <div className='mb-6 p-4 bg-blue-600 text-white rounded-lg'>
-          {message}
-        </div>
-      )}
+      <AnimatePresence>
+        {message && (
+          <motion.div
+            variants={messageVariants}
+            initial='hidden'
+            animate='visible'
+            exit='exit'
+            className='mb-6 p-4 bg-blue-600 text-white rounded-lg shadow-lg'
+          >
+            {message}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Tabs */}
-      <div className='flex space-x-1 mb-8 bg-gray-800 rounded-lg p-1'>
-        <button
-          onClick={() => setActiveTab('turnos')}
-          className={`flex-1 py-3 px-4 rounded-md font-medium transition-colors cursor-pointer ${
-            activeTab === 'turnos'
-              ? 'bg-blue-600 text-white'
-              : 'text-gray-300 hover:text-white'
-          }`}
-        >
-          📋 Turnos
-        </button>
-        <button
-          onClick={() => setActiveTab('stats')}
-          className={`flex-1 py-3 px-4 rounded-md font-medium transition-colors cursor-pointer ${
-            activeTab === 'stats'
-              ? 'bg-blue-600 text-white'
-              : 'text-gray-300 hover:text-white'
-          }`}
-        >
-          📊 Estadísticas
-        </button>
-        <button
-          onClick={() => setActiveTab('config')}
-          className={`flex-1 py-3 px-4 rounded-md font-medium transition-colors cursor-pointer ${
-            activeTab === 'config'
-              ? 'bg-blue-600 text-white'
-              : 'text-gray-300 hover:text-white'
-          }`}
-        >
-          ⚙️ Configuración
-        </button>
-      </div>
+      {/* Tabs - ✅ IGUALES EN ANCHO con animaciones */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className='flex mb-8 bg-gray-800 rounded-xl p-2 shadow-inner'
+      >
+        {[
+          { id: 'turnos', label: '📋 Turnos', emoji: '📋' },
+          { id: 'stats', label: '📊 Estadísticas', emoji: '📊' },
+          { id: 'config', label: '⚙️ Configuración', emoji: '⚙️' },
+        ].map((tab, index) => (
+          <motion.button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`flex-1 py-4 px-6 rounded-lg font-semibold text-center transition-all duration-300 relative overflow-hidden ${
+              activeTab === tab.id
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'text-gray-300 hover:text-white hover:bg-gray-700'
+            }`}
+            whileHover={{
+              scale: activeTab === tab.id ? 1 : 1.02,
+              y: activeTab === tab.id ? 0 : -2,
+            }}
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.3,
+              delay: 0.3 + index * 0.1,
+              type: 'spring',
+              stiffness: 400,
+              damping: 25,
+            }}
+          >
+            {/* Efecto de brillo cuando está activo */}
+            {activeTab === tab.id && (
+              <motion.div
+                className='absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent'
+                initial={{ x: '-100%' }}
+                animate={{ x: '100%' }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  repeatDelay: 3,
+                  ease: 'easeInOut',
+                }}
+              />
+            )}
+
+            {/* Indicador activo */}
+            {activeTab === tab.id && (
+              <motion.div
+                layoutId='activeTab'
+                className='absolute bottom-0 left-0 right-0 h-1 bg-white rounded-full'
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              />
+            )}
+
+            <span className='relative z-10 flex items-center justify-center gap-2'>
+              <motion.span
+                animate={{
+                  scale: activeTab === tab.id ? 1.2 : 1,
+                  rotate: activeTab === tab.id ? [0, 10, -10, 0] : 0,
+                }}
+                transition={{
+                  duration: 0.3,
+                  rotate: { duration: 0.6, ease: 'easeInOut' },
+                }}
+              >
+                {tab.emoji}
+              </motion.span>
+              <span className='hidden sm:inline'>
+                {tab.label.replace(tab.emoji + ' ', '')}
+              </span>
+            </span>
+          </motion.button>
+        ))}
+      </motion.div>
 
       {/* Content */}
       <div className='min-h-[600px]'>
-        {activeTab === 'turnos' && (
-          <TurnosTable
-            turnos={turnos}
-            loading={loading}
-            onStatusUpdate={handleStatusUpdate}
-            onDelete={handleDeleteTurno}
-            onRefresh={loadTurnos}
-          />
-        )}
-        {activeTab === 'stats' && <AdminStats turnos={turnos} />}
-        {activeTab === 'config' && <ServiceConfig />}
+        <AnimatePresence mode='wait'>
+          <motion.div
+            key={activeTab}
+            variants={tabContentVariants}
+            initial='hidden'
+            animate='visible'
+            exit='exit'
+          >
+            {activeTab === 'turnos' && (
+              <TurnosTable
+                turnos={turnos}
+                loading={loading}
+                onStatusUpdate={handleStatusUpdate}
+                onDelete={handleDeleteTurno}
+                onRefresh={loadTurnos}
+              />
+            )}
+            {activeTab === 'stats' && <AdminStats turnos={turnos} />}
+            {activeTab === 'config' && <ServiceConfig />}
+          </motion.div>
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   )
 }

@@ -29,6 +29,7 @@ export default function ServiceConfig() {
     'Revisación técnica',
     'Otro',
     'Caja automática',
+    'Mecánica general',
   ]
 
   // Sub-servicios de Caja automática
@@ -39,6 +40,20 @@ export default function ServiceConfig() {
     'Cambio de solenoides',
     'Overhaul completo',
     'Reparaciones mayores',
+  ]
+
+  const mecanicaGeneralSubServices = [
+    'Correa de distribución',
+    'Frenos',
+    'Embrague',
+    'Suspensión',
+    'Motor',
+    'Bujías / Inyectores',
+    'Batería',
+    'Ruidos o vibraciones',
+    'Mantenimiento general',
+    'Dirección',
+    'Otro / No estoy seguro',
   ]
 
   // Cargar configuraciones desde Firebase
@@ -186,6 +201,38 @@ export default function ServiceConfig() {
         setMessage(
           '✅ Configuraciones de Caja automática guardadas exitosamente'
         )
+      } else if (selectedService === 'Mecánica general') {
+        // Guardar todas las configuraciones de sub-servicios de Mecánica general
+        console.log(
+          '💾 Guardando configuraciones de sub-servicios de Mecánica general...'
+        )
+
+        const subServiceConfigs = configs.filter(config =>
+          mecanicaGeneralSubServices.includes(config.serviceName)
+        )
+
+        for (const configToSave of subServiceConfigs) {
+          console.log(`🔄 Guardando ${configToSave.serviceName}...`)
+          const result = await updateServiceConfig(configToSave.serviceName, {
+            maxPerDay: configToSave.maxPerDay,
+            maxPerWeek: configToSave.maxPerWeek,
+            requiresDate: configToSave.requiresDate,
+            allowedDays: configToSave.allowedDays,
+            isActive: configToSave.isActive,
+            serviceName: configToSave.serviceName,
+          })
+
+          if (!result.success) {
+            throw new Error(
+              `Error guardando ${configToSave.serviceName}: ${result.message}`
+            )
+          }
+          console.log(`✅ ${configToSave.serviceName} guardado correctamente`)
+        }
+
+        setMessage(
+          '✅ Configuraciones de Mecánica general guardadas exitosamente'
+        )
       } else {
         // Guardar configuración de un servicio individual
         console.log(`💾 Guardando configuración para ${selectedService}...`)
@@ -235,13 +282,19 @@ export default function ServiceConfig() {
       'Revisación técnica',
       'Otro',
       ...cajaAutomaticaSubServices,
+      ...mecanicaGeneralSubServices,
     ].includes(config.serviceName)
 
     return (
       <div
         className={`bg-gray-800 p-6 rounded-xl border-l-4 ${
           isActiveService ? 'border-blue-500' : 'border-gray-600'
-        } ${selectedService === 'Caja automática' ? 'mb-0' : 'mb-6'}`}
+        } ${
+          selectedService === 'Caja automática' ||
+          selectedService === 'Mecánica general'
+            ? 'mb-0'
+            : 'mb-6'
+        }`}
       >
         <div className='flex justify-between items-start mb-4'>
           <h3
@@ -395,7 +448,7 @@ export default function ServiceConfig() {
         <h3 className='text-lg font-semibold text-white mb-4'>
           Selecciona un servicio para configurar
         </h3>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+        <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4'>
           {availableServices.map(service => {
             const config = configs.find(c => c.serviceName === service)
             const isSelected = selectedService === service
@@ -416,6 +469,7 @@ export default function ServiceConfig() {
                     {service === 'Revisación técnica' && '📋'}
                     {service === 'Otro' && '⚙️'}
                     {service === 'Caja automática' && '🔧'}
+                    {service === 'Mecánica general' && '🔩'}
                   </div>
                   <div className='font-semibold'>{service}</div>
                 </div>
@@ -449,13 +503,59 @@ export default function ServiceConfig() {
           </div>
 
           {selectedService === 'Caja automática' ? (
-            // Mostrar sub-servicios de Caja automática directamente como configuraciones
+            // Mostrar sub-servicios de Caja automática
             <div className='space-y-6'>
               <p className='text-gray-300 text-sm mb-4'>
                 Configuración de sub-servicios de Caja automática:
               </p>
               <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
                 {cajaAutomaticaSubServices.map(subService => {
+                  const subConfig = configs.find(
+                    c => c.serviceName === subService
+                  )
+                  if (subConfig) {
+                    return (
+                      <div key={subService}>
+                        {renderServiceConfig(subConfig)}
+                      </div>
+                    )
+                  } else {
+                    return (
+                      <div
+                        key={subService}
+                        className='bg-gray-800 p-6 rounded-xl border-l-4 border-gray-600'
+                      >
+                        <div className='flex justify-between items-start mb-4'>
+                          <h3 className='text-lg font-semibold text-gray-400'>
+                            {subService}
+                            <span className='ml-2 px-2 py-1 bg-gray-600 text-xs rounded-full text-gray-300'>
+                              SIN CONFIGURACIÓN
+                            </span>
+                          </h3>
+                        </div>
+                        <div className='text-center py-8 text-gray-400'>
+                          No se encontró configuración para {subService}.
+                          <button
+                            onClick={loadConfigs}
+                            className='block mx-auto mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors duration-200 cursor-pointer'
+                          >
+                            🔄 Recargar
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  }
+                })}
+              </div>
+            </div>
+          ) : selectedService === 'Mecánica general' ? (
+            // Mostrar sub-servicios de Mecánica general
+            <div className='space-y-6'>
+              <p className='text-gray-300 text-sm mb-4'>
+                Configuración de sub-servicios de Mecánica general:
+              </p>
+              <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+                {mecanicaGeneralSubServices.map(subService => {
                   const subConfig = configs.find(
                     c => c.serviceName === subService
                   )

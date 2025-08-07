@@ -13,6 +13,7 @@ export interface Turno {
   status: 'pending' | 'cancelled' | 'completed' | 'reprogrammed'
   createdAt: Date
   updatedAt: Date
+  cancelToken: string // Token único para cancelar el turno
 }
 
 export interface TurnoInput {
@@ -25,6 +26,7 @@ export interface TurnoInput {
   date: Date | null
   time: string
   message: string
+  cancelToken: string // Token único para cancelar el turno
 }
 
 export interface TurnoResponse {

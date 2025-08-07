@@ -156,6 +156,9 @@ export async function createTurno(
       }
     }
 
+    // Generar un token único para cancelar el turno
+    const cancelToken = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 16)
+
     // Preparar datos del turno
     const now = new Date()
     const turno: Omit<Turno, 'id'> = {
@@ -163,6 +166,7 @@ export async function createTurno(
       status: 'pending',
       createdAt: now,
       updatedAt: now,
+      cancelToken,
     }
 
     // Convertir fechas a Timestamp para Firestore
@@ -183,7 +187,7 @@ export async function createTurno(
 
     // Enviar email de confirmación solo al cliente (Bcc configurado en EmailJS)
     try {
-      await sendTurnoConfirmationToClient(turnoData)
+      await sendTurnoConfirmationToClient({ ...turnoData, cancelToken })
       console.log('✅ Email de confirmación enviado correctamente')
     } catch (emailError) {
       console.error('❌ Error enviando email de confirmación:', emailError)
@@ -494,6 +498,7 @@ export async function getAllTurnos(): Promise<Turno[]> {
         status: data.status,
         createdAt: data.createdAt.toDate(),
         updatedAt: data.updatedAt.toDate(),
+        cancelToken: data.cancelToken || '',
       })
     })
 
@@ -588,12 +593,14 @@ export async function getTurnosByDateRange(
         phone: data.phone,
         vehicle: data.vehicle,
         service: data.service,
+        subService: data.subService,
         date: data.date ? data.date.toDate() : null,
         time: data.time,
         message: data.message,
         status: data.status,
         createdAt: data.createdAt.toDate(),
         updatedAt: data.updatedAt.toDate(),
+        cancelToken: data.cancelToken || '',
       }
       turnos.push(turno)
     })

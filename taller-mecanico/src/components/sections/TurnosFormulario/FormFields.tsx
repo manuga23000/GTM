@@ -70,14 +70,23 @@ export default function FormFields({
   }
 
   return (
-    <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+    <>
+      <div className='mb-2 p-4 rounded-lg bg-blue-900/60 border border-blue-400 flex items-center gap-3 text-blue-200 text-sm shadow-sm'>
+        <svg xmlns='http://www.w3.org/2000/svg' className='h-6 w-6 text-blue-300' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 11c0-1.657-1.343-3-3-3s-3 1.343-3 3 1.343 3 3 3 3-1.343 3-3zm0 0c0-1.657 1.343-3 3-3s3 1.343 3 3-1.343 3-3 3-3-1.343-3-3zm0 0v6' /></svg>
+        <span><b>Todos los trabajos</b>, incluyendo caja automática y servicios especializados, los realizamos <b>nosotros mismos en nuestro taller</b>. <b>No tercerizamos</b> ningún trabajo. Su vehículo queda siempre en manos de nuestro equipo.</span>
+      </div>
+      <div className='mb-6 p-4 rounded-lg bg-green-900/50 border border-green-400 flex items-center gap-3 text-green-100 text-sm shadow-sm'>
+        <svg xmlns='http://www.w3.org/2000/svg' className='h-6 w-6 text-green-300' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M17 9V7a5 5 0 00-10 0v2a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2v-6a2 2 0 00-2-2zm-7-2a3 3 0 016 0v2H7V7zm0 4h10v6H7v-6z' /></svg>
+        <span>Para confirmar tu turno, te pedimos amablemente que envíes un comprobante de pago de <b>$20.000</b>. Este importe quedará a cuenta del trabajo o servicio a realizar. Esto nos ayuda a reservar tu lugar y brindarte un mejor servicio. ¡Gracias por tu comprensión!</span>
+      </div>
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
       {/* Nombre */}
       <div>
         <label
           htmlFor='name'
           className='block text-sm font-medium text-gray-300 mb-2'
         >
-          Nombre completo
+          Nombre completo <span className='text-red-500'>*</span>
         </label>
         <input
           type='text'
@@ -97,7 +106,7 @@ export default function FormFields({
           htmlFor='phone'
           className='block text-sm font-medium text-gray-300 mb-2'
         >
-          Teléfono
+          Teléfono <span className='text-red-500'>*</span>
         </label>
         <input
           type='tel'
@@ -117,7 +126,7 @@ export default function FormFields({
           htmlFor='email'
           className='block text-sm font-medium text-gray-300 mb-2'
         >
-          Email
+          Email <span className='text-red-500'>*</span>
         </label>
         <input
           type='email'
@@ -157,7 +166,7 @@ export default function FormFields({
           htmlFor='service'
           className='block text-sm font-medium text-gray-300 mb-2'
         >
-          Servicio requerido *
+          Servicio requerido <span className='text-red-500'>*</span>
         </label>
         <select
           id='service'
@@ -253,7 +262,7 @@ export default function FormFields({
           htmlFor='preferredDate'
           className='block text-sm font-medium text-gray-300 mb-2'
         >
-          Fecha
+          Fecha <span className='text-red-500'>*</span>
         </label>
 
         {/* Si es Programación de módulos, mostrar mensaje de WhatsApp */}
@@ -421,5 +430,6 @@ export default function FormFields({
         )}
       </div>
     </div>
+    </>
   )
 }

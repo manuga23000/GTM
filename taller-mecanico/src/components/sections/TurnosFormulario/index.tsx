@@ -24,6 +24,7 @@ export default function TurnosFormulario() {
     date: null,
     time: '',
     message: '',
+    cancelToken: '',
   })
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingDates, setIsLoadingDates] = useState(true)
@@ -362,6 +363,7 @@ export default function TurnosFormulario() {
           date: null,
           time: '',
           message: '',
+          cancelToken: '',
         })
         // Limpiar cache de disponibilidad
         setAvailabilityCache({})

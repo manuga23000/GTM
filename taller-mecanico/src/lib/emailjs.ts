@@ -66,6 +66,7 @@ export const sendTurnoConfirmationToClient = async (turnoData: {
   subService?: string
   date: Date | null
   message: string
+  cancelToken: string
 }) => {
   try {
     // ✅ FIX: INICIALIZAR EMAILJS ANTES DE USAR
@@ -90,6 +91,8 @@ export const sendTurnoConfirmationToClient = async (turnoData: {
       ? `${turnoData.service} - ${turnoData.subService}`
       : turnoData.service
 
+    const cancelUrl = `http://localhost:3000/cancelar-turno/${turnoData.cancelToken}`
+
     const templateParams = {
       to_name: turnoData.name,
       to_email: turnoData.email,
@@ -103,6 +106,7 @@ export const sendTurnoConfirmationToClient = async (turnoData: {
       taller_telefono: '+54 9 336 469-4921',
       taller_direccion: 'San Martín 1234, Resistencia, Chaco',
       taller_horarios: 'Lunes a Viernes de 8:00 a 16:00',
+      cancel_url: cancelUrl,
     }
 
     const response = await emailjs.send(

@@ -8,6 +8,7 @@ import { createTurno, checkAvailability } from '@/actions/turnos'
 import { TurnoInput, ServiceConfig } from '../../../actions/types/types'
 import { useRouter } from 'next/navigation'
 import FormFields from './FormFields'
+import MobileInputStyles from './MobileInputStyles'
 import SuccessModal from './SuccessModal'
 import DatePickerStyles from './DatePickerStyles'
 import { getAllServiceConfigs } from '@/actions/serviceconfig' // Nueva importación
@@ -421,6 +422,7 @@ export default function TurnosFormulario() {
             className='bg-gray-800 rounded-2xl p-8 shadow-2xl border border-gray-700'
           >
             <form onSubmit={handleSubmit} className='space-y-6'>
+              <MobileInputStyles />
               <FormFields
                 formData={formData}
                 availabilityCache={availabilityCache}

@@ -2,14 +2,12 @@ import { updateTurnoStatus } from '@/actions/turnos'
 import { getAllTurnos } from '@/actions/turnos'
 import { notFound } from 'next/navigation'
 
-interface CancelarTurnoPageProps {
-  params: { token: string }
-}
+
 
 // Página principal
-export default async function CancelarTurnoPage({
+export default async function Page({
   params,
-}: CancelarTurnoPageProps) {
+}: { params: { token: string } }) {
   const { token } = params
 
   // Buscar el turno por token

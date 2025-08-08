@@ -5,7 +5,7 @@ import WhatsAppButton from '@/components/layout/WhatsAppButton'
 
 export default function TurnosPage() {
   return (
-    <div className='min-h-screen bg-black text-white'>
+    <div className='min-h-screen bg-black text-white overflow-x-hidden'>
       <Navbar />
       <TurnosHero />
       <TurnosFormulario />

@@ -58,19 +58,17 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
   }
 
   const handleDeleteTurno = async (turnoId: string) => {
-    if (confirm('¿Estás seguro de que quieres eliminar este turno?')) {
-      try {
-        const result = await deleteTurno(turnoId)
-        if (result.success) {
-          setMessage(result.message)
-          await loadTurnos()
-          setTimeout(() => setMessage(''), 3000)
-        } else {
-          setMessage(result.message)
-        }
-      } catch (error) {
-        setMessage('Error al eliminar el turno')
+    try {
+      const result = await deleteTurno(turnoId)
+      if (result.success) {
+        setMessage(result.message)
+        await loadTurnos()
+        setTimeout(() => setMessage(''), 3000)
+      } else {
+        setMessage(result.message)
       }
+    } catch (error) {
+      setMessage('Error al eliminar el turno')
     }
   }
 
@@ -161,14 +159,18 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
         </h1>
         <motion.button
           whileHover={{
-            scale: 1.05,
+            scale: 1.1,
             boxShadow: '0 10px 25px rgba(239, 68, 68, 0.4)',
           }}
           whileTap={{ scale: 0.95 }}
           onClick={handleLogout}
-          className='bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 cursor-pointer'
+          aria-label='Cerrar sesión'
+          className='bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-colors duration-200 cursor-pointer flex items-center justify-center shadow-md'
         >
-          Cerrar sesión
+          {/* Icono logout */}
+          <svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' fill='none' viewBox='0 0 24 24'>
+            <path fill='currentColor' d='M16.3 7.7a1 1 0 0 1 1.4 1.4L16.4 11H21a1 1 0 1 1 0 2h-4.6l1.3 1.9a1 1 0 1 1-1.6 1.2l-3-4.2a1 1 0 0 1 0-1.2l3-4.2ZM13 3a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V5H7v14h5v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6Z'/>
+          </svg>
         </motion.button>
       </motion.div>
 

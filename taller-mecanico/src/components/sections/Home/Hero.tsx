@@ -68,7 +68,7 @@ export default function Hero() {
                 size='lg'
                 className='w-full sm:w-auto lg:w-auto'
               >
-                PROXIMAMENTE - SISTEMA DE TURNOS
+                RESERVAR TURNO
               </Button>
               <Link href='/servicios' className='w-full sm:w-auto lg:w-auto'>
                 <Button

@@ -396,7 +396,7 @@ export default function TurnosFormulario() {
   return (
     <>
       {/* Formulario Section */}
-      <section className='py-20 bg-gray-900'>
+      <section className='py-20 bg-gray-900 overflow-x-hidden'>
         <motion.div
           ref={sectionRef}
           variants={animations.staggerContainer}

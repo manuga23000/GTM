@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Turno } from '@/actions/types/types'
 
 interface TurnosTableProps {
@@ -77,23 +77,36 @@ export default function TurnosTable({
     })
   }
 
+  // Confirmar con el navegador antes de eliminar
   const handleDeleteClick = (turnoId: string) => {
-    setTurnoToDelete(turnoId)
-    setShowDeleteModal(true)
-  }
-
-  const handleConfirmDelete = () => {
-    if (turnoToDelete) {
-      onDelete(turnoToDelete)
-      setShowDeleteModal(false)
-      setTurnoToDelete(null)
+    if (window.confirm('¿Estás seguro de que quieres eliminar este turno? Esta acción no se puede deshacer.')) {
+      onDelete(turnoId)
     }
   }
 
-  const handleCancelDelete = () => {
-    setShowDeleteModal(false)
-    setTurnoToDelete(null)
-  }
+  // Bloquear scroll de fondo cuando el modal está abierto
+  useEffect(() => {
+    if (showDeleteModal) {
+      // Guardar posición actual
+      const scrollY = window.scrollY
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = '100%'
+    } else {
+      // Restaurar posición
+      const scrollY = document.body.style.top
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.width = ''
+      window.scrollTo(0, parseInt(scrollY || '0') * -1)
+    }
+
+    return () => {
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.width = ''
+    }
+  }, [showDeleteModal])
 
   if (loading) {
     return (
@@ -163,9 +176,69 @@ export default function TurnosTable({
         </div>
       </div>
 
-      {/* Table */}
-      <div className='overflow-x-auto'>
-        <table className='w-full bg-gray-800 rounded-lg overflow-hidden'>
+      {/* Cards mobile */}
+      <div className='flex flex-col gap-4 sm:hidden'>
+        {filteredTurnos.map(turno => (
+          <div
+            key={turno.id}
+            className='bg-gray-900 rounded-xl shadow-lg border border-gray-700 p-4 flex flex-col gap-2'
+          >
+            <div className='flex justify-between items-center'>
+              <div className='font-bold text-white text-lg'>{turno.name}</div>
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                  turno.status
+                )}`}
+              >
+                {getStatusText(turno.status)}
+              </span>
+            </div>
+            <div className='text-gray-400 text-xs'>
+              {new Date(turno.createdAt).toLocaleDateString('es-ES')}
+            </div>
+            <div className='text-white text-sm'>
+              {turno.email}{' '}
+              <span className='text-gray-400'>| {turno.phone}</span>
+            </div>
+            <div className='text-white text-sm'>
+              Vehículo: <span className='font-medium'>{turno.vehicle}</span>
+            </div>
+            <div className='text-white text-sm'>
+              Servicio: <span className='font-medium'>{turno.service}</span>
+              {turno.subService && (
+                <span className='text-gray-400'> / {turno.subService}</span>
+              )}
+            </div>
+            <div className='text-white text-sm'>
+              Fecha:{' '}
+              <span className='font-medium'>{formatDate(turno.date)}</span>
+            </div>
+            <div className='flex gap-2 mt-2'>
+              <select
+                value={turno.status}
+                onChange={e => onStatusUpdate(turno.id!, e.target.value as any)}
+                className='px-2 py-1 rounded bg-gray-700 border border-gray-600 text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer flex-1'
+              >
+                <option value='pending'>Pendiente</option>
+                <option value='cancelled'>Cancelado</option>
+                <option value='completed'>Completado</option>
+                <option value='reprogrammed'>Reprogramado</option>
+              </select>
+              <button
+                onClick={() => handleDeleteClick(turno.id!)}
+                className='px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs transition-colors cursor-pointer flex items-center justify-center'
+                aria-label='Eliminar turno'
+              >
+                🗑️
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Table desktop */}
+      <div className='overflow-x-auto w-full rounded-lg shadow-lg border border-gray-700 hidden sm:block'>
+        <table className='min-w-full bg-gray-900 rounded-lg overflow-hidden'>
           <thead className='bg-gray-900'>
             <tr>
               <th className='px-4 py-3 text-left text-white font-medium'>
@@ -268,34 +341,7 @@ export default function TurnosTable({
         </div>
       )}
 
-      {/* Delete Modal */}
-      {showDeleteModal && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-          <div className='bg-gray-800 p-6 rounded-xl max-w-md w-full mx-4'>
-            <h3 className='text-xl font-bold text-white mb-4'>
-              Confirmar eliminación
-            </h3>
-            <p className='text-gray-300 mb-6'>
-              ¿Estás seguro de que quieres eliminar este turno? Esta acción no
-              se puede deshacer.
-            </p>
-            <div className='flex space-x-4'>
-              <button
-                onClick={handleConfirmDelete}
-                className='flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 cursor-pointer'
-              >
-                Eliminar
-              </button>
-              <button
-                onClick={handleCancelDelete}
-                className='flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 cursor-pointer'
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   )
 }

@@ -133,31 +133,22 @@ export default function BookingSection() {
           {/* Botón y texto adicional */}
           <motion.div variants={animations.fadeInUp} className='mt-12'>
             <Button variant='primary' size='xl'>
-              PRÓXIMAMENTE - SISTEMA DE TURNOS
+              RESERVAR TURNO
             </Button>
 
             <motion.p
               variants={animations.fadeInUp}
               className='text-gray-400 mt-4 text-sm'
             >
-              Mientras tanto, contáctanos por{' '}
+              Ya podés reservar tu turno online desde el sistema. Si tenés dudas, también podés contactarnos por{' '}
               <Link
                 href='https://wa.me/5493364694921'
                 target='_blank'
                 rel='noopener noreferrer'
               >
-                <motion.span
-                  whileHover={{
-                    color: '#10b981',
-                    scale: 1.05,
-                    transition: { duration: 0.4, ease: 'easeOut' as const },
-                  }}
-                  className='text-green-500 font-semibold cursor-pointer'
-                >
-                  WhatsApp
-                </motion.span>
-              </Link>{' '}
-              para coordinar tu cita
+                WhatsApp
+              </Link>
+              .
             </motion.p>
           </motion.div>
         </motion.div>

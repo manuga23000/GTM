@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Turno } from '@/actions/types/types'
 
 interface TurnosTableProps {
@@ -22,8 +22,6 @@ export default function TurnosTable({
 }: TurnosTableProps) {
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [turnoToDelete, setTurnoToDelete] = useState<string | null>(null)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -84,29 +82,6 @@ export default function TurnosTable({
     }
   }
 
-  // Bloquear scroll de fondo cuando el modal está abierto
-  useEffect(() => {
-    if (showDeleteModal) {
-      // Guardar posición actual
-      const scrollY = window.scrollY
-      document.body.style.position = 'fixed'
-      document.body.style.top = `-${scrollY}px`
-      document.body.style.width = '100%'
-    } else {
-      // Restaurar posición
-      const scrollY = document.body.style.top
-      document.body.style.position = ''
-      document.body.style.top = ''
-      document.body.style.width = ''
-      window.scrollTo(0, parseInt(scrollY || '0') * -1)
-    }
-
-    return () => {
-      document.body.style.position = ''
-      document.body.style.top = ''
-      document.body.style.width = ''
-    }
-  }, [showDeleteModal])
 
   if (loading) {
     return (
@@ -216,7 +191,7 @@ export default function TurnosTable({
             <div className='flex gap-2 mt-2'>
               <select
                 value={turno.status}
-                onChange={e => onStatusUpdate(turno.id!, e.target.value as any)}
+                onChange={e => onStatusUpdate(turno.id!, e.target.value as 'pending' | 'cancelled' | 'completed' | 'reprogrammed')}
                 className='px-2 py-1 rounded bg-gray-700 border border-gray-600 text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer flex-1'
               >
                 <option value='pending'>Pendiente</option>
@@ -312,7 +287,7 @@ export default function TurnosTable({
                     <select
                       value={turno.status}
                       onChange={e =>
-                        onStatusUpdate(turno.id!, e.target.value as any)
+                        onStatusUpdate(turno.id!, e.target.value as 'pending' | 'cancelled' | 'completed' | 'reprogrammed')
                       }
                       className='px-2 py-1 rounded bg-gray-700 border border-gray-600 text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer'
                     >

@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import Button from '@/components/ui/Button'
@@ -63,7 +63,7 @@ export default function TurnosFormulario() {
   }
 
   // Función para cargar disponibilidad
-  const loadAvailability = async (specificService?: string) => {
+  const loadAvailability = useCallback(async (specificService?: string) => {
     setIsLoadingDates(true)
     const newCache: Record<string, boolean> = { ...availabilityCache }
 
@@ -212,16 +212,16 @@ export default function TurnosFormulario() {
 
     setAvailabilityCache(newCache)
     setIsLoadingDates(false)
-  }
+  }, [])
 
   // Cargar configuraciones y disponibilidad al montar el componente
   useEffect(() => {
     const initializeData = async () => {
-      await loadServiceConfigs()
-      await loadAvailability()
-    }
-    initializeData()
-  }, [])
+      await loadServiceConfigs();
+      await loadAvailability();
+    };
+    initializeData();
+  }, [loadAvailability]);
 
   // Recargar disponibilidad cuando cambie el servicio principal
   useEffect(() => {

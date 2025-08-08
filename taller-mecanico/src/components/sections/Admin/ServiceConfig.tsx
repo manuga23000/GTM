@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type { ServiceConfig } from '@/actions/types/types'
 import {
   getAllServiceConfigs,
@@ -57,7 +57,7 @@ export default function ServiceConfig() {
   ]
 
   // Cargar configuraciones desde Firebase
-  const loadConfigs = async () => {
+  const loadConfigs = useCallback(async () => {
     try {
       setLoading(true)
       console.log('🔄 Cargando configuraciones desde Firebase...')
@@ -107,15 +107,15 @@ export default function ServiceConfig() {
     } finally {
       setLoading(false)
     }
-  }
+  }, []);
 
   // Cargar configuraciones al montar el componente
   useEffect(() => {
     loadConfigs()
-  }, [])
+  }, [loadConfigs])
 
   // Actualizar una configuración específica
-  const updateConfig = (serviceName: string, field: string, value: any) => {
+  const updateConfig = (serviceName: string, field: string, value: unknown) => {
     setConfigs(prev =>
       prev.map(config =>
         config.serviceName === serviceName
@@ -266,7 +266,7 @@ export default function ServiceConfig() {
       }
 
       setTimeout(() => setMessage(''), 3000)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ Error guardando configuración:', error)
       setMessage(`❌ Error: ${error.message}`)
       setTimeout(() => setMessage(''), 5000)
@@ -450,7 +450,7 @@ export default function ServiceConfig() {
         </h3>
         <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4'>
           {availableServices.map(service => {
-            const config = configs.find(c => c.serviceName === service)
+            // const config = configs.find(c => c.serviceName === service)
             const isSelected = selectedService === service
 
             return (

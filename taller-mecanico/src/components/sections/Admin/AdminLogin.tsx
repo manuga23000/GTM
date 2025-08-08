@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { getAuth, signInWithEmailAndPassword, User } from 'firebase/auth'
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
 import { app } from '@/lib/firebase'
 import React from 'react'
 
@@ -18,7 +18,7 @@ export default function AdminLogin() {
     const auth = getAuth(app)
     try {
       await signInWithEmailAndPassword(auth, email, password)
-    } catch (err: any) {
+    } catch {
       setError('Email o contraseña incorrectos.')
     } finally {
       setLoading(false)

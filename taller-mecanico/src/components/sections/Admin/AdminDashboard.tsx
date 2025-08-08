@@ -1,5 +1,5 @@
 'use client'
-import { getAuth, signOut, User } from 'firebase/auth'
+import { getAuth, signOut } from 'firebase/auth'
 import { app } from '@/lib/firebase'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -9,11 +9,8 @@ import TurnosTable from './TurnosTable'
 import AdminStats from './AdminStats'
 import ServiceConfig from './ServiceConfig'
 
-interface AdminDashboardProps {
-  user: User
-}
-
-export default function AdminDashboard({ user }: AdminDashboardProps) {
+export default function AdminDashboard() {
+  
   const [turnos, setTurnos] = useState<Turno[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'turnos' | 'stats' | 'config'>(
@@ -203,7 +200,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
         ].map((tab, index) => (
           <motion.button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
+            onClick={() => setActiveTab(tab.id as 'turnos' | 'stats' | 'config')}
             className={`flex-1 py-4 px-6 rounded-lg font-semibold text-center transition-all duration-300 relative overflow-hidden ${
               activeTab === tab.id
                 ? 'bg-blue-600 text-white shadow-lg'

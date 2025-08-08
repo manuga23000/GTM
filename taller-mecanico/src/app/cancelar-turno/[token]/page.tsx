@@ -1,14 +1,15 @@
 import { updateTurnoStatus } from '@/actions/turnos'
 import { getAllTurnos } from '@/actions/turnos'
-import { notFound } from 'next/navigation'
 
 
 
 // Página principal
 export default async function Page({
   params,
-}: { params: { token: string } }) {
-  const { token } = params
+}: {
+  params: Promise<{ token: string }>
+}) {
+  const { token } = await params
 
   // Buscar el turno por token
   const turnos = await getAllTurnos()

@@ -21,7 +21,7 @@ export default function AdminPage() {
   return (
     <div className='min-h-screen bg-black text-white'>
       <AdminHero>
-        {!user ? <AdminLogin /> : <AdminDashboard user={user} />}
+        {!user ? <AdminLogin /> : <AdminDashboard />}
       </AdminHero>
     </div>
   )

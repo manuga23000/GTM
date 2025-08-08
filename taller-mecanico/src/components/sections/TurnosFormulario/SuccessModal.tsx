@@ -4,13 +4,11 @@ import { motion } from 'framer-motion'
 interface SuccessModalProps {
   isOpen: boolean
   onGoHome: () => void
-  onNewTurno: () => void
 }
 
 export default function SuccessModal({
   isOpen,
-  onGoHome,
-  onNewTurno,
+  onGoHome
 }: SuccessModalProps) {
   if (!isOpen) return null
 

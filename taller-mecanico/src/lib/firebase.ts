@@ -16,6 +16,5 @@ console.log('🔥 Firebase inicializado correctamente')
 // Inicializar Firebase
 const app = initializeApp(firebaseConfig)
 
-// Inicializar Firestore
 export const db = getFirestore(app)
 export { app }

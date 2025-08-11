@@ -59,10 +59,6 @@ async function getServiceAvailabilityConfig(serviceName: string): Promise<{
     try {
       const dynamicConfig = await getServiceConfig(serviceName)
       if (dynamicConfig && dynamicConfig.isActive) {
-        console.log(
-          `🔄 Usando configuración dinámica para ${serviceName}:`,
-          dynamicConfig
-        )
         return {
           maxPerDay: dynamicConfig.maxPerDay,
           maxPerWeek: dynamicConfig.maxPerWeek,
@@ -95,10 +91,6 @@ async function getServiceAvailabilityConfig(serviceName: string): Promise<{
 
   const staticConfig = staticConfigs[serviceName]
   if (staticConfig) {
-    console.log(
-      `📋 Usando configuración estática para ${serviceName}:`,
-      staticConfig
-    )
     return staticConfig
   }
 
@@ -157,7 +149,9 @@ export async function createTurno(
     }
 
     // Generar un token único para cancelar el turno
-    const cancelToken = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 16)
+    const cancelToken = crypto.randomUUID
+      ? crypto.randomUUID()
+      : Math.random().toString(36).substr(2, 16)
 
     // Preparar datos del turno
     const now = new Date()
@@ -188,7 +182,6 @@ export async function createTurno(
     // Enviar email de confirmación solo al cliente (Bcc configurado en EmailJS)
     try {
       await sendTurnoConfirmationToClient({ ...turnoData, cancelToken })
-      console.log('✅ Email de confirmación enviado correctamente')
     } catch (emailError) {
       console.error('❌ Error enviando email de confirmación:', emailError)
     }
@@ -217,14 +210,11 @@ export async function checkAvailability(
   service: string
 ): Promise<AvailabilityCheck> {
   try {
-    console.log(`🔍 CHECKING AVAILABILITY: ${date} para ${service}`)
-
     // Obtener configuración del servicio (dinámico desde Firebase)
     const serviceConfig = await getServiceAvailabilityConfig(service)
 
     // Si no hay configuración para el servicio, siempre está disponible
     if (!serviceConfig) {
-      console.log(`❌ No config for service: ${service}`)
       return {
         date,
         service,
@@ -234,8 +224,6 @@ export async function checkAvailability(
       }
     }
 
-    console.log(`⚙️ Service config:`, serviceConfig)
-
     // Verificar si el día está permitido para este servicio
     if (serviceConfig.allowedDays) {
       const [year, month, day] = date.split('-').map(Number)
@@ -244,7 +232,6 @@ export async function checkAvailability(
       const dayNumber = dayOfWeek === 0 ? 7 : dayOfWeek
 
       if (!serviceConfig.allowedDays.includes(dayNumber)) {
-        console.log(`❌ Día ${dayNumber} no permitido para ${service}`)
         return {
           date,
           service,
@@ -328,10 +315,6 @@ export async function checkAvailability(
       const dailySnapshot = await getDocs(dailyQuery)
       dailyUsed = dailySnapshot.size
       dailyAvailable = dailyUsed < dailyTotal
-
-      console.log(
-        `📊 Límite DIARIO: ${dailyUsed}/${dailyTotal} - Disponible: ${dailyAvailable}`
-      )
     }
 
     // 2. VERIFICAR LÍMITE SEMANAL (si existe)
@@ -409,20 +392,10 @@ export async function checkAvailability(
       const weeklySnapshot = await getDocs(weeklyQuery)
       weeklyUsed = weeklySnapshot.size
       weeklyAvailable = weeklyUsed < weeklyTotal
-
-      console.log(
-        `📊 Límite SEMANAL: ${weeklyUsed}/${weeklyTotal} - Disponible: ${weeklyAvailable}`
-      )
     }
 
     // 3. RESULTADO FINAL: Ambos límites deben cumplirse
     const finalAvailable = dailyAvailable && weeklyAvailable
-
-    console.log(`✅ DISPONIBILIDAD FINAL: ${finalAvailable}`)
-    console.log(`   - Diario: ${dailyAvailable} (${dailyUsed}/${dailyTotal})`)
-    console.log(
-      `   - Semanal: ${weeklyAvailable} (${weeklyUsed}/${weeklyTotal})`
-    )
 
     // Devolver información del límite más restrictivo
     let totalSlots = 0

@@ -48,10 +48,23 @@ export default function TurnosFormulario() {
   // Cargar configuraciones de servicios
   const loadServiceConfigs = async () => {
     try {
+      console.log(
+        '🔥 Firebase Status Check - Intentando conectar a Firebase para cargar configuraciones de servicios...'
+      )
       const configs = await getAllServiceConfigs()
       setServiceConfigs(configs)
+      console.log(
+        '✅ Firebase Status Check - Firebase funcionando correctamente. Configuraciones cargadas:',
+        configs.length
+      )
     } catch (error) {
-      console.error('Error loading service configs:', error)
+      console.error(
+        '❌ Firebase Status Check - Error conectando a Firebase:',
+        error
+      )
+      console.error(
+        '❌ Firebase Status Check - Firebase NO está funcionando correctamente'
+      )
     }
   }
 
@@ -106,6 +119,9 @@ export default function TurnosFormulario() {
     }
 
     try {
+      console.log(
+        '🔥 Firebase Status Check - Verificando disponibilidad en Firebase...'
+      )
       const availabilityPromises: Promise<{
         dateString: string
         service: string
@@ -208,18 +224,26 @@ export default function TurnosFormulario() {
       }
 
       const results = await Promise.all(availabilityPromises)
-
-      // Guardar resultados en cache usando una clave compuesta
-      results.forEach(({ dateString, service, available }) => {
-        const cacheKey = `${dateString}-${service}`
-        newCache[cacheKey] = available
+      results.forEach(result => {
+        const key = `${result.dateString}-${result.service}`
+        newCache[key] = result.available
       })
-    } catch (error) {
-      console.error('❌ Error loading availability:', error)
-    }
 
-    setAvailabilityCache(newCache)
-    setIsLoadingDates(false)
+      setAvailabilityCache(newCache)
+      console.log(
+        '✅ Firebase Status Check - Disponibilidad cargada correctamente desde Firebase'
+      )
+    } catch (error) {
+      console.error(
+        '❌ Firebase Status Check - Error cargando disponibilidad desde Firebase:',
+        error
+      )
+      console.error(
+        '❌ Firebase Status Check - Firebase NO está funcionando correctamente para disponibilidad'
+      )
+    } finally {
+      setIsLoadingDates(false)
+    }
   }, [])
 
   // Cargar configuraciones y disponibilidad al montar el componente
@@ -287,111 +311,120 @@ export default function TurnosFormulario() {
     setIsLoading(true)
     setStatus({ type: null, message: '' })
 
-    // Validación básica - Solo servicio obligatorio para testing
-    if (!formData.service) {
-      setStatus({
-        type: 'error',
-        message: 'Por favor, selecciona un servicio.',
-      })
-      setIsLoading(false)
-      return
-    }
-
-    // Para Programación de módulos, mostrar mensaje especial pero permitir envío
-    if (formData.service === 'Programación de módulos') {
-      setStatus({
-        type: 'success',
-        message:
-          'Gracias por tu interés. Te recomendamos contactarnos por WhatsApp para coordinar este servicio de manera más eficiente.',
-      })
-      setIsLoading(false)
-      return
-    }
-
-    // Validación específica para servicios que requieren fecha
-    const servicesRequiringDate = [
-      'Diagnóstico',
-      'Revisación técnica',
-      'Otro',
-      'Overhaul completo',
-      'Reparaciones mayores',
-      'Cambio de embrague',
-      'Reparación de motor',
-    ]
-    const serviceToCheck =
-      (formData.service === 'Caja automática' ||
-        formData.service === 'Mecánica general') &&
-      formData.subService
-        ? formData.subService
-        : formData.service
-
-    if (servicesRequiringDate.includes(serviceToCheck) && !formData.date) {
-      setStatus({
-        type: 'error',
-        message: `Para el servicio de ${serviceToCheck} debes seleccionar una fecha.`,
-      })
-      setIsLoading(false)
-      return
-    }
-
-    // Validación específica para caja automática
-    if (formData.service === 'Caja automática' && !formData.subService) {
-      setStatus({
-        type: 'error',
-        message:
-          'Para el servicio de Caja automática debes seleccionar el tipo de servicio.',
-      })
-      setIsLoading(false)
-      return
-    }
-
-    // Validación específica para mecánica general
-    if (formData.service === 'Mecánica general' && !formData.subService) {
-      setStatus({
-        type: 'error',
-        message:
-          'Para el servicio de Mecánica general debes seleccionar el tipo de servicio.',
-      })
-      setIsLoading(false)
-      return
-    }
-
+    console.log(
+      '🔥 Firebase Status Check - Intentando crear turno en Firebase...'
+    )
     try {
-      const result = await createTurno(formData)
-
-      if (result.success) {
-        setShowSuccessModal(true)
-        // Limpiar el formulario
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          vehicle: '',
-          service: '',
-          subService: '',
-          date: null,
-          time: '',
-          message: '',
-          cancelToken: '',
-        })
-        // Limpiar cache de disponibilidad
-        setAvailabilityCache({})
-      } else {
+      // Validación básica - Solo servicio obligatorio para testing
+      if (!formData.service) {
         setStatus({
           type: 'error',
-          message: result.message,
+          message: 'Por favor, selecciona un servicio.',
         })
+        setIsLoading(false)
+        return
       }
-    } catch {
-      setStatus({
-        type: 'error',
-        message: 'Error al enviar la solicitud. Intenta nuevamente.',
-      })
-    } finally {
+
+      if (formData.service === 'Programación de módulos') {
+        setStatus({
+          type: 'success',
+          message:
+            'Gracias por tu interés. Te recomendamos contactarnos por WhatsApp para coordinar este servicio de manera más eficiente.',
+        })
+        setIsLoading(false)
+        return
+      }
+
+      const servicesRequiringDate = [
+        'Diagnóstico',
+        'Revisación técnica',
+        'Otro',
+        'Overhaul completo',
+        'Reparaciones mayores',
+        'Cambio de embrague',
+        'Reparación de motor',
+      ]
+      const serviceToCheck =
+        (formData.service === 'Caja automática' ||
+          formData.service === 'Mecánica general') &&
+        formData.subService
+          ? formData.subService
+          : formData.service
+
+      if (servicesRequiringDate.includes(serviceToCheck) && !formData.date) {
+        setStatus({
+          type: 'error',
+          message: `Para el servicio de ${serviceToCheck} debes seleccionar una fecha.`,
+        })
+        setIsLoading(false)
+        return
+      }
+
+      if (formData.service === 'Caja automática' && !formData.subService) {
+        setStatus({
+          type: 'error',
+          message:
+            'Para el servicio de Caja automática debes seleccionar el tipo de servicio.',
+        })
+        setIsLoading(false)
+        return
+      }
+
+      if (formData.service === 'Mecánica general' && !formData.subService) {
+        setStatus({
+          type: 'error',
+          message:
+            'Para el servicio de Mecánica general debes seleccionar el tipo de servicio.',
+        })
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        const result = await createTurno(formData)
+        console.log(
+          '✅ Firebase Status Check - Turno creado exitosamente en Firebase'
+        )
+
+        if (result.success) {
+          setShowSuccessModal(true)
+          setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            vehicle: '',
+            service: '',
+            subService: '',
+            date: null,
+            time: '',
+            message: '',
+            cancelToken: '',
+          })
+          setAvailabilityCache({})
+        } else {
+          setStatus({
+            type: 'error',
+            message: result.message,
+          })
+        }
+      } catch (error) {
+        console.error(
+          '❌ Firebase Status Check - Error creando turno en Firebase:',
+          error
+        )
+        setStatus({
+          type: 'error',
+          message:
+            'Error al enviar el turno. Por favor, intenta nuevamente o contacta por teléfono.',
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    } catch (error) {
+      console.error('❌ Error general en handleSubmit:', error)
       setIsLoading(false)
     }
   }
-
   const handleGoHome = () => {
     router.push('/')
   }

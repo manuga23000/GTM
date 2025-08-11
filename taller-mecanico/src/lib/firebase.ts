@@ -7,7 +7,7 @@ console.log(
   '🔑 All NEXT_PUBLIC vars:',
   Object.keys(process.env)
     .filter(key => key.startsWith('NEXT_PUBLIC'))
-    .reduce((obj, key) => {
+    .reduce<Record<string, string>>((obj, key) => {
       obj[key] = process.env[key] ? '✅ SET' : '❌ UNDEFINED'
       return obj
     }, {})

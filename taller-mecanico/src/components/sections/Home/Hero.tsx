@@ -63,13 +63,15 @@ export default function Hero() {
               variants={animations.fadeInUp}
               className='flex flex-col sm:flex-row lg:flex-row gap-4 justify-center lg:justify-start'
             >
-              <Button
-                variant='primary'
-                size='lg'
-                className='w-full sm:w-auto lg:w-auto'
-              >
-                RESERVAR TURNO
-              </Button>
+              <Link href='/turnos' className='w-full sm:w-auto lg:w-auto'>
+                <Button
+                  variant='primary'
+                  size='lg'
+                  className='w-full sm:w-auto lg:w-auto'
+                >
+                  RESERVAR TURNO
+                </Button>
+              </Link>
               <Link href='/servicios' className='w-full sm:w-auto lg:w-auto'>
                 <Button
                   variant='outline'

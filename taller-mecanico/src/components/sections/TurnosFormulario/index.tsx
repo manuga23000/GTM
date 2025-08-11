@@ -212,7 +212,7 @@ export default function TurnosFormulario() {
 
     setAvailabilityCache(newCache)
     setIsLoadingDates(false)
-  }, [availabilityCache])
+  }, [])
 
   // Cargar configuraciones y disponibilidad al montar el componente
   useEffect(() => {
@@ -241,7 +241,7 @@ export default function TurnosFormulario() {
       // Para otros servicios, limpiar cache
       setAvailabilityCache({})
     }
-  }, [formData.service, formData.subService, loadAvailability])
+  }, [formData.service, formData.subService])
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -388,6 +388,10 @@ export default function TurnosFormulario() {
     router.push('/')
   }
 
+  const handleNewTurno = () => {
+    setShowSuccessModal(false)
+    setStatus({ type: null, message: '' })
+  }
 
   return (
     <>
@@ -488,10 +492,10 @@ export default function TurnosFormulario() {
       </section>
 
       <SuccessModal
-  isOpen={showSuccessModal}
-  onGoHome={handleGoHome}
-/>
-      
+        isOpen={showSuccessModal}
+        onGoHome={handleGoHome}
+        onNewTurno={handleNewTurno}
+      />
     </>
   )
 }

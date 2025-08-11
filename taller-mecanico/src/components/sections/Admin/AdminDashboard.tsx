@@ -10,6 +10,7 @@ import AdminStats from './AdminStats'
 import ServiceConfig from './ServiceConfig'
 
 export default function AdminDashboard() {
+  
   const [turnos, setTurnos] = useState<Turno[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'turnos' | 'stats' | 'config'>(
@@ -48,7 +49,7 @@ export default function AdminDashboard() {
       } else {
         setMessage(result.message)
       }
-    } catch {
+    } catch (error) {
       setMessage('Error al actualizar el turno')
     }
   }
@@ -63,7 +64,7 @@ export default function AdminDashboard() {
       } else {
         setMessage(result.message)
       }
-    } catch {
+    } catch (error) {
       setMessage('Error al eliminar el turno')
     }
   }
@@ -79,7 +80,7 @@ export default function AdminDashboard() {
       opacity: 1,
       transition: {
         duration: 0.3,
-        ease: [0.4, 0.0, 0.2, 1] as [number, number, number, number],
+        ease: 'easeInOut',
       },
     },
   }
@@ -96,6 +97,7 @@ export default function AdminDashboard() {
       scale: 1,
       transition: {
         duration: 0.4,
+        ease: 'easeOut',
       },
     },
     exit: {
@@ -104,6 +106,7 @@ export default function AdminDashboard() {
       scale: 0.95,
       transition: {
         duration: 0.2,
+        ease: 'easeIn',
       },
     },
   }
@@ -118,11 +121,19 @@ export default function AdminDashboard() {
       opacity: 1,
       y: 0,
       scale: 1,
+      transition: {
+        type: 'spring',
+        stiffness: 400,
+        damping: 25,
+      },
     },
     exit: {
       opacity: 0,
       y: -30,
       scale: 0.9,
+      transition: {
+        duration: 0.3,
+      },
     },
   }
 
@@ -154,17 +165,8 @@ export default function AdminDashboard() {
           className='bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-colors duration-200 cursor-pointer flex items-center justify-center shadow-md'
         >
           {/* Icono logout */}
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            width='22'
-            height='22'
-            fill='none'
-            viewBox='0 0 24 24'
-          >
-            <path
-              fill='currentColor'
-              d='M16.3 7.7a1 1 0 0 1 1.4 1.4L16.4 11H21a1 1 0 1 1 0 2h-4.6l1.3 1.9a1 1 0 1 1-1.6 1.2l-3-4.2a1 1 0 0 1 0-1.2l3-4.2ZM13 3a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V5H7v14h5v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6Z'
-            />
+          <svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' fill='none' viewBox='0 0 24 24'>
+            <path fill='currentColor' d='M16.3 7.7a1 1 0 0 1 1.4 1.4L16.4 11H21a1 1 0 1 1 0 2h-4.6l1.3 1.9a1 1 0 1 1-1.6 1.2l-3-4.2a1 1 0 0 1 0-1.2l3-4.2ZM13 3a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V5H7v14h5v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6Z'/>
           </svg>
         </motion.button>
       </motion.div>
@@ -177,11 +179,6 @@ export default function AdminDashboard() {
             initial='hidden'
             animate='visible'
             exit='exit'
-            transition={{
-              type: 'spring',
-              stiffness: 400,
-              damping: 25,
-            }}
             className='mb-6 p-4 bg-blue-600 text-white rounded-lg shadow-lg'
           >
             {message}
@@ -203,9 +200,7 @@ export default function AdminDashboard() {
         ].map((tab, index) => (
           <motion.button
             key={tab.id}
-            onClick={() =>
-              setActiveTab(tab.id as 'turnos' | 'stats' | 'config')
-            }
+            onClick={() => setActiveTab(tab.id as 'turnos' | 'stats' | 'config')}
             className={`flex-1 py-4 px-6 rounded-lg font-semibold text-center transition-all duration-300 relative overflow-hidden ${
               activeTab === tab.id
                 ? 'bg-blue-600 text-white shadow-lg'

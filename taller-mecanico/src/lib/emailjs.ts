@@ -34,6 +34,13 @@ export const sendEmail = async (formData: {
       to_name: 'GTM Taller Mecánico',
     }
 
+    // Al inicio de sendTurnoConfirmationToClient, agrega:
+    console.log('🔍 EmailJS Debug:', {
+      serviceId: emailjsConfig.serviceId || '❌ MISSING',
+      turnoTemplateId: emailjsConfig.turnoTemplateId || '❌ MISSING',
+      publicKey: emailjsConfig.publicKey || '❌ MISSING',
+    })
+
     const response = await emailjs.send(
       emailjsConfig.serviceId,
       emailjsConfig.templateId,

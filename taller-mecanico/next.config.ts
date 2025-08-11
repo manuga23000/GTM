@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
       process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
     NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 
-    // EmailJS
+    // EmailJS - ✅ TODAS las variables
     NEXT_PUBLIC_EMAILJS_SERVICE_ID: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
     NEXT_PUBLIC_EMAILJS_TEMPLATE_ID:
       process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,

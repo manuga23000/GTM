@@ -58,6 +58,14 @@ export default function FormFields({
   onDateChange,
   getServiceConfig, // Nueva prop
 }: FormFieldsProps) {
+  // Función para generar fecha local consistente (evita problemas de zona horaria)
+  const getLocalDateString = (date: Date): string => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
   // Función para verificar si un día está permitido para un servicio
   const isDayAllowedForService = (date: Date, serviceName: string): boolean => {
     const config = getServiceConfig(serviceName)
@@ -361,7 +369,7 @@ export default function FormFields({
                   locale='es-custom'
                   calendarStartDay={0}
                   filterDate={date => {
-                    const dateString = date.toISOString().split('T')[0]
+                    const dateString = getLocalDateString(date) // Usar función local consistente
 
                     // Para Diagnóstico, verificar disponibilidad específica
                     if (formData.service === 'Diagnóstico') {

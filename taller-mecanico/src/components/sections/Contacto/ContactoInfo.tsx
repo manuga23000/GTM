@@ -81,7 +81,7 @@ export default function ContactoInfo() {
             variants={animations.fadeInUp}
             className='text-sm md:text-base font-medium break-words text-center'
           >
-            contacto@mecanicagrandoli.com
+            gtmsn291@gmail.com
           </motion.span>
         </motion.div>
         {/* Dirección */}

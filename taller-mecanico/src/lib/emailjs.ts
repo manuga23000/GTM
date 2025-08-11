@@ -4,11 +4,14 @@ import emailjs from '@emailjs/browser'
 // Configuración de EmailJS
 export const emailjsConfig = {
   serviceId: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || '',
-  templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || '', // Para contacto
+  templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || '',
   turnoTemplateId:
-    process.env.NEXT_PUBLIC_EMAILJS_TURNO_CLIENTE_TEMPLATE_ID || '', // Para turnos
+    process.env.NEXT_PUBLIC_EMAILJS_TURNO_CLIENTE_TEMPLATE_ID || '', // ⚠️ Esta es la que falla
   publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC || '',
 }
+
+// 🔍 DEBUG GLOBAL
+console.log('📧 EmailJS Config Initial:', emailjsConfig)
 
 // Inicializar EmailJS (opcional, solo si lo usás en el frontend)
 export const initEmailJS = () => {
@@ -76,6 +79,16 @@ export const sendTurnoConfirmationToClient = async (turnoData: {
   cancelToken: string
 }) => {
   try {
+    console.log('🔍 EmailJS Variables Debug:', {
+      serviceId: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || '❌ MISSING',
+      templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || '❌ MISSING',
+      turnoTemplateId:
+        process.env.NEXT_PUBLIC_EMAILJS_TURNO_CLIENTE_TEMPLATE_ID ||
+        '❌ MISSING',
+      publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC || '❌ MISSING',
+    })
+
+    console.log('🔍 EmailjsConfig Object:', emailjsConfig)
     // ✅ FIX: INICIALIZAR EMAILJS ANTES DE USAR
     if (!emailjsConfig.publicKey) {
       throw new Error('EmailJS public key no configurada')
@@ -98,7 +111,7 @@ export const sendTurnoConfirmationToClient = async (turnoData: {
       ? `${turnoData.service} - ${turnoData.subService}`
       : turnoData.service
 
-    const cancelUrl = `http://localhost:3000/cancelar-turno/${turnoData.cancelToken}`
+    const cancelUrl = `https://www.mecanicagrandoli.com.ar/cancelar-turno/${turnoData.cancelToken}`
 
     const templateParams = {
       to_name: turnoData.name,

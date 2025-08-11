@@ -2,7 +2,7 @@
 import { getAuth, signOut } from 'firebase/auth'
 import { app } from '@/lib/firebase'
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, Variants } from 'framer-motion'
 import { Turno } from '@/actions/types/types'
 import { getAllTurnos, updateTurnoStatus, deleteTurno } from '@/actions/turnos'
 import TurnosTable from './TurnosTable'
@@ -10,7 +10,6 @@ import AdminStats from './AdminStats'
 import ServiceConfig from './ServiceConfig'
 
 export default function AdminDashboard() {
-  
   const [turnos, setTurnos] = useState<Turno[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'turnos' | 'stats' | 'config'>(
@@ -73,19 +72,19 @@ export default function AdminDashboard() {
     loadTurnos()
   }, [])
 
-  // Configuración de animaciones
-  const containerVariants = {
+  // Configuración de animaciones - CORREGIDO
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
         duration: 0.3,
-        ease: 'easeInOut',
+        ease: [0.4, 0.0, 0.2, 1], // Bezier curve equivalente a easeInOut
       },
     },
   }
 
-  const tabContentVariants = {
+  const tabContentVariants: Variants = {
     hidden: {
       opacity: 0,
       y: 20,
@@ -97,7 +96,7 @@ export default function AdminDashboard() {
       scale: 1,
       transition: {
         duration: 0.4,
-        ease: 'easeOut',
+        ease: [0.4, 0.0, 0.2, 1], // Bezier curve equivalente a easeOut
       },
     },
     exit: {
@@ -106,12 +105,12 @@ export default function AdminDashboard() {
       scale: 0.95,
       transition: {
         duration: 0.2,
-        ease: 'easeIn',
+        ease: [0.4, 0.0, 1, 1], // Bezier curve equivalente a easeIn
       },
     },
   }
 
-  const messageVariants = {
+  const messageVariants: Variants = {
     hidden: {
       opacity: 0,
       y: -30,
@@ -165,8 +164,17 @@ export default function AdminDashboard() {
           className='bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-colors duration-200 cursor-pointer flex items-center justify-center shadow-md'
         >
           {/* Icono logout */}
-          <svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' fill='none' viewBox='0 0 24 24'>
-            <path fill='currentColor' d='M16.3 7.7a1 1 0 0 1 1.4 1.4L16.4 11H21a1 1 0 1 1 0 2h-4.6l1.3 1.9a1 1 0 1 1-1.6 1.2l-3-4.2a1 1 0 0 1 0-1.2l3-4.2ZM13 3a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V5H7v14h5v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6Z'/>
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            width='22'
+            height='22'
+            fill='none'
+            viewBox='0 0 24 24'
+          >
+            <path
+              fill='currentColor'
+              d='M16.3 7.7a1 1 0 0 1 1.4 1.4L16.4 11H21a1 1 0 1 1 0 2h-4.6l1.3 1.9a1 1 0 1 1-1.6 1.2l-3-4.2a1 1 0 0 1 0-1.2l3-4.2ZM13 3a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V5H7v14h5v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6Z'
+            />
           </svg>
         </motion.button>
       </motion.div>
@@ -200,7 +208,9 @@ export default function AdminDashboard() {
         ].map((tab, index) => (
           <motion.button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as 'turnos' | 'stats' | 'config')}
+            onClick={() =>
+              setActiveTab(tab.id as 'turnos' | 'stats' | 'config')
+            }
             className={`flex-1 py-4 px-6 rounded-lg font-semibold text-center transition-all duration-300 relative overflow-hidden ${
               activeTab === tab.id
                 ? 'bg-blue-600 text-white shadow-lg'
@@ -231,7 +241,7 @@ export default function AdminDashboard() {
                   duration: 1.5,
                   repeat: Infinity,
                   repeatDelay: 3,
-                  ease: 'easeInOut',
+                  ease: [0.4, 0.0, 0.2, 1],
                 }}
               />
             )}
@@ -253,7 +263,7 @@ export default function AdminDashboard() {
                 }}
                 transition={{
                   duration: 0.3,
-                  rotate: { duration: 0.6, ease: 'easeInOut' },
+                  rotate: { duration: 0.6, ease: [0.4, 0.0, 0.2, 1] },
                 }}
               >
                 {tab.emoji}

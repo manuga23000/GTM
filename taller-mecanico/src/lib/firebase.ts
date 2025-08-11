@@ -13,7 +13,6 @@ const firebaseConfig = {
 // Log simple para verificar que todo funciona
 console.log('🔥 Firebase inicializado correctamente')
 
-// Inicializar Firebase
 const app = initializeApp(firebaseConfig)
 
 export const db = getFirestore(app)

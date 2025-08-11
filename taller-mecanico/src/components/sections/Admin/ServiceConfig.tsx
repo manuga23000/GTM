@@ -268,7 +268,8 @@ export default function ServiceConfig() {
       setTimeout(() => setMessage(''), 3000)
     } catch (error: unknown) {
       console.error('❌ Error guardando configuración:', error)
-      setMessage(`❌ Error: ${error.message}`)
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      setMessage(`❌ Error: ${errorMessage}`)
       setTimeout(() => setMessage(''), 5000)
     } finally {
       setSaving(false)

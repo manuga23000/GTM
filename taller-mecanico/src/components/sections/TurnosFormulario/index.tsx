@@ -217,11 +217,11 @@ export default function TurnosFormulario() {
   // Cargar configuraciones y disponibilidad al montar el componente
   useEffect(() => {
     const initializeData = async () => {
-      await loadServiceConfigs();
-      await loadAvailability();
-    };
-    initializeData();
-  }, [loadAvailability]);
+      await loadServiceConfigs()
+      await loadAvailability()
+    }
+    initializeData()
+  }, [loadAvailability])
 
   // Recargar disponibilidad cuando cambie el servicio principal
   useEffect(() => {
@@ -494,7 +494,7 @@ export default function TurnosFormulario() {
       <SuccessModal
         isOpen={showSuccessModal}
         onGoHome={handleGoHome}
-        onNewTurno={handleNewTurno}
+        //  onNewTurno={handleNewTurno}
       />
     </>
   )

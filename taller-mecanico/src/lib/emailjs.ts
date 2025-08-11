@@ -7,7 +7,7 @@ export const emailjsConfig = {
   templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || '', // Para contacto
   turnoTemplateId:
     process.env.NEXT_PUBLIC_EMAILJS_TURNO_CLIENTE_TEMPLATE_ID || '', // Para turnos
-  publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || '',
+  publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC || '',
 }
 
 // Inicializar EmailJS (opcional, solo si lo usás en el frontend)

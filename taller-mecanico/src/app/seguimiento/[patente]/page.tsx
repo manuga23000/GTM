@@ -256,7 +256,10 @@ export default function SeguimientoPage() {
     return (
       <>
         <Navbar />
-        <div className='min-h-screen bg-gray-50 flex items-center justify-center pt-16 lg:pt-24'>
+        <div
+          className='min-h-screen bg-gray-50 flex items-center justify-center'
+          style={{ paddingTop: '120px' }}
+        >
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
@@ -275,20 +278,23 @@ export default function SeguimientoPage() {
     return (
       <>
         <Navbar />
-        <div className='min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 flex items-center justify-center pt-16 lg:pt-24'>
+        <div
+          className='min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 flex items-center justify-center'
+          style={{ paddingTop: '120px', paddingBottom: '60px' }}
+        >
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className='bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4 text-center'
+            className='bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4 text-center'
           >
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-              className='w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6'
+              className='w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-5'
             >
               <svg
-                className='w-10 h-10 text-yellow-600'
+                className='w-8 h-8 text-yellow-600'
                 fill='none'
                 stroke='currentColor'
                 viewBox='0 0 24 24'
@@ -302,39 +308,21 @@ export default function SeguimientoPage() {
               </svg>
             </motion.div>
 
-            <h1 className='text-2xl font-bold text-gray-800 mb-4'>
+            <h1 className='text-sm font-bold text-gray-800 mb-3'>
               Vehículo no ingresado aún
             </h1>
 
-            <p className='text-gray-600 mb-2'>
+            <p className='text-gray-600 mb-5 text-sm'>
               La patente <strong className='text-red-600'>{patente}</strong> no
               se encuentra registrada en nuestro sistema.
             </p>
 
-            <p className='text-gray-500 text-sm mb-6'>
-              El vehículo aún no ha sido ingresado al taller o la patente no es
-              correcta.
-            </p>
-
-            <div className='space-y-3'>
-              <button
-                onClick={() => window.history.back()}
-                className='w-full px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium'
-              >
-                Volver atrás
-              </button>
-
-              <button
-                onClick={() => (window.location.href = '/contacto')}
-                className='w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium'
-              >
-                Contactar al taller
-              </button>
-            </div>
-
-            <p className='text-xs text-gray-400 mt-4'>
-              Si crees que esto es un error, contacta con nosotros
-            </p>
+            <button
+              onClick={() => window.history.back()}
+              className='w-full px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium'
+            >
+              Volver atrás
+            </button>
           </motion.div>
         </div>
       </>
@@ -345,12 +333,15 @@ export default function SeguimientoPage() {
     return (
       <>
         <Navbar />
-        <div className='min-h-screen bg-gray-50 flex items-center justify-center pt-16 lg:pt-24'>
-          <div className='text-center bg-white p-8 rounded-lg shadow-lg'>
-            <h1 className='text-2xl font-bold text-gray-800 mb-4'>
+        <div
+          className='min-h-screen bg-gray-50 flex items-center justify-center'
+          style={{ paddingTop: '120px' }}
+        >
+          <div className='text-center bg-white p-6 rounded-lg shadow-lg max-w-sm mx-4'>
+            <h1 className='text-xl font-bold text-gray-800 mb-4'>
               Error del sistema
             </h1>
-            <p className='text-gray-600 mb-6'>
+            <p className='text-gray-600 mb-6 text-sm'>
               Ocurrió un error al cargar la información del vehículo.
             </p>
             <button

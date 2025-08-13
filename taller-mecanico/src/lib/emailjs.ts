@@ -10,9 +10,6 @@ export const emailjsConfig = {
   publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC || '',
 }
 
-// 🔍 DEBUG GLOBAL
-console.log('📧 EmailJS Config Initial:', emailjsConfig)
-
 // Inicializar EmailJS (opcional, solo si lo usás en el frontend)
 export const initEmailJS = () => {
   emailjs.init(emailjsConfig.publicKey)
@@ -36,13 +33,6 @@ export const sendEmail = async (formData: {
       message: formData.message,
       to_name: 'GTM Taller Mecánico',
     }
-
-    // Al inicio de sendTurnoConfirmationToClient, agrega:
-    console.log('🔍 EmailJS Debug:', {
-      serviceId: emailjsConfig.serviceId || '❌ MISSING',
-      turnoTemplateId: emailjsConfig.turnoTemplateId || '❌ MISSING',
-      publicKey: emailjsConfig.publicKey || '❌ MISSING',
-    })
 
     const response = await emailjs.send(
       emailjsConfig.serviceId,
@@ -79,16 +69,6 @@ export const sendTurnoConfirmationToClient = async (turnoData: {
   cancelToken: string
 }) => {
   try {
-    console.log('🔍 EmailJS Variables Debug:', {
-      serviceId: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || '❌ MISSING',
-      templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || '❌ MISSING',
-      turnoTemplateId:
-        process.env.NEXT_PUBLIC_EMAILJS_TURNO_CLIENTE_TEMPLATE_ID ||
-        '❌ MISSING',
-      publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC || '❌ MISSING',
-    })
-
-    console.log('🔍 EmailjsConfig Object:', emailjsConfig)
     // ✅ FIX: INICIALIZAR EMAILJS ANTES DE USAR
     if (!emailjsConfig.publicKey) {
       throw new Error('EmailJS public key no configurada')

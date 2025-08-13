@@ -1,12 +1,18 @@
+// components/layout/Navbar.tsx
 'use client'
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
+import { usePathname } from 'next/navigation'
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const pathname = usePathname()
+
+  // Detectar si estamos en páginas de seguimiento
+  const isSeguimientoPage = pathname.startsWith('/seguimiento')
 
   useEffect(() => {
     const handleScroll = () => {
@@ -102,11 +108,19 @@ export default function Navbar() {
     open: { rotate: 180 },
   }
 
+  // Lógica de background del navbar
+  const getNavbarBackground = () => {
+    // Si estamos en páginas de seguimiento, siempre negro
+    if (isSeguimientoPage) {
+      return 'bg-black border-b border-gray-800/50'
+    }
+    // En otras páginas, comportamiento normal
+    return scrolled ? 'bg-black border-b border-gray-800/50' : 'bg-transparent'
+  }
+
   return (
     <nav
-      className={`fixed top-0 w-full z-50 py-2 transition-colors duration-300 ${
-        scrolled ? 'bg-black border-b border-gray-800/50' : 'bg-transparent'
-      }`}
+      className={`fixed top-0 w-full z-50 py-2 transition-colors duration-300 ${getNavbarBackground()}`}
     >
       <div className='max-w-7xl mx-auto px-6 lg:px-8'>
         <div className='flex items-center justify-between h-14 lg:h-24'>
@@ -150,6 +164,13 @@ export default function Navbar() {
               className='relative text-white hover:text-red-500 px-4 h-full flex items-center text-sm font-semibold tracking-wide transition-all duration-300 group whitespace-nowrap'
             >
               CONTACTO
+              <span className='absolute bottom-0 left-0 w-full h-0.5 bg-red-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300'></span>
+            </Link>
+            <Link
+              href='/seguimiento'
+              className='relative text-white hover:text-red-500 px-4 h-full flex items-center text-sm font-semibold tracking-wide transition-all duration-300 group whitespace-nowrap'
+            >
+              SEGUIMIENTO
               <span className='absolute bottom-0 left-0 w-full h-0.5 bg-red-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300'></span>
             </Link>
           </div>
@@ -277,6 +298,29 @@ export default function Navbar() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span>CONTACTO</span>
+                    <svg
+                      className='w-5 h-5 text-red-500 group-hover:translate-x-1 transition-transform duration-300'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M9 5l7 7-7 7'
+                      />
+                    </svg>
+                  </Link>
+                </motion.div>
+
+                <motion.div variants={menuItemVariants}>
+                  <Link
+                    href='/seguimiento'
+                    className='flex items-center justify-between text-white hover:text-red-400 px-4 py-4 text-base font-semibold tracking-wide transition-all duration-300 rounded-xl hover:bg-white/10 active:bg-white/20 group'
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <span>SEGUIMIENTO</span>
                     <svg
                       className='w-5 h-5 text-red-500 group-hover:translate-x-1 transition-transform duration-300'
                       fill='none'

@@ -17,12 +17,31 @@ interface SeguimientoHeaderProps {
 
 export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
   const formatearFecha = (fecha: string) => {
+    const date = new Date(fecha)
+    return date.toLocaleDateString('es-AR', {
+      day: '2-digit',
+      month: 'short',
+    })
+  }
+
+  const formatearFechaCompleta = (fecha: string) => {
     return new Date(fecha).toLocaleDateString('es-AR', {
       day: '2-digit',
-      month: '2-digit',
+      month: 'long',
       year: 'numeric',
     })
   }
+
+  const calcularDiasEnTaller = (fechaIngreso: string) => {
+    const inicio = new Date(fechaIngreso)
+    const hoy = new Date()
+    const diferencia = Math.floor(
+      (hoy.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24)
+    )
+    return Math.max(0, diferencia)
+  }
+
+  const diasEnTaller = calcularDiasEnTaller(data.fechaIngreso)
 
   return (
     <motion.header
@@ -62,7 +81,9 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
             <h1 className='text-2xl md:text-3xl font-bold'>
               Seguimiento de Vehículo
             </h1>
-            <p className='text-gray-300'>GTM - Tu aliado automotriz</p>
+            <p className='text-gray-300'>
+              GTM - Tu aliado automotriz de confianza
+            </p>
           </div>
         </div>
 
@@ -74,16 +95,21 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
           className='bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20'
         >
           <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-            {/* Patente destacada */}
+            {/* Patente y días en taller */}
             <motion.div
               whileHover={{ scale: 1.02 }}
               className='text-center md:text-left'
             >
-              <div className='inline-flex items-center bg-red-600 text-white px-4 py-2 rounded-lg text-xl font-bold tracking-wider'>
-                <FaCar className='mr-2' />
+              <div className='inline-flex items-center bg-red-600 text-white px-6 py-3 rounded-lg text-2xl font-bold tracking-wider mb-3'>
+                <FaCar className='mr-3' />
                 {data.patente}
               </div>
-              <p className='text-gray-300 mt-2 text-sm'>Patente del vehículo</p>
+              <div className='text-gray-300'>
+                <p className='text-sm mb-1'>Días en taller</p>
+                <p className='text-white font-bold text-xl'>
+                  {diasEnTaller} días
+                </p>
+              </div>
             </motion.div>
 
             {/* Info del vehículo */}
@@ -93,13 +119,13 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
               transition={{ delay: 0.4 }}
               className='text-center md:text-left'
             >
-              <h3 className='text-xl font-semibold mb-1'>
+              <h3 className='text-2xl font-bold mb-2'>
                 {data.marca} {data.modelo}
               </h3>
-              <p className='text-gray-300 text-sm mb-3'>Año {data.año}</p>
-              <div className='flex items-center justify-center md:justify-start text-gray-300 text-sm'>
+              <p className='text-gray-300 text-lg mb-3'>Año {data.año}</p>
+              <div className='flex items-center justify-center md:justify-start text-gray-300'>
                 <FaUser className='mr-2' />
-                {data.cliente}
+                <span className='font-medium'>{data.cliente}</span>
               </div>
             </motion.div>
 
@@ -110,17 +136,43 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
               transition={{ delay: 0.5 }}
               className='text-center md:text-right'
             >
-              <div className='inline-flex items-center bg-gray-700 text-white px-4 py-2 rounded-lg'>
-                <FaCalendarAlt className='mr-2' />
+              <div className='inline-flex items-center bg-gray-700 text-white px-4 py-3 rounded-lg'>
+                <FaCalendarAlt className='mr-3' />
                 <div>
-                  <div className='text-sm text-gray-300'>Ingreso</div>
-                  <div className='font-semibold'>
+                  <div className='text-sm text-gray-300 mb-1'>
+                    Fecha de Ingreso
+                  </div>
+                  <div className='font-bold text-lg'>
                     {formatearFecha(data.fechaIngreso)}
+                  </div>
+                  <div className='text-xs text-gray-400'>
+                    {formatearFechaCompleta(data.fechaIngreso)}
                   </div>
                 </div>
               </div>
             </motion.div>
           </div>
+
+          {/* Barra separadora roja */}
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 0.8, duration: 0.8 }}
+            className='mt-6 h-1 bg-gradient-to-r from-red-600 to-red-600 rounded-full'
+          />
+        </motion.div>
+
+        {/* Indicador de estado */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.9 }}
+          className='flex justify-center mt-4'
+        >
+          <div className='bg-green-500 w-3 h-3 rounded-full animate-pulse' />
+          <span className='ml-2 text-green-400 text-sm font-medium'>
+            Sistema conectado
+          </span>
         </motion.div>
       </div>
     </motion.header>

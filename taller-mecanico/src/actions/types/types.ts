@@ -72,3 +72,14 @@ export interface ServiceConfigResponse {
   error?: string
   config?: ServiceConfig
 }
+
+// NUEVO: Tipo para alta de vehículo
+export interface VehicleInput {
+  plateNumber: string;
+  brand: string;
+  model: string;
+  clientName: string;
+  clientPhone: string;
+  serviceType: string;
+  createdAt: Date;
+}

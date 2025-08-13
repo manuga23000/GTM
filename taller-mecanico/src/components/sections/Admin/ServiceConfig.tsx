@@ -60,7 +60,6 @@ export default function ServiceConfig() {
   const loadConfigs = useCallback(async () => {
     try {
       setLoading(true)
-      console.log('🔄 Cargando configuraciones desde Firebase...')
 
       // Primero limpiar configuraciones duplicadas
       await cleanDuplicateConfigs()
@@ -70,7 +69,6 @@ export default function ServiceConfig() {
 
       // Finalmente obtener todas las configuraciones
       const allConfigs = await getAllServiceConfigs()
-      console.log('📋 Configuraciones cargadas:', allConfigs)
 
       // Filtrar configuraciones duplicadas (mantener solo la más reciente)
       const uniqueConfigs = allConfigs.reduce((acc, config) => {
@@ -89,7 +87,6 @@ export default function ServiceConfig() {
         return acc
       }, [] as ServiceConfig[])
 
-      console.log('🔍 Configuraciones únicas:', uniqueConfigs)
       setConfigs(uniqueConfigs)
 
       // Seleccionar automáticamente el primer servicio disponible si no hay ninguno seleccionado
@@ -107,7 +104,7 @@ export default function ServiceConfig() {
     } finally {
       setLoading(false)
     }
-  }, []);
+  }, [])
 
   // Cargar configuraciones al montar el componente
   useEffect(() => {
@@ -171,16 +168,12 @@ export default function ServiceConfig() {
     try {
       if (selectedService === 'Caja automática') {
         // Guardar todas las configuraciones de sub-servicios de Caja automática
-        console.log(
-          '💾 Guardando configuraciones de sub-servicios de Caja automática...'
-        )
 
         const subServiceConfigs = configs.filter(config =>
           cajaAutomaticaSubServices.includes(config.serviceName)
         )
 
         for (const configToSave of subServiceConfigs) {
-          console.log(`🔄 Guardando ${configToSave.serviceName}...`)
           const result = await updateServiceConfig(configToSave.serviceName, {
             maxPerDay: configToSave.maxPerDay,
             maxPerWeek: configToSave.maxPerWeek,
@@ -195,7 +188,6 @@ export default function ServiceConfig() {
               `Error guardando ${configToSave.serviceName}: ${result.message}`
             )
           }
-          console.log(`✅ ${configToSave.serviceName} guardado correctamente`)
         }
 
         setMessage(
@@ -203,16 +195,12 @@ export default function ServiceConfig() {
         )
       } else if (selectedService === 'Mecánica general') {
         // Guardar todas las configuraciones de sub-servicios de Mecánica general
-        console.log(
-          '💾 Guardando configuraciones de sub-servicios de Mecánica general...'
-        )
 
         const subServiceConfigs = configs.filter(config =>
           mecanicaGeneralSubServices.includes(config.serviceName)
         )
 
         for (const configToSave of subServiceConfigs) {
-          console.log(`🔄 Guardando ${configToSave.serviceName}...`)
           const result = await updateServiceConfig(configToSave.serviceName, {
             maxPerDay: configToSave.maxPerDay,
             maxPerWeek: configToSave.maxPerWeek,
@@ -227,7 +215,6 @@ export default function ServiceConfig() {
               `Error guardando ${configToSave.serviceName}: ${result.message}`
             )
           }
-          console.log(`✅ ${configToSave.serviceName} guardado correctamente`)
         }
 
         setMessage(
@@ -235,7 +222,6 @@ export default function ServiceConfig() {
         )
       } else {
         // Guardar configuración de un servicio individual
-        console.log(`💾 Guardando configuración para ${selectedService}...`)
 
         const configToSave = configs.find(
           config => config.serviceName === selectedService
@@ -259,7 +245,6 @@ export default function ServiceConfig() {
           throw new Error(result.message)
         }
 
-        console.log(`✅ ${selectedService} guardado correctamente`)
         setMessage(
           `✅ Configuración de ${selectedService} guardada exitosamente`
         )
@@ -268,7 +253,8 @@ export default function ServiceConfig() {
       setTimeout(() => setMessage(''), 3000)
     } catch (error: unknown) {
       console.error('❌ Error guardando configuración:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      const errorMessage =
+        error instanceof Error ? error.message : 'Error desconocido'
       setMessage(`❌ Error: ${errorMessage}`)
       setTimeout(() => setMessage(''), 5000)
     } finally {

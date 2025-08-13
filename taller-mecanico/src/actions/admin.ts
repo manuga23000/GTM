@@ -1,5 +1,5 @@
 // src/actions/admin.ts
-import { doc, setDoc, getDoc, Timestamp } from 'firebase/firestore'
+import { doc, setDoc, getDoc, getDocs, collection, Timestamp } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 
 // Tipos para la configuración
@@ -286,4 +286,67 @@ export async function exportServiceConfig(): Promise<
   Record<string, ServiceConfig>
 > {
   return await loadServiceConfig()
+}
+
+/**
+ * Obtener todos los vehículos
+ */
+import { VehicleInput } from './types/types'
+
+export async function getAllVehicles(): Promise<VehicleInput[]> {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'vehicles'));
+    const vehicles: VehicleInput[] = [];
+    querySnapshot.forEach(doc => {
+      const data = doc.data();
+      vehicles.push({
+        plateNumber: data.plateNumber,
+        brand: data.brand,
+        model: data.model,
+        clientName: data.clientName,
+        clientPhone: data.clientPhone,
+        serviceType: data.serviceType,
+        createdAt: data.createdAt instanceof Date ? data.createdAt : (data.createdAt?.toDate ? data.createdAt.toDate() : new Date()),
+      });
+    });
+    return vehicles;
+  } catch (error) {
+    console.error('Error obteniendo vehículos:', error);
+    return [];
+  }
+}
+
+/**
+ * Crear un nuevo vehículo
+ */
+
+export async function createVehicle(vehicleData: VehicleInput): Promise<AdminResponse> {
+  try {
+    // Validaciones básicas
+    if (!vehicleData.plateNumber || !vehicleData.clientName || !vehicleData.brand || !vehicleData.model || !vehicleData.serviceType) {
+      return {
+        success: false,
+        message: 'Faltan campos obligatorios (patente, cliente, marca, modelo, tipo de servicio)',
+        error: 'MISSING_REQUIRED_FIELDS',
+      }
+    }
+
+    const docRef = doc(db, 'vehicles', vehicleData.plateNumber)
+    await setDoc(docRef, {
+      ...vehicleData,
+      createdAt: vehicleData.createdAt ? vehicleData.createdAt : new Date(),
+    })
+
+    return {
+      success: true,
+      message: 'Vehículo creado exitosamente',
+    }
+  } catch (error) {
+    console.error('Error creando vehículo:', error)
+    return {
+      success: false,
+      message: 'Error al crear el vehículo',
+      error: error instanceof Error ? error.message : 'INTERNAL_ERROR',
+    }
+  }
 }

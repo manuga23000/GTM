@@ -18,7 +18,8 @@ import {
 
 export default function Footer() {
   const pathname = usePathname()
-  const hideFooter = pathname.startsWith('/admin') || pathname.startsWith('/cancelar-turno')
+  const hideFooter =
+    pathname.startsWith('/admin') || pathname.startsWith('/cancelar-turno')
 
   if (hideFooter) return null // ⛔ No mostrar nada si es /admin o /cancelar-turno
 
@@ -214,6 +215,12 @@ export default function Footer() {
               className='text-gray-300 hover:text-red-500 transition font-medium'
             >
               Contacto
+            </Link>
+            <Link
+              href='/seguimiento'
+              className='text-gray-300 hover:text-red-500 transition font-medium'
+            >
+              Seguimiento
             </Link>
           </div>
         </div>

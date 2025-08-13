@@ -3,13 +3,10 @@
 import { useParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 import SeguimientoHeader from '@/components/sections/Seguimiento/SeguimientoHeader'
 import EstadoActual from '@/components/sections/Seguimiento/EstadoActual'
 import TimelineProgreso from '@/components/sections/Seguimiento/TimelineProgreso'
-import GaleriaImagenes from '@/components/sections/Seguimiento/GaleriaImagenes'
-import DetallesVehiculo from '@/components/sections/Seguimiento/DetallesVehiculo'
-import ContactoTaller from '@/components/sections/Seguimiento/ContactoTaller'
+import Navbar from '@/components/layout/Navbar'
 
 interface SeguimientoData {
   patente: string
@@ -49,37 +46,130 @@ export default function SeguimientoPage() {
   const [seguimientoData, setSeguimientoData] =
     useState<SeguimientoData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Simulación de carga de datos - en producción conectarías con tu API
     const cargarDatos = async () => {
       try {
-        // Simular delay de red
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        setError(null)
 
-        // Datos mock - reemplazar con llamada real a la API
+        // Intentar cargar datos reales desde backend
+        try {
+          const { getSeguimientoByPatente } = await import(
+            '@/actions/seguimiento'
+          )
+          const data = await getSeguimientoByPatente(patente)
+
+          if (data) {
+            // Mapear el estado de Firebase a un estado más descriptivo
+            const mapearEstado = (status: string) => {
+              switch (status?.toLowerCase()) {
+                case 'received':
+                  return 'Vehículo recibido'
+                case 'diagnosis':
+                  return 'En diagnóstico'
+                case 'repair':
+                  return 'En reparación'
+                case 'quality_control':
+                  return 'Control de calidad'
+                case 'ready':
+                  return 'Listo para entrega'
+                default:
+                  return 'Vehículo recibido'
+              }
+            }
+
+            // Generar timeline básico basado en el estado actual
+            const generarTimeline = (
+              estado: string,
+              fechaIngreso: string
+            ): TimelineItem[] => {
+              const fecha = new Date(fechaIngreso)
+              const timeline: TimelineItem[] = [
+                {
+                  id: 1,
+                  fecha: fechaIngreso,
+                  hora: '09:00',
+                  estado: 'Vehículo recibido',
+                  descripcion: 'Recepción del vehículo en el taller',
+                  completado: true,
+                },
+              ]
+
+              if (estado !== 'Vehículo recibido') {
+                const fechaDiagnostico = new Date(fecha)
+                fechaDiagnostico.setDate(fecha.getDate() + 1)
+                timeline.push({
+                  id: 2,
+                  fecha: fechaDiagnostico.toISOString().split('T')[0],
+                  hora: '10:00',
+                  estado: 'Diagnóstico iniciado',
+                  descripcion: 'Evaluación inicial del vehículo',
+                  completado: true,
+                })
+              }
+
+              return timeline
+            }
+
+            const estadoMapeado = mapearEstado(data.estadoActual || 'received')
+
+            setSeguimientoData({
+              patente: data.patente,
+              modelo: data.modelo,
+              marca: data.marca,
+              año: data.año,
+              cliente: data.cliente,
+              fechaIngreso: data.fechaIngreso,
+              estadoActual: estadoMapeado,
+              trabajosRealizados: [
+                'Vehículo ingresado al sistema',
+                'Documentación completada',
+              ],
+              proximoPaso: 'Evaluación técnica inicial',
+              fechaEstimadaEntrega: new Date(
+                Date.now() + 7 * 24 * 60 * 60 * 1000
+              )
+                .toISOString()
+                .split('T')[0],
+              timeline: generarTimeline(estadoMapeado, data.fechaIngreso),
+              imagenes: [],
+            })
+            setLoading(false)
+            return
+          } else {
+            // No se encontraron datos en Firebase
+            setError('not_found')
+            setLoading(false)
+            return
+          }
+        } catch (importError) {
+          setError('backend_error')
+        }
+
+        // Si hay error de backend, usar datos mock para desarrollo
         const mockData: SeguimientoData = {
           patente: patente.toUpperCase(),
           modelo: 'Corolla',
           marca: 'Toyota',
           año: '2018',
           cliente: 'Juan Pérez',
-          fechaIngreso: '2025-08-10',
+          fechaIngreso: '2025-08-09',
           estadoActual: 'En reparación',
           trabajosRealizados: [
-            'Diagnóstico completo de caja automática',
-            'Cambio de filtro y aceite ATF',
-            'Reparación de válvula solenoide',
+            'Diagnóstico inicial completado',
+            'Desmontaje de caja automática',
+            'Identificación de válvula solenoide defectuosa',
           ],
-          proximoPaso: 'Prueba de manejo y control de calidad',
+          proximoPaso: 'Reemplazo de componentes defectuosos',
           fechaEstimadaEntrega: '2025-08-15',
           timeline: [
             {
               id: 1,
-              fecha: '2025-08-10',
-              hora: '09:00',
+              fecha: '2025-08-09',
+              hora: '09:30',
               estado: 'Vehículo recibido',
-              descripcion: 'Recepción del vehículo y documentación inicial',
+              descripcion: 'Recepción del vehículo en el taller',
               completado: true,
             },
             {
@@ -152,6 +242,7 @@ export default function SeguimientoPage() {
         setSeguimientoData(mockData)
       } catch (error) {
         console.error('Error cargando datos:', error)
+        setError('general_error')
       } finally {
         setLoading(false)
       }
@@ -160,67 +251,155 @@ export default function SeguimientoPage() {
     cargarDatos()
   }, [patente])
 
+  // Loading state
   if (loading) {
     return (
-      <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className='w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full'
-        />
-        <span className='ml-4 text-gray-600 text-lg'>
-          Cargando seguimiento...
-        </span>
-      </div>
+      <>
+        <Navbar />
+        <div className='min-h-screen bg-gray-50 flex items-center justify-center pt-16 lg:pt-24'>
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            className='w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full'
+          />
+          <span className='ml-4 text-gray-600 text-lg'>
+            Cargando seguimiento...
+          </span>
+        </div>
+      </>
     )
   }
 
+  // Error states
+  if (error === 'not_found') {
+    return (
+      <>
+        <Navbar />
+        <div className='min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 flex items-center justify-center pt-16 lg:pt-24'>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className='bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4 text-center'
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+              className='w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6'
+            >
+              <svg
+                className='w-10 h-10 text-yellow-600'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z'
+                />
+              </svg>
+            </motion.div>
+
+            <h1 className='text-2xl font-bold text-gray-800 mb-4'>
+              Vehículo no ingresado aún
+            </h1>
+
+            <p className='text-gray-600 mb-2'>
+              La patente <strong className='text-red-600'>{patente}</strong> no
+              se encuentra registrada en nuestro sistema.
+            </p>
+
+            <p className='text-gray-500 text-sm mb-6'>
+              El vehículo aún no ha sido ingresado al taller o la patente no es
+              correcta.
+            </p>
+
+            <div className='space-y-3'>
+              <button
+                onClick={() => window.history.back()}
+                className='w-full px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium'
+              >
+                Volver atrás
+              </button>
+
+              <button
+                onClick={() => (window.location.href = '/contacto')}
+                className='w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium'
+              >
+                Contactar al taller
+              </button>
+            </div>
+
+            <p className='text-xs text-gray-400 mt-4'>
+              Si crees que esto es un error, contacta con nosotros
+            </p>
+          </motion.div>
+        </div>
+      </>
+    )
+  }
+
+  if (error === 'general_error') {
+    return (
+      <>
+        <Navbar />
+        <div className='min-h-screen bg-gray-50 flex items-center justify-center pt-16 lg:pt-24'>
+          <div className='text-center bg-white p-8 rounded-lg shadow-lg'>
+            <h1 className='text-2xl font-bold text-gray-800 mb-4'>
+              Error del sistema
+            </h1>
+            <p className='text-gray-600 mb-6'>
+              Ocurrió un error al cargar la información del vehículo.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className='px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors mr-4'
+            >
+              Reintentar
+            </button>
+            <button
+              onClick={() => window.history.back()}
+              className='px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors'
+            >
+              Volver atrás
+            </button>
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  // Main render - solo se ejecuta si seguimientoData existe
   if (!seguimientoData) {
     return (
-      <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
-        <div className='text-center'>
-          <h1 className='text-3xl font-bold text-gray-800 mb-4'>
-            Vehículo no encontrado
-          </h1>
-          <p className='text-gray-600 mb-6'>
-            No se encontró información para la patente:{' '}
-            <strong>{patente}</strong>
-          </p>
-          <button
-            onClick={() => window.history.back()}
-            className='bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors'
-          >
-            Volver
-          </button>
-        </div>
-      </div>
+      <>
+        <Navbar />
+        <div>No hay datos</div>
+      </>
     )
   }
 
   return (
-    <div className='min-h-screen bg-gray-50'>
-      {/* Header con info del vehículo */}
-      <SeguimientoHeader data={seguimientoData} />
-
-      <main className='max-w-7xl mx-auto px-4 py-8 space-y-8'>
-        {/* Estado actual destacado */}
-        <EstadoActual data={seguimientoData} />
-
-        {/* Grid principal */}
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
-          {/* Columna izquierda - Timeline */}
-          <div className='lg:col-span-2 space-y-8'>
-            <TimelineProgreso timeline={seguimientoData.timeline} />
-            <GaleriaImagenes imagenes={seguimientoData.imagenes} />
-          </div>
-
-          {/* Columna derecha - Info del vehículo y contacto */}
-          <div className='space-y-8'>
-            <DetallesVehiculo data={seguimientoData} />
-            <ContactoTaller />
-          </div>
+    <>
+      <Navbar />
+      <main className='min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 pt-16 lg:pt-24'>
+        <SeguimientoHeader
+          data={{
+            patente: seguimientoData.patente,
+            modelo: seguimientoData.modelo,
+            marca: seguimientoData.marca,
+            año: seguimientoData.año,
+            cliente: seguimientoData.cliente,
+            fechaIngreso: seguimientoData.fechaIngreso,
+          }}
+        />
+        <div className='max-w-5xl mx-auto px-4 pt-4 space-y-8'>
+          <EstadoActual data={seguimientoData} />
+          <TimelineProgreso timeline={seguimientoData.timeline} />
         </div>
       </main>
-    </div>
+    </>
   )
 }

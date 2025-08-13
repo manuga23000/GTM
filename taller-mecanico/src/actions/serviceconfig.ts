@@ -194,8 +194,6 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
  */
 export async function initializeServiceConfigs(): Promise<ServiceConfigResponse> {
   try {
-    console.log('🚀 Inicializando configuraciones de servicios...')
-
     for (const configData of INITIAL_CONFIGS) {
       // Verificar si ya existe la configuración
       const q = query(
@@ -222,12 +220,6 @@ export async function initializeServiceConfigs(): Promise<ServiceConfigResponse>
 
         const docRef = doc(collection(db, COLLECTION_NAME))
         await setDoc(docRef, firestoreData)
-
-        console.log(`✅ Configuración creada para: ${configData.serviceName}`)
-      } else {
-        console.log(
-          `📝 Configuración ya existe para: ${configData.serviceName}`
-        )
       }
     }
 
@@ -327,9 +319,6 @@ export async function updateServiceConfig(
   configData: Partial<ServiceConfigInput>
 ): Promise<ServiceConfigResponse> {
   try {
-    console.log(`🔄 Actualizando configuración para: ${serviceName}`)
-    console.log('📋 Nuevos datos:', configData)
-
     // Buscar la configuración existente
     const q = query(
       collection(db, COLLECTION_NAME),

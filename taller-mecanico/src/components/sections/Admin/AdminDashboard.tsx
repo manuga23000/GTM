@@ -8,13 +8,14 @@ import { getAllTurnos, updateTurnoStatus, deleteTurno } from '@/actions/turnos'
 import TurnosTable from './TurnosTable'
 import AdminStats from './AdminStats'
 import ServiceConfig from './ServiceConfig'
+import VehicleConfig from './VehicleConfig'
 
 export default function AdminDashboard() {
   const [turnos, setTurnos] = useState<Turno[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'turnos' | 'stats' | 'config'>(
-    'turnos'
-  )
+  const [activeTab, setActiveTab] = useState<
+    'turnos' | 'stats' | 'config' | 'vehicles'
+  >('turnos')
   const [message, setMessage] = useState('')
 
   const handleLogout = async () => {
@@ -72,14 +73,14 @@ export default function AdminDashboard() {
     loadTurnos()
   }, [])
 
-  // Configuración de animaciones - CORREGIDO
+  // Configuración de animaciones
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
         duration: 0.3,
-        ease: [0.4, 0.0, 0.2, 1], // Bezier curve equivalente a easeInOut
+        ease: [0.4, 0.0, 0.2, 1],
       },
     },
   }
@@ -96,7 +97,7 @@ export default function AdminDashboard() {
       scale: 1,
       transition: {
         duration: 0.4,
-        ease: [0.4, 0.0, 0.2, 1], // Bezier curve equivalente a easeOut
+        ease: [0.4, 0.0, 0.2, 1],
       },
     },
     exit: {
@@ -105,7 +106,7 @@ export default function AdminDashboard() {
       scale: 0.95,
       transition: {
         duration: 0.2,
-        ease: [0.4, 0.0, 1, 1], // Bezier curve equivalente a easeIn
+        ease: [0.4, 0.0, 1, 1],
       },
     },
   }
@@ -194,7 +195,7 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Tabs - ✅ IGUALES EN ANCHO con animaciones */}
+      {/* Tabs - Ahora con 4 tabs */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -205,11 +206,12 @@ export default function AdminDashboard() {
           { id: 'turnos', label: '📋 Turnos', emoji: '📋' },
           { id: 'stats', label: '📊 Estadísticas', emoji: '📊' },
           { id: 'config', label: '⚙️ Configuración', emoji: '⚙️' },
+          { id: 'vehicles', label: '🚗 Vehículos', emoji: '🚗' },
         ].map((tab, index) => (
           <motion.button
             key={tab.id}
             onClick={() =>
-              setActiveTab(tab.id as 'turnos' | 'stats' | 'config')
+              setActiveTab(tab.id as 'turnos' | 'stats' | 'config' | 'vehicles')
             }
             className={`flex-1 py-4 px-6 rounded-lg font-semibold text-center transition-all duration-300 relative overflow-hidden ${
               activeTab === tab.id
@@ -297,6 +299,7 @@ export default function AdminDashboard() {
             )}
             {activeTab === 'stats' && <AdminStats turnos={turnos} />}
             {activeTab === 'config' && <ServiceConfig />}
+            {activeTab === 'vehicles' && <VehicleConfig />}
           </motion.div>
         </AnimatePresence>
       </div>

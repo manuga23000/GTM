@@ -145,9 +145,6 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
                   <div className='font-bold text-lg'>
                     {formatearFecha(data.fechaIngreso)}
                   </div>
-                  <div className='text-xs text-gray-400'>
-                    {formatearFechaCompleta(data.fechaIngreso)}
-                  </div>
                 </div>
               </div>
             </motion.div>
@@ -168,12 +165,7 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9 }}
           className='flex justify-center mt-4'
-        >
-          <div className='bg-green-500 w-3 h-3 rounded-full animate-pulse' />
-          <span className='ml-2 text-green-400 text-sm font-medium'>
-            Sistema conectado
-          </span>
-        </motion.div>
+        ></motion.div>
       </div>
     </motion.header>
   )

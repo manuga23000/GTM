@@ -75,11 +75,12 @@ export interface ServiceConfigResponse {
 
 // NUEVO: Tipo para alta de vehículo
 export interface VehicleInput {
-  plateNumber: string;
-  brand: string;
-  model: string;
-  clientName: string;
-  clientPhone: string;
-  serviceType: string;
-  createdAt: Date;
+  plateNumber: string
+  brand: string
+  model: string
+  year: number // Nuevo campo para el año del vehículo
+  clientName: string
+  clientPhone: string
+  serviceType: string
+  createdAt?: Date
 }

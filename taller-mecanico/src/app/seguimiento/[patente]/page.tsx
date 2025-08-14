@@ -122,18 +122,11 @@ export default function SeguimientoPage() {
               cliente: data.cliente,
               fechaIngreso: data.fechaIngreso,
               estadoActual: estadoMapeado,
-              trabajosRealizados: [
-                'Vehículo ingresado al sistema',
-                'Documentación completada',
-              ],
-              proximoPaso: 'Evaluación técnica inicial',
-              fechaEstimadaEntrega: new Date(
-                Date.now() + 7 * 24 * 60 * 60 * 1000
-              )
-                .toISOString()
-                .split('T')[0],
-              timeline: generarTimeline(estadoMapeado, data.fechaIngreso),
-              imagenes: [],
+              trabajosRealizados: data.trabajosRealizados && data.trabajosRealizados.length > 0 ? data.trabajosRealizados : ['Sin trabajos registrados'],
+              proximoPaso: data.proximoPaso || 'Sin información',
+              fechaEstimadaEntrega: data.fechaEstimadaEntrega || '',
+              timeline: data.timeline && data.timeline.length > 0 ? data.timeline : [],
+              imagenes: data.imagenes && data.imagenes.length > 0 ? data.imagenes : [],
             })
             setLoading(false)
             return

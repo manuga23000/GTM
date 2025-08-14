@@ -3,6 +3,21 @@ import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 
 // Tipo para datos de seguimiento que coincide con la estructura de Firebase
+export interface TimelineItem {
+  id: number
+  fecha: string
+  hora: string
+  estado: string
+  descripcion: string
+  completado: boolean
+}
+export interface ImagenItem {
+  id: number
+  url: string
+  fecha: string
+  descripcion: string
+  tipo: 'antes' | 'proceso' | 'despues'
+}
 export interface SeguimientoData {
   patente: string
   modelo: string
@@ -13,6 +28,11 @@ export interface SeguimientoData {
   estadoActual?: string
   telefono?: string
   tipoServicio?: string
+  trabajosRealizados?: string[]
+  proximoPaso?: string
+  fechaEstimadaEntrega?: string
+  timeline?: TimelineItem[]
+  imagenes?: ImagenItem[]
 }
 
 /**
@@ -71,6 +91,11 @@ export async function getSeguimientoByPatente(
       estadoActual: data.status || 'received',
       telefono: data.clientPhone || '',
       tipoServicio: data.serviceType || 'Reparación general',
+      trabajosRealizados: data.trabajosRealizados || [],
+      proximoPaso: data.proximoPaso || '',
+      fechaEstimadaEntrega: data.fechaEstimadaEntrega ? formatearFecha(data.fechaEstimadaEntrega) : '',
+      timeline: data.timeline || [],
+      imagenes: data.imagenes || [],
     }
 
     return seguimientoData

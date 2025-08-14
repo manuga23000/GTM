@@ -1,5 +1,5 @@
 // src/actions/admin.ts
-import { doc, setDoc, getDoc, getDocs, collection, Timestamp } from 'firebase/firestore'
+import { doc, setDoc, getDoc, getDocs, collection, Timestamp, deleteDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 
 // Tipos para la configuración
@@ -303,6 +303,7 @@ export async function getAllVehicles(): Promise<VehicleInput[]> {
         plateNumber: data.plateNumber,
         brand: data.brand,
         model: data.model,
+        year: typeof data.year === 'number' ? data.year : (data.createdAt ? new Date(data.createdAt instanceof Date ? data.createdAt : (data.createdAt?.toDate ? data.createdAt.toDate() : new Date())).getFullYear() : new Date().getFullYear()),
         clientName: data.clientName,
         clientPhone: data.clientPhone,
         serviceType: data.serviceType,
@@ -317,16 +318,34 @@ export async function getAllVehicles(): Promise<VehicleInput[]> {
 }
 
 /**
+ * Eliminar un vehículo por patente
+ * @param plateNumber Patente (ID)
+ */
+export async function deleteVehicle(plateNumber: string): Promise<AdminResponse> {
+  try {
+    if (!plateNumber) {
+      return { success: false, message: 'Falta la patente', error: 'MISSING_PLATE' };
+    }
+    const docRef = doc(db, 'vehicles', plateNumber);
+    await deleteDoc(docRef);
+    return { success: true, message: 'Vehículo eliminado correctamente' };
+  } catch (error) {
+    console.error('Error eliminando vehículo:', error);
+    return { success: false, message: 'Error al eliminar el vehículo', error: error instanceof Error ? error.message : 'INTERNAL_ERROR' };
+  }
+}
+
+/**
  * Crear un nuevo vehículo
  */
 
 export async function createVehicle(vehicleData: VehicleInput): Promise<AdminResponse> {
   try {
     // Validaciones básicas
-    if (!vehicleData.plateNumber || !vehicleData.clientName || !vehicleData.brand || !vehicleData.model || !vehicleData.serviceType) {
+    if (!vehicleData.plateNumber || !vehicleData.clientName || !vehicleData.brand || !vehicleData.model || !vehicleData.serviceType || typeof vehicleData.year !== 'number') {
       return {
         success: false,
-        message: 'Faltan campos obligatorios (patente, cliente, marca, modelo, tipo de servicio)',
+        message: 'Faltan campos obligatorios (patente, cliente, marca, modelo, tipo de servicio, año)',
         error: 'MISSING_REQUIRED_FIELDS',
       }
     }
@@ -350,3 +369,27 @@ export async function createVehicle(vehicleData: VehicleInput): Promise<AdminRes
     }
   }
 }
+
+/**
+ * Actualizar los datos de un vehículo existente en Firebase
+ * @param plateNumber Patente (ID)
+ * @param updateData Campos a actualizar (deben incluir year si se quiere modificar)
+ */
+export async function updateVehicle(plateNumber: string, updateData: Partial<VehicleInput>): Promise<AdminResponse> {
+  try {
+    if (!plateNumber) {
+      return { success: false, message: 'Falta la patente', error: 'MISSING_PLATE' }
+    }
+    const docRef = doc(db, 'vehicles', plateNumber)
+    await setDoc(docRef, {
+      ...updateData,
+      plateNumber, // Siempre mantener la patente
+      updatedAt: new Date(),
+    }, { merge: true })
+    return { success: true, message: 'Vehículo actualizado correctamente' }
+  } catch (error) {
+    console.error('Error actualizando vehículo:', error)
+    return { success: false, message: 'Error al actualizar el vehículo', error: error instanceof Error ? error.message : 'INTERNAL_ERROR' }
+  }
+}
+

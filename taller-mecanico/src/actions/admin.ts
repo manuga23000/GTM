@@ -342,17 +342,19 @@ export async function deleteVehicle(plateNumber: string): Promise<AdminResponse>
 export async function createVehicle(vehicleData: VehicleInput): Promise<AdminResponse> {
   try {
     // Validaciones básicas
-    if (!vehicleData.plateNumber || !vehicleData.clientName || !vehicleData.brand || !vehicleData.model || !vehicleData.serviceType || typeof vehicleData.year !== 'number') {
+    if (!vehicleData.plateNumber || !vehicleData.clientName) {
       return {
         success: false,
-        message: 'Faltan campos obligatorios (patente, cliente, marca, modelo, tipo de servicio, año)',
+        message: 'Faltan campos obligatorios (patente y cliente)',
         error: 'MISSING_REQUIRED_FIELDS',
       }
     }
 
-    const docRef = doc(db, 'vehicles', vehicleData.plateNumber)
+    const normalizedPlate = vehicleData.plateNumber.replace(/\s+/g, '').toUpperCase();
+    const docRef = doc(db, 'vehicles', normalizedPlate);
     await setDoc(docRef, {
       ...vehicleData,
+      plateNumber: normalizedPlate,
       createdAt: vehicleData.createdAt ? vehicleData.createdAt : new Date(),
     })
 

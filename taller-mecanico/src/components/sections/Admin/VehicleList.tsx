@@ -2,13 +2,14 @@ import { motion } from 'framer-motion'
 
 export interface VehicleInTracking {
   id: string
-  plateNumber: string
-  brand: string
-  model: string
-  year: number
-  clientName: string
-  clientPhone: string
-  serviceType: string
+  plateNumber: string // obligatorio
+  clientName: string // obligatorio
+  brand?: string
+  model?: string
+  year?: number
+  clientPhone?: string
+  serviceType?: string
+  chassisNumber?: string
   entryDate: Date
   estimatedCompletionDate?: Date
   status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'

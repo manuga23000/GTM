@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { VehicleInTracking } from './VehicleList'
-import React from 'react'
+import React, { useState } from 'react'
+import { updateVehicle } from '@/actions/admin'
 
 interface VehicleDetailsProps {
   vehicle: VehicleInTracking
@@ -23,7 +24,10 @@ export default function VehicleDetails({
   onDeleteStep,
   setVehiclesInTracking,
 }: VehicleDetailsProps) {
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState('');
   return (
+    <>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -116,6 +120,75 @@ export default function VehicleDetails({
                 />
               </div>
             </div>
+            <button
+              className="self-end mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+              onClick={async () => {
+                setSaving(true);
+                setSaveMsg('');
+                try {
+                  const response = await updateVehicle(vehicle.plateNumber, {
+                    notes: vehicle.notes,
+                    nextStep: vehicle.nextStep,
+                    estimatedCompletionDate: vehicle.estimatedCompletionDate || undefined,
+                  });
+                  if (response.success) {
+                    setSaveMsg('Guardado exitosamente');
+                    setTimeout(() => setSaveMsg(''), 2000);
+                  } else {
+                    setSaveMsg(response.message || 'Error al guardar');
+                  }
+                } catch (err) {
+                  setSaveMsg('Error de conexión');
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              disabled={saving}
+            >
+              {saving ? 'Guardando...' : 'Guardar'}
+            </button>
+            {saveMsg && <span className="text-xs text-green-300 mt-1">{saveMsg}</span>}
+              <div className="flex-1">
+                <label className="block text-gray-300 text-xs mb-1">
+                  Próximo paso
+                </label>
+                <input
+                  type="text"
+                  className="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white"
+                  value={vehicle.nextStep || ''}
+                  onChange={e =>
+                    setVehiclesInTracking((prev: VehicleInTracking[]) =>
+                      prev.map(v =>
+                        v.id === vehicle.id ? { ...v, nextStep: e.target.value } : v
+                      )
+                    )
+                  }
+                  placeholder="Ej: Esperar repuesto, Llamar cliente, etc."
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-gray-300 text-xs mb-1">
+                  Fecha estimada de finalización
+                </label>
+                <input
+                  type="date"
+                  className="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white"
+                  value={vehicle.estimatedCompletionDate ? new Date(vehicle.estimatedCompletionDate).toISOString().substring(0, 10) : ''}
+                  onChange={e =>
+                    setVehiclesInTracking((prev: VehicleInTracking[]) =>
+                      prev.map(v =>
+                        v.id === vehicle.id
+                          ? {
+                              ...v,
+                              estimatedCompletionDate: e.target.value ? new Date(e.target.value) : undefined,
+                            }
+                          : v
+                      )
+                    )
+                  }
+                />
+              </div>
+            </div>
           </div>
         </div>
         <div className="flex gap-2">
@@ -140,7 +213,6 @@ export default function VehicleDetails({
             </button>
           )}
         </div>
-      </div>
       {/* Timeline de pasos */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
@@ -198,5 +270,6 @@ export default function VehicleDetails({
         ))}
       </div>
     </motion.div>
+    </>
   )
 }

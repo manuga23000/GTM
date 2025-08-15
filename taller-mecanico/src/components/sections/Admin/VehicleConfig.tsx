@@ -1,6 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { createVehicle, getAllVehicles, updateVehicle, deleteVehicle } from '@/actions/admin'
+import {
+  createVehicle,
+  getAllVehicles,
+  updateVehicle,
+  deleteVehicle,
+} from '@/actions/admin'
 import { motion, AnimatePresence } from 'framer-motion'
 import VehicleList, { VehicleInTracking } from './VehicleList'
 import VehicleDetails from './VehicleDetails'
@@ -89,14 +94,19 @@ export default function VehicleConfig() {
 
   // Lógica de eliminación de vehículo
   const handleDeleteVehicle = async () => {
-    if (!selectedVehicleData) return;
-    if (!window.confirm(`¿Seguro que deseas eliminar el vehículo ${selectedVehicleData.plateNumber}? Esta acción no se puede deshacer.`)) return;
-    setMessage('Eliminando vehículo...');
+    if (!selectedVehicleData) return
+    if (
+      !window.confirm(
+        `¿Seguro que deseas eliminar el vehículo ${selectedVehicleData.plateNumber}? Esta acción no se puede deshacer.`
+      )
+    )
+      return
+    setMessage('Eliminando vehículo...')
     try {
-      const response = await deleteVehicle(selectedVehicleData.plateNumber);
+      const response = await deleteVehicle(selectedVehicleData.plateNumber)
       if (response.success) {
         // Refrescar lista desde backend
-        const backendVehicles = await getAllVehicles();
+        const backendVehicles = await getAllVehicles()
         const mapped = backendVehicles.map(v => ({
           id: v.plateNumber,
           plateNumber: v.plateNumber,
@@ -110,20 +120,20 @@ export default function VehicleConfig() {
           status: 'received' as const,
           steps: [],
           notes: '',
-        }));
-        setVehiclesInTracking(mapped);
-        setSelectedVehicle('');
-        setMessage('Vehículo eliminado correctamente');
-        setTimeout(() => setMessage(''), 2000);
+        }))
+        setVehiclesInTracking(mapped)
+        setSelectedVehicle('')
+        setMessage('Vehículo eliminado correctamente')
+        setTimeout(() => setMessage(''), 2000)
       } else {
-        setMessage(response.message || 'Error al eliminar vehículo');
-        setTimeout(() => setMessage(''), 3000);
+        setMessage(response.message || 'Error al eliminar vehículo')
+        setTimeout(() => setMessage(''), 3000)
       }
     } catch (error) {
-      setMessage('Error al eliminar vehículo');
-      setTimeout(() => setMessage(''), 4000);
+      setMessage('Error al eliminar vehículo')
+      setTimeout(() => setMessage(''), 4000)
     }
-  };
+  }
 
   // Lógica de edición de vehículo
   const handleOpenEditVehicle = () => {
@@ -235,6 +245,7 @@ export default function VehicleConfig() {
   }
 
   const handleAddVehicle = async () => {
+  console.log('DEBUG newVehicle:', newVehicle);
     setMessage('Guardando vehículo...')
     try {
       const response = await createVehicle(newVehicle)

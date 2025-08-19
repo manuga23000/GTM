@@ -1,37 +1,53 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { VehicleInTracking } from './VehicleList'
-import React from 'react'
+import React, { useEffect } from 'react'
+
+// Tipos para vehículo nuevo (antes de guardar)
+interface NewVehicleData {
+  plateNumber: string
+  brand: string
+  model: string
+  year: number
+  clientName: string
+  clientPhone: string
+  serviceType: string
+  chassisNumber: string
+  totalCost: number
+  notes: string
+  createdAt: Date
+  estimatedCompletionDate: Date | null
+}
+
+// Tipos para datos de seguimiento
+interface TrackingData {
+  notes?: string
+  nextStep?: string
+  estimatedCompletionDate?: string | Date | null
+}
+
+// Tipo para las funciones setter
+type VehicleSetter<T> = (value: T | ((prev: T) => T)) => void
 
 interface VehicleModalProps {
   // Agregar nuevo vehículo
   showAddForm: boolean
   setShowAddForm: (show: boolean) => void
-  newVehicle: any
-  setNewVehicle: (v: any) => void
+  newVehicle: NewVehicleData
+  setNewVehicle: VehicleSetter<NewVehicleData>
   handleAddVehicle: () => void
 
   // Editar vehículo (datos básicos)
   showEditVehicleModal: boolean
   setShowEditVehicleModal: (show: boolean) => void
   editVehicle: VehicleInTracking | null
-  setEditVehicle: (
-    v:
-      | VehicleInTracking
-      | null
-      | ((v: VehicleInTracking | null) => VehicleInTracking | null)
-  ) => void
+  setEditVehicle: VehicleSetter<VehicleInTracking | null>
   handleSaveVehicleEdit: () => void
 
   // Editar seguimiento
   showTrackingModal: boolean
   setShowTrackingModal: (show: boolean) => void
   editTracking: VehicleInTracking | null
-  setEditTracking: (
-    v:
-      | VehicleInTracking
-      | null
-      | ((v: VehicleInTracking | null) => VehicleInTracking | null)
-  ) => void
+  setEditTracking: VehicleSetter<VehicleInTracking | null>
   handleSaveTrackingEdit: () => void
 }
 
@@ -41,11 +57,11 @@ const VehicleForm = ({
   setVehicle,
   isEdit = false,
 }: {
-  vehicle: any
-  setVehicle: (v: any) => void
+  vehicle: NewVehicleData | VehicleInTracking
+  setVehicle: VehicleSetter<NewVehicleData> | VehicleSetter<VehicleInTracking>
   isEdit?: boolean
 }) => {
-  const formatPlateNumber = (value: string) => {
+  const formatPlateNumber = (value: string): string => {
     let formatted = value.toUpperCase().replace(/[^A-Z0-9]/g, '')
     if (formatted.length <= 7) {
       if (/^[A-Z]{2}\d{3}[A-Z]{2}$/.test(formatted)) {
@@ -62,11 +78,33 @@ const VehicleForm = ({
     return formatted
   }
 
-  const formatDate = (date: any) => {
+  const formatDate = (date: string | Date | null | undefined): string => {
     if (!date) return ''
     if (typeof date === 'string') return date.slice(0, 10)
     if (date instanceof Date) return date.toISOString().slice(0, 10)
     return ''
+  }
+
+  const handleVehicleUpdate = (
+    updates: Partial<NewVehicleData | VehicleInTracking>
+  ) => {
+    if (isEdit) {
+      ;(setVehicle as VehicleSetter<VehicleInTracking>)(
+        (prev: VehicleInTracking) =>
+          ({
+            ...prev,
+            ...updates,
+          } as VehicleInTracking)
+      )
+    } else {
+      ;(setVehicle as VehicleSetter<NewVehicleData>)(
+        (prev: NewVehicleData) =>
+          ({
+            ...prev,
+            ...updates,
+          } as NewVehicleData)
+      )
+    }
   }
 
   return (
@@ -79,13 +117,17 @@ const VehicleForm = ({
           </label>
           <input
             type='date'
-            value={formatDate(vehicle.entryDate || vehicle.createdAt)}
-            onChange={e =>
-              setVehicle((prev: any) => ({
-                ...prev,
-                [isEdit ? 'entryDate' : 'createdAt']: e.target.value,
-              }))
-            }
+            value={formatDate(
+              isEdit && 'entryDate' in vehicle
+                ? vehicle.entryDate
+                : 'createdAt' in vehicle
+                ? vehicle.createdAt
+                : undefined
+            )}
+            onChange={e => {
+              const fieldName = isEdit ? 'entryDate' : 'createdAt'
+              handleVehicleUpdate({ [fieldName]: e.target.value })
+            }}
             className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
           />
         </div>
@@ -97,12 +139,11 @@ const VehicleForm = ({
             type='date'
             value={formatDate(vehicle.estimatedCompletionDate)}
             onChange={e =>
-              setVehicle((prev: any) => ({
-                ...prev,
+              handleVehicleUpdate({
                 estimatedCompletionDate: e.target.value
                   ? new Date(e.target.value)
                   : null,
-              }))
+              })
             }
             className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
           />
@@ -114,22 +155,15 @@ const VehicleForm = ({
         <input
           type='text'
           placeholder='Cliente *'
-          value={vehicle.clientName || ''}
-          onChange={e =>
-            setVehicle((prev: any) => ({ ...prev, clientName: e.target.value }))
-          }
+          value={vehicle.clientName}
+          onChange={e => handleVehicleUpdate({ clientName: e.target.value })}
           className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
         />
         <input
           type='text'
           placeholder='Teléfono'
-          value={vehicle.clientPhone || ''}
-          onChange={e =>
-            setVehicle((prev: any) => ({
-              ...prev,
-              clientPhone: e.target.value,
-            }))
-          }
+          value={vehicle.clientPhone}
+          onChange={e => handleVehicleUpdate({ clientPhone: e.target.value })}
           className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
         />
       </div>
@@ -139,19 +173,15 @@ const VehicleForm = ({
         <input
           type='text'
           placeholder='Marca'
-          value={vehicle.brand || ''}
-          onChange={e =>
-            setVehicle((prev: any) => ({ ...prev, brand: e.target.value }))
-          }
+          value={vehicle.brand}
+          onChange={e => handleVehicleUpdate({ brand: e.target.value })}
           className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
         />
         <input
           type='text'
           placeholder='Modelo'
-          value={vehicle.model || ''}
-          onChange={e =>
-            setVehicle((prev: any) => ({ ...prev, model: e.target.value }))
-          }
+          value={vehicle.model}
+          onChange={e => handleVehicleUpdate({ model: e.target.value })}
           className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
         />
       </div>
@@ -161,24 +191,22 @@ const VehicleForm = ({
         <input
           type='number'
           placeholder='Año'
-          value={vehicle.year || ''}
+          value={vehicle.year}
           onChange={e =>
-            setVehicle((prev: any) => ({
-              ...prev,
+            handleVehicleUpdate({
               year: parseInt(e.target.value) || new Date().getFullYear(),
-            }))
+            })
           }
           className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
         />
         <input
           type='text'
           placeholder='Patente *'
-          value={vehicle.plateNumber || ''}
+          value={vehicle.plateNumber}
           onChange={e =>
-            setVehicle((prev: any) => ({
-              ...prev,
+            handleVehicleUpdate({
               plateNumber: formatPlateNumber(e.target.value),
-            }))
+            })
           }
           maxLength={9}
           className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
@@ -190,24 +218,18 @@ const VehicleForm = ({
         <input
           type='text'
           placeholder='N° de chasis'
-          value={vehicle.chassisNumber || ''}
-          onChange={e =>
-            setVehicle((prev: any) => ({
-              ...prev,
-              chassisNumber: e.target.value,
-            }))
-          }
+          value={vehicle.chassisNumber}
+          onChange={e => handleVehicleUpdate({ chassisNumber: e.target.value })}
           className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
         />
         <input
           type='number'
           placeholder='Costo total'
-          value={vehicle.totalCost || ''}
+          value={vehicle.totalCost}
           onChange={e =>
-            setVehicle((prev: any) => ({
-              ...prev,
+            handleVehicleUpdate({
               totalCost: parseFloat(e.target.value) || 0,
-            }))
+            })
           }
           className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
         />
@@ -217,12 +239,26 @@ const VehicleForm = ({
       <input
         type='text'
         placeholder='Tipo de servicio'
-        value={vehicle.serviceType || ''}
-        onChange={e =>
-          setVehicle((prev: any) => ({ ...prev, serviceType: e.target.value }))
-        }
+        value={vehicle.serviceType}
+        onChange={e => handleVehicleUpdate({ serviceType: e.target.value })}
         className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
       />
+
+      {/* Notas (solo para vehículos nuevos) */}
+      {!isEdit && 'notes' in vehicle && (
+        <div>
+          <label className='block text-gray-300 text-sm mb-1'>
+            Notas iniciales
+          </label>
+          <textarea
+            placeholder='Observaciones iniciales del vehículo...'
+            value={vehicle.notes}
+            onChange={e => handleVehicleUpdate({ notes: e.target.value })}
+            className='w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white resize-none'
+            rows={3}
+          />
+        </div>
+      )}
     </div>
   )
 }
@@ -232,14 +268,21 @@ const TrackingForm = ({
   tracking,
   setTracking,
 }: {
-  tracking: any
-  setTracking: (v: any) => void
+  tracking: VehicleInTracking
+  setTracking: VehicleSetter<VehicleInTracking>
 }) => {
-  const formatDate = (date: any) => {
+  const formatDate = (date: string | Date | null | undefined): string => {
     if (!date) return ''
     if (typeof date === 'string') return date.slice(0, 10)
     if (date instanceof Date) return date.toISOString().slice(0, 10)
     return ''
+  }
+
+  const handleTrackingUpdate = (updates: Partial<VehicleInTracking>) => {
+    setTracking((prev: VehicleInTracking) => ({
+      ...prev,
+      ...updates,
+    }))
   }
 
   return (
@@ -251,9 +294,7 @@ const TrackingForm = ({
         </label>
         <textarea
           value={tracking.notes || ''}
-          onChange={e =>
-            setTracking((prev: any) => ({ ...prev, notes: e.target.value }))
-          }
+          onChange={e => handleTrackingUpdate({ notes: e.target.value })}
           placeholder='Detalle de trabajos realizados, diagnósticos, reparaciones realizadas...'
           className='w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white resize-none focus:border-blue-500 focus:outline-none'
           rows={4}
@@ -272,12 +313,7 @@ const TrackingForm = ({
           <input
             type='text'
             value={tracking.nextStep || ''}
-            onChange={e =>
-              setTracking((prev: any) => ({
-                ...prev,
-                nextStep: e.target.value,
-              }))
-            }
+            onChange={e => handleTrackingUpdate({ nextStep: e.target.value })}
             placeholder='Ej: Esperar repuesto, Llamar cliente...'
             className='w-full h-10 p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none'
           />
@@ -292,12 +328,11 @@ const TrackingForm = ({
             type='date'
             value={formatDate(tracking.estimatedCompletionDate)}
             onChange={e =>
-              setTracking((prev: any) => ({
-                ...prev,
+              handleTrackingUpdate({
                 estimatedCompletionDate: e.target.value
                   ? new Date(e.target.value)
                   : null,
-              }))
+              })
             }
             className='w-full h-10 p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none'
           />
@@ -306,8 +341,6 @@ const TrackingForm = ({
     </div>
   )
 }
-
-import { useEffect } from 'react'
 
 export default function VehicleModal({
   showAddForm,
@@ -352,11 +385,11 @@ export default function VehicleModal({
     }
   }, [showAddForm, showEditVehicleModal, showTrackingModal])
 
-  const isValidVehicle = (vehicle: any) => {
+  const isValidVehicle = (vehicle: NewVehicleData): boolean => {
     return (
-      vehicle.plateNumber &&
+      !!vehicle.plateNumber &&
       /^([A-Z]{3} \d{3}|[A-Z]{2} \d{3} [A-Z]{2})$/.test(vehicle.plateNumber) &&
-      vehicle.clientName?.trim()
+      !!vehicle.clientName.trim()
     )
   }
 
@@ -512,7 +545,7 @@ export default function VehicleModal({
 
               <VehicleForm
                 vehicle={editVehicle}
-                setVehicle={setEditVehicle}
+                setVehicle={setEditVehicle as VehicleSetter<VehicleInTracking>}
                 isEdit={true}
               />
 
@@ -597,7 +630,9 @@ export default function VehicleModal({
 
               <TrackingForm
                 tracking={editTracking}
-                setTracking={setEditTracking}
+                setTracking={
+                  setEditTracking as VehicleSetter<VehicleInTracking>
+                }
               />
 
               <div className='flex gap-3 pt-6 mt-6 border-t border-gray-700'>

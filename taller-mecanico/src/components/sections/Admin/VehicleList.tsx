@@ -14,7 +14,7 @@ export interface VehicleInTracking {
   estimatedCompletionDate?: Date | null // Cambiar undefined por null
   status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'
   totalCost?: number // Campo de costo agregado
-  steps: any[]
+  steps: unknown[]
   notes: string
   nextStep?: string
 }

@@ -381,8 +381,10 @@ export async function deleteVehicle(
 /**
  * Filtrar valores undefined de un objeto para Firebase
  */
-function filterUndefinedValues(obj: any): any {
-  const filtered: any = {}
+function filterUndefinedValues(
+  obj: Record<string, unknown>
+): Record<string, unknown> {
+  const filtered: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(obj)) {
     if (value !== undefined) {
       filtered[key] = value

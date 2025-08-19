@@ -57,12 +57,26 @@ export async function getSeguimientoByPatente(
 
     const data = docSnap.data()
 
-    // Función para formatear fecha desde Firestore
-    const formatearFecha = (timestamp: any): string => {
+    interface FirestoreTimestamp {
+      toDate(): Date
+    }
+
+    const isFirestoreTimestamp = (
+      value: unknown
+    ): value is FirestoreTimestamp => {
+      return (
+        typeof value === 'object' &&
+        value !== null &&
+        'toDate' in value &&
+        typeof (value as Record<string, unknown>).toDate === 'function'
+      )
+    }
+
+    const formatearFecha = (timestamp: unknown): string => {
       if (!timestamp) return new Date().toISOString()
 
       // Si es un Timestamp de Firestore
-      if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+      if (isFirestoreTimestamp(timestamp)) {
         return timestamp.toDate().toISOString()
       }
 
@@ -93,7 +107,9 @@ export async function getSeguimientoByPatente(
       tipoServicio: data.serviceType || 'Reparación general',
       trabajosRealizados: data.trabajosRealizados || [],
       proximoPaso: data.proximoPaso || '',
-      fechaEstimadaEntrega: data.fechaEstimadaEntrega ? formatearFecha(data.fechaEstimadaEntrega) : '',
+      fechaEstimadaEntrega: data.fechaEstimadaEntrega
+        ? formatearFecha(data.fechaEstimadaEntrega)
+        : '',
       timeline: data.timeline || [],
       imagenes: data.imagenes || [],
     }

@@ -1,5 +1,13 @@
 // src/actions/admin.ts
-import { doc, setDoc, getDoc, getDocs, collection, Timestamp, deleteDoc } from 'firebase/firestore'
+import {
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  collection,
+  Timestamp,
+  deleteDoc,
+} from 'firebase/firestore'
 import { db } from '../lib/firebase'
 
 // Tipos para la configuración
@@ -295,25 +303,50 @@ import { VehicleInput } from './types/types'
 
 export async function getAllVehicles(): Promise<VehicleInput[]> {
   try {
-    const querySnapshot = await getDocs(collection(db, 'vehicles'));
-    const vehicles: VehicleInput[] = [];
+    const querySnapshot = await getDocs(collection(db, 'vehicles'))
+    const vehicles: VehicleInput[] = []
     querySnapshot.forEach(doc => {
-      const data = doc.data();
+      const data = doc.data()
       vehicles.push({
         plateNumber: data.plateNumber,
         brand: data.brand,
         model: data.model,
-        year: typeof data.year === 'number' ? data.year : (data.createdAt ? new Date(data.createdAt instanceof Date ? data.createdAt : (data.createdAt?.toDate ? data.createdAt.toDate() : new Date())).getFullYear() : new Date().getFullYear()),
+        year:
+          typeof data.year === 'number'
+            ? data.year
+            : data.createdAt
+            ? new Date(
+                data.createdAt instanceof Date
+                  ? data.createdAt
+                  : data.createdAt?.toDate
+                  ? data.createdAt.toDate()
+                  : new Date()
+              ).getFullYear()
+            : new Date().getFullYear(),
         clientName: data.clientName,
         clientPhone: data.clientPhone,
         serviceType: data.serviceType,
-        createdAt: data.createdAt instanceof Date ? data.createdAt : (data.createdAt?.toDate ? data.createdAt.toDate() : new Date()),
-      });
-    });
-    return vehicles;
+        chassisNumber: data.chassisNumber,
+        totalCost: data.totalCost || 0, // NUEVO: incluir totalCost
+        createdAt:
+          data.createdAt instanceof Date
+            ? data.createdAt
+            : data.createdAt?.toDate
+            ? data.createdAt.toDate()
+            : new Date(),
+        estimatedCompletionDate: data.estimatedCompletionDate
+          ? data.estimatedCompletionDate instanceof Date
+            ? data.estimatedCompletionDate
+            : data.estimatedCompletionDate.toDate()
+          : null, // Manejar null correctamente
+        notes: data.notes || '',
+        nextStep: data.nextStep || '',
+      })
+    })
+    return vehicles
   } catch (error) {
-    console.error('Error obteniendo vehículos:', error);
-    return [];
+    console.error('Error obteniendo vehículos:', error)
+    return []
   }
 }
 
@@ -321,25 +354,49 @@ export async function getAllVehicles(): Promise<VehicleInput[]> {
  * Eliminar un vehículo por patente
  * @param plateNumber Patente (ID)
  */
-export async function deleteVehicle(plateNumber: string): Promise<AdminResponse> {
+export async function deleteVehicle(
+  plateNumber: string
+): Promise<AdminResponse> {
   try {
     if (!plateNumber) {
-      return { success: false, message: 'Falta la patente', error: 'MISSING_PLATE' };
+      return {
+        success: false,
+        message: 'Falta la patente',
+        error: 'MISSING_PLATE',
+      }
     }
-    const docRef = doc(db, 'vehicles', plateNumber);
-    await deleteDoc(docRef);
-    return { success: true, message: 'Vehículo eliminado correctamente' };
+    const docRef = doc(db, 'vehicles', plateNumber)
+    await deleteDoc(docRef)
+    return { success: true, message: 'Vehículo eliminado correctamente' }
   } catch (error) {
-    console.error('Error eliminando vehículo:', error);
-    return { success: false, message: 'Error al eliminar el vehículo', error: error instanceof Error ? error.message : 'INTERNAL_ERROR' };
+    console.error('Error eliminando vehículo:', error)
+    return {
+      success: false,
+      message: 'Error al eliminar el vehículo',
+      error: error instanceof Error ? error.message : 'INTERNAL_ERROR',
+    }
   }
+}
+
+/**
+ * Filtrar valores undefined de un objeto para Firebase
+ */
+function filterUndefinedValues(obj: any): any {
+  const filtered: any = {}
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      filtered[key] = value
+    }
+  }
+  return filtered
 }
 
 /**
  * Crear un nuevo vehículo
  */
-
-export async function createVehicle(vehicleData: VehicleInput): Promise<AdminResponse> {
+export async function createVehicle(
+  vehicleData: VehicleInput
+): Promise<AdminResponse> {
   try {
     // Validaciones básicas
     if (!vehicleData.plateNumber || !vehicleData.clientName) {
@@ -350,13 +407,23 @@ export async function createVehicle(vehicleData: VehicleInput): Promise<AdminRes
       }
     }
 
-    const normalizedPlate = vehicleData.plateNumber.replace(/\s+/g, '').toUpperCase();
-    const docRef = doc(db, 'vehicles', normalizedPlate);
-    await setDoc(docRef, {
+    const normalizedPlate = vehicleData.plateNumber
+      .replace(/\s+/g, '')
+      .toUpperCase()
+    const docRef = doc(db, 'vehicles', normalizedPlate)
+
+    // Preparar datos con todos los campos incluido totalCost
+    const dataToSave = {
       ...vehicleData,
       plateNumber: normalizedPlate,
-      createdAt: vehicleData.createdAt ? vehicleData.createdAt : new Date(),
-    })
+      createdAt: vehicleData.createdAt || new Date(),
+      totalCost: vehicleData.totalCost || 0,
+    }
+
+    // Filtrar valores undefined antes de enviar a Firebase
+    const filteredData = filterUndefinedValues(dataToSave)
+
+    await setDoc(docRef, filteredData)
 
     return {
       success: true,
@@ -375,23 +442,45 @@ export async function createVehicle(vehicleData: VehicleInput): Promise<AdminRes
 /**
  * Actualizar los datos de un vehículo existente en Firebase
  * @param plateNumber Patente (ID)
- * @param updateData Campos a actualizar (deben incluir year si se quiere modificar)
+ * @param updateData Campos a actualizar (ahora incluye totalCost)
  */
-export async function updateVehicle(plateNumber: string, updateData: Partial<VehicleInput>): Promise<AdminResponse> {
+export async function updateVehicle(
+  plateNumber: string,
+  updateData: Partial<VehicleInput>
+): Promise<AdminResponse> {
   try {
     if (!plateNumber) {
-      return { success: false, message: 'Falta la patente', error: 'MISSING_PLATE' }
+      return {
+        success: false,
+        message: 'Falta la patente',
+        error: 'MISSING_PLATE',
+      }
     }
     const docRef = doc(db, 'vehicles', plateNumber)
-    await setDoc(docRef, {
+
+    // Preparar datos de actualización
+    const dataToUpdate = {
       ...updateData,
       plateNumber, // Siempre mantener la patente
       updatedAt: new Date(),
-    }, { merge: true })
+    }
+
+    // Si se incluye totalCost, asegurar que es un número
+    if (updateData.totalCost !== undefined) {
+      dataToUpdate.totalCost = Number(updateData.totalCost) || 0
+    }
+
+    // Filtrar valores undefined antes de enviar a Firebase
+    const filteredData = filterUndefinedValues(dataToUpdate)
+
+    await setDoc(docRef, filteredData, { merge: true })
     return { success: true, message: 'Vehículo actualizado correctamente' }
   } catch (error) {
     console.error('Error actualizando vehículo:', error)
-    return { success: false, message: 'Error al actualizar el vehículo', error: error instanceof Error ? error.message : 'INTERNAL_ERROR' }
+    return {
+      success: false,
+      message: 'Error al actualizar el vehículo',
+      error: error instanceof Error ? error.message : 'INTERNAL_ERROR',
+    }
   }
 }
-

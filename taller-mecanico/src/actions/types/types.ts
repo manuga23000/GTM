@@ -73,7 +73,7 @@ export interface ServiceConfigResponse {
   config?: ServiceConfig
 }
 
-// NUEVO: Tipo para alta de vehículo
+// TIPO ACTUALIZADO PARA ALTA DE VEHÍCULO (INCLUYE COSTO)
 export interface VehicleInput {
   plateNumber: string // obligatorio
   clientName: string // obligatorio
@@ -83,8 +83,9 @@ export interface VehicleInput {
   clientPhone?: string
   serviceType?: string
   chassisNumber?: string
+  totalCost?: number // NUEVO: campo de costo total
   createdAt?: Date
-  estimatedCompletionDate?: Date
+  estimatedCompletionDate?: Date | null // Cambiar undefined por null para Firebase
   notes?: string
   nextStep?: string
-} // Nueva: fecha estimativa de salida
+}

@@ -216,12 +216,14 @@ export default function Footer() {
             >
               Contacto
             </Link>
+            {/* 
             <Link
               href='/seguimiento'
               className='text-gray-300 hover:text-red-500 transition font-medium'
             >
               Seguimiento
             </Link>
+             */}
           </div>
         </div>
 

@@ -138,7 +138,7 @@ export default function TestSections({
                 abajo)
               </li>
               <li>
-                <strong>3.</strong> Tocá el botón "ABRIR MODAL"
+                <strong>3.</strong> Tocá el botón &quot;ABRIR MODAL&quot;
               </li>
               <li>
                 <strong>4.</strong> El modal DEBE aparecer centrado en tu

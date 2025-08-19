@@ -1,8 +1,33 @@
-import { AnimatePresence, motion } from 'framer-motion'
-import { VehicleInTracking } from './VehicleList'
-import React, { useEffect } from 'react'
+// src/components/sections/Admin/VehicleModal.tsx
+// REEMPLAZA TODO EL CONTENIDO DEL ARCHIVO ACTUAL
+'use client'
+import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { createPortal } from 'react-dom'
+import VehicleForm from './VehicleForm'
 
-// Tipos para vehículo nuevo (antes de guardar)
+// Portal Hook Inline
+function usePortal() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  return mounted
+}
+
+// Portal Component Inline
+function Portal({ children }: { children: React.ReactNode }) {
+  const mounted = usePortal()
+
+  if (!mounted || typeof document === 'undefined') return null
+
+  return createPortal(children, document.body)
+}
+
+// Tipos existentes (copiados del original)
 interface NewVehicleData {
   plateNumber: string
   brand: string
@@ -18,32 +43,43 @@ interface NewVehicleData {
   estimatedCompletionDate: Date | null
 }
 
-// Tipos para datos de seguimiento
-interface TrackingData {
-  notes?: string
+interface VehicleInTracking {
+  id: string
+  plateNumber: string
+  clientName: string
+  brand?: string
+  model?: string
+  year?: number
+  clientPhone?: string
+  serviceType?: string
+  chassisNumber?: string
+  entryDate: Date
+  estimatedCompletionDate?: Date | null
+  status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'
+  totalCost?: number
+  steps: unknown[]
+  notes: string
   nextStep?: string
-  estimatedCompletionDate?: string | Date | null
 }
 
-// Tipo para las funciones setter
 type VehicleSetter<T> = (value: T | ((prev: T) => T)) => void
 
 interface VehicleModalProps {
-  // Agregar nuevo vehículo
+  // Props para agregar nuevo vehículo
   showAddForm: boolean
   setShowAddForm: (show: boolean) => void
   newVehicle: NewVehicleData
   setNewVehicle: VehicleSetter<NewVehicleData>
   handleAddVehicle: () => void
 
-  // Editar vehículo (datos básicos)
+  // Props para editar vehículo
   showEditVehicleModal: boolean
   setShowEditVehicleModal: (show: boolean) => void
   editVehicle: VehicleInTracking | null
   setEditVehicle: VehicleSetter<VehicleInTracking | null>
   handleSaveVehicleEdit: () => void
 
-  // Editar seguimiento
+  // Props para editar seguimiento
   showTrackingModal: boolean
   setShowTrackingModal: (show: boolean) => void
   editTracking: VehicleInTracking | null
@@ -51,219 +87,7 @@ interface VehicleModalProps {
   handleSaveTrackingEdit: () => void
 }
 
-// Componente reutilizable para formulario de vehículo
-const VehicleForm = ({
-  vehicle,
-  setVehicle,
-  isEdit = false,
-}: {
-  vehicle: NewVehicleData | VehicleInTracking
-  setVehicle: VehicleSetter<NewVehicleData> | VehicleSetter<VehicleInTracking>
-  isEdit?: boolean
-}) => {
-  const formatPlateNumber = (value: string): string => {
-    let formatted = value.toUpperCase().replace(/[^A-Z0-9]/g, '')
-    if (formatted.length <= 7) {
-      if (/^[A-Z]{2}\d{3}[A-Z]{2}$/.test(formatted)) {
-        formatted =
-          formatted.slice(0, 2) +
-          ' ' +
-          formatted.slice(2, 5) +
-          ' ' +
-          formatted.slice(5, 7)
-      } else if (/^[A-Z]{3}\d{3}$/.test(formatted)) {
-        formatted = formatted.slice(0, 3) + ' ' + formatted.slice(3, 6)
-      }
-    }
-    return formatted
-  }
-
-  const formatDate = (date: string | Date | null | undefined): string => {
-    if (!date) return ''
-    if (typeof date === 'string') return date.slice(0, 10)
-    if (date instanceof Date) return date.toISOString().slice(0, 10)
-    return ''
-  }
-
-  const handleVehicleUpdate = (
-    updates: Partial<NewVehicleData | VehicleInTracking>
-  ) => {
-    if (isEdit) {
-      ;(setVehicle as VehicleSetter<VehicleInTracking>)(
-        (prev: VehicleInTracking) =>
-          ({
-            ...prev,
-            ...updates,
-          } as VehicleInTracking)
-      )
-    } else {
-      ;(setVehicle as VehicleSetter<NewVehicleData>)(
-        (prev: NewVehicleData) =>
-          ({
-            ...prev,
-            ...updates,
-          } as NewVehicleData)
-      )
-    }
-  }
-
-  return (
-    <div className='space-y-4'>
-      {/* Fechas */}
-      <div className='grid grid-cols-2 gap-3'>
-        <div>
-          <label className='block text-gray-300 text-sm mb-1'>
-            Fecha de ingreso *
-          </label>
-          <input
-            type='date'
-            value={formatDate(
-              isEdit && 'entryDate' in vehicle
-                ? vehicle.entryDate
-                : 'createdAt' in vehicle
-                ? vehicle.createdAt
-                : undefined
-            )}
-            onChange={e => {
-              const fieldName = isEdit ? 'entryDate' : 'createdAt'
-              handleVehicleUpdate({ [fieldName]: e.target.value })
-            }}
-            className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-          />
-        </div>
-        <div>
-          <label className='block text-gray-300 text-sm mb-1'>
-            Fecha estimada de finalización
-          </label>
-          <input
-            type='date'
-            value={formatDate(vehicle.estimatedCompletionDate)}
-            onChange={e =>
-              handleVehicleUpdate({
-                estimatedCompletionDate: e.target.value
-                  ? new Date(e.target.value)
-                  : null,
-              })
-            }
-            className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-          />
-        </div>
-      </div>
-
-      {/* Cliente y teléfono */}
-      <div className='grid grid-cols-2 gap-3'>
-        <input
-          type='text'
-          placeholder='Cliente *'
-          value={vehicle.clientName}
-          onChange={e => handleVehicleUpdate({ clientName: e.target.value })}
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
-        <input
-          type='text'
-          placeholder='Teléfono'
-          value={vehicle.clientPhone}
-          onChange={e => handleVehicleUpdate({ clientPhone: e.target.value })}
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
-      </div>
-
-      {/* Marca y modelo */}
-      <div className='grid grid-cols-2 gap-3'>
-        <input
-          type='text'
-          placeholder='Marca'
-          value={vehicle.brand}
-          onChange={e => handleVehicleUpdate({ brand: e.target.value })}
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
-        <input
-          type='text'
-          placeholder='Modelo'
-          value={vehicle.model}
-          onChange={e => handleVehicleUpdate({ model: e.target.value })}
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
-      </div>
-
-      {/* Año y patente */}
-      <div className='grid grid-cols-2 gap-3'>
-        <input
-          type='number'
-          placeholder='Año'
-          value={vehicle.year}
-          onChange={e =>
-            handleVehicleUpdate({
-              year: parseInt(e.target.value) || new Date().getFullYear(),
-            })
-          }
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
-        <input
-          type='text'
-          placeholder='Patente *'
-          value={vehicle.plateNumber}
-          onChange={e =>
-            handleVehicleUpdate({
-              plateNumber: formatPlateNumber(e.target.value),
-            })
-          }
-          maxLength={9}
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
-      </div>
-
-      {/* Chasis y costo */}
-      <div className='grid grid-cols-2 gap-3'>
-        <input
-          type='text'
-          placeholder='N° de chasis'
-          value={vehicle.chassisNumber}
-          onChange={e => handleVehicleUpdate({ chassisNumber: e.target.value })}
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
-        <input
-          type='number'
-          placeholder='Costo total'
-          value={vehicle.totalCost}
-          onChange={e =>
-            handleVehicleUpdate({
-              totalCost: parseFloat(e.target.value) || 0,
-            })
-          }
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
-      </div>
-
-      {/* Tipo de servicio */}
-      <input
-        type='text'
-        placeholder='Tipo de servicio'
-        value={vehicle.serviceType}
-        onChange={e => handleVehicleUpdate({ serviceType: e.target.value })}
-        className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-      />
-
-      {/* Notas (solo para vehículos nuevos) */}
-      {!isEdit && 'notes' in vehicle && (
-        <div>
-          <label className='block text-gray-300 text-sm mb-1'>
-            Notas iniciales
-          </label>
-          <textarea
-            placeholder='Observaciones iniciales del vehículo...'
-            value={vehicle.notes}
-            onChange={e => handleVehicleUpdate({ notes: e.target.value })}
-            className='w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white resize-none'
-            rows={3}
-          />
-        </div>
-      )}
-    </div>
-  )
-}
-
-// Componente para formulario de seguimiento (simplificado)
+// Componente para formulario de seguimiento (copiado del original)
 const TrackingForm = ({
   tracking,
   setTracking,
@@ -359,23 +183,19 @@ export default function VehicleModal({
   setEditTracking,
   handleSaveTrackingEdit,
 }: VehicleModalProps) {
-  // Bloquear scroll del body cuando cualquier modal esté abierto
+  // Bloquear scroll cuando cualquier modal esté abierto
   useEffect(() => {
     const anyModalOpen =
       showAddForm || showEditVehicleModal || showTrackingModal
 
     if (anyModalOpen) {
-      // Guardar el scroll actual
       const scrollY = window.scrollY
-
-      // Aplicar estilos para bloquear scroll
       document.body.style.position = 'fixed'
       document.body.style.top = `-${scrollY}px`
       document.body.style.width = '100%'
       document.body.style.overflow = 'hidden'
 
       return () => {
-        // Restaurar estilos y posición
         document.body.style.position = ''
         document.body.style.top = ''
         document.body.style.width = ''
@@ -396,263 +216,271 @@ export default function VehicleModal({
   return (
     <>
       {/* Modal agregar nuevo vehículo */}
-      <AnimatePresence>
-        {showAddForm && (
-          <div
-            className='fixed z-[9999]'
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '1rem',
-            }}
-            onClick={() => setShowAddForm(false)}
-          >
+      <Portal>
+        <AnimatePresence>
+          {showAddForm && (
             <div
-              className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
+              className='fixed z-[99999]'
               style={{
-                position: 'absolute',
+                position: 'fixed',
                 top: 0,
                 left: 0,
                 right: 0,
                 bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1rem',
               }}
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className='relative bg-gray-800 rounded-xl p-6 w-full shadow-2xl'
-              style={{
-                maxWidth: '32rem',
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                position: 'relative',
-                zIndex: 1,
-              }}
-              onClick={e => e.stopPropagation()}
+              onClick={() => setShowAddForm(false)}
             >
-              <div className='flex justify-between items-center mb-4'>
-                <div>
-                  <h3 className='text-xl font-bold text-white'>
-                    Crear Nuevo Vehículo
-                  </h3>
-                  <p className='text-gray-400 text-sm mt-1'>
-                    Ingresa los datos del nuevo vehículo al sistema
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowAddForm(false)}
-                  className='text-gray-400 hover:text-white text-2xl'
-                >
-                  ✕
-                </button>
-              </div>
-
-              <VehicleForm
-                vehicle={newVehicle}
-                setVehicle={setNewVehicle}
-                isEdit={false}
+              <div
+                className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
               />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className='relative bg-gray-800 rounded-xl p-6 w-full shadow-2xl'
+                style={{
+                  maxWidth: '32rem',
+                  maxHeight: '90vh',
+                  overflowY: 'auto',
+                  position: 'relative',
+                  zIndex: 1,
+                }}
+                onClick={e => e.stopPropagation()}
+              >
+                <div className='flex justify-between items-center mb-4'>
+                  <div>
+                    <h3 className='text-xl font-bold text-white'>
+                      Crear Nuevo Vehículo
+                    </h3>
+                    <p className='text-gray-400 text-sm mt-1'>
+                      Ingresa los datos del nuevo vehículo al sistema
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowAddForm(false)}
+                    className='text-gray-400 hover:text-white text-2xl'
+                  >
+                    ✕
+                  </button>
+                </div>
 
-              <div className='flex gap-3 pt-4 mt-6 border-t border-gray-700'>
-                <button
-                  onClick={() => setShowAddForm(false)}
-                  className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleAddVehicle}
-                  disabled={!isValidVehicle(newVehicle)}
-                  className={`flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium ${
-                    !isValidVehicle(newVehicle)
-                      ? 'opacity-50 cursor-not-allowed'
-                      : ''
-                  }`}
-                >
-                  ✅ Crear Vehículo
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                <VehicleForm
+                  vehicle={newVehicle}
+                  setVehicle={setNewVehicle}
+                  isEdit={false}
+                />
+
+                <div className='flex gap-3 pt-4 mt-6 border-t border-gray-700'>
+                  <button
+                    onClick={() => setShowAddForm(false)}
+                    className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleAddVehicle}
+                    disabled={!isValidVehicle(newVehicle)}
+                    className={`flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium ${
+                      !isValidVehicle(newVehicle)
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                    }`}
+                  >
+                    ✅ Crear Vehículo
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </Portal>
 
       {/* Modal editar vehículo (datos básicos) */}
-      <AnimatePresence>
-        {showEditVehicleModal && editVehicle && (
-          <div
-            className='fixed z-[9999]'
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '1rem',
-            }}
-            onClick={() => setShowEditVehicleModal(false)}
-          >
+      <Portal>
+        <AnimatePresence>
+          {showEditVehicleModal && editVehicle && (
             <div
-              className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
+              className='fixed z-[99999]'
               style={{
-                position: 'absolute',
+                position: 'fixed',
                 top: 0,
                 left: 0,
                 right: 0,
                 bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1rem',
               }}
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className='relative bg-gray-800 rounded-xl p-6 w-full shadow-2xl'
-              style={{
-                maxWidth: '32rem',
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                position: 'relative',
-                zIndex: 1,
-              }}
-              onClick={e => e.stopPropagation()}
+              onClick={() => setShowEditVehicleModal(false)}
             >
-              <div className='flex justify-between items-center mb-4'>
-                <div>
-                  <h3 className='text-xl font-bold text-white'>
-                    Editar Datos del Vehículo
-                  </h3>
-                  <p className='text-gray-400 text-sm mt-1'>
-                    Modificar información básica del vehículo
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowEditVehicleModal(false)}
-                  className='text-gray-400 hover:text-white text-2xl'
-                >
-                  ✕
-                </button>
-              </div>
-
-              <VehicleForm
-                vehicle={editVehicle}
-                setVehicle={setEditVehicle as VehicleSetter<VehicleInTracking>}
-                isEdit={true}
+              <div
+                className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
               />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className='relative bg-gray-800 rounded-xl p-6 w-full shadow-2xl'
+                style={{
+                  maxWidth: '32rem',
+                  maxHeight: '90vh',
+                  overflowY: 'auto',
+                  position: 'relative',
+                  zIndex: 1,
+                }}
+                onClick={e => e.stopPropagation()}
+              >
+                <div className='flex justify-between items-center mb-4'>
+                  <div>
+                    <h3 className='text-xl font-bold text-white'>
+                      Editar Datos del Vehículo
+                    </h3>
+                    <p className='text-gray-400 text-sm mt-1'>
+                      Modificar información básica del vehículo
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowEditVehicleModal(false)}
+                    className='text-gray-400 hover:text-white text-2xl'
+                  >
+                    ✕
+                  </button>
+                </div>
 
-              <div className='flex gap-3 pt-4 mt-6 border-t border-gray-700'>
-                <button
-                  onClick={() => setShowEditVehicleModal(false)}
-                  className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleSaveVehicleEdit}
-                  className='flex-1 px-4 py-3 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors font-medium'
-                >
-                  💾 Guardar Cambios
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                <VehicleForm
+                  vehicle={editVehicle}
+                  setVehicle={
+                    setEditVehicle as VehicleSetter<VehicleInTracking>
+                  }
+                  isEdit={true}
+                />
+
+                <div className='flex gap-3 pt-4 mt-6 border-t border-gray-700'>
+                  <button
+                    onClick={() => setShowEditVehicleModal(false)}
+                    className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleSaveVehicleEdit}
+                    className='flex-1 px-4 py-3 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors font-medium'
+                  >
+                    💾 Guardar Cambios
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </Portal>
 
       {/* Modal editar seguimiento */}
-      <AnimatePresence>
-        {showTrackingModal && editTracking && (
-          <div
-            className='fixed z-[9999]'
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '1rem',
-            }}
-            onClick={() => setShowTrackingModal(false)}
-          >
+      <Portal>
+        <AnimatePresence>
+          {showTrackingModal && editTracking && (
             <div
-              className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
+              className='fixed z-[99999]'
               style={{
-                position: 'absolute',
+                position: 'fixed',
                 top: 0,
                 left: 0,
                 right: 0,
                 bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1rem',
               }}
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className='relative bg-gray-800 rounded-xl p-6 w-full shadow-2xl'
-              style={{
-                maxWidth: '32rem',
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                position: 'relative',
-                zIndex: 1,
-              }}
-              onClick={e => e.stopPropagation()}
+              onClick={() => setShowTrackingModal(false)}
             >
-              <div className='flex justify-between items-center mb-6'>
-                <div>
-                  <h3 className='text-xl font-bold text-white'>
-                    Actualizar Seguimiento
-                  </h3>
-                  <p className='text-gray-400 text-sm mt-1'>
-                    {editTracking.plateNumber} - {editTracking.brand}{' '}
-                    {editTracking.model}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowTrackingModal(false)}
-                  className='text-gray-400 hover:text-white text-2xl'
-                >
-                  ✕
-                </button>
-              </div>
-
-              <TrackingForm
-                tracking={editTracking}
-                setTracking={
-                  setEditTracking as VehicleSetter<VehicleInTracking>
-                }
+              <div
+                className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
               />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className='relative bg-gray-800 rounded-xl p-6 w-full shadow-2xl'
+                style={{
+                  maxWidth: '32rem',
+                  maxHeight: '90vh',
+                  overflowY: 'auto',
+                  position: 'relative',
+                  zIndex: 1,
+                }}
+                onClick={e => e.stopPropagation()}
+              >
+                <div className='flex justify-between items-center mb-6'>
+                  <div>
+                    <h3 className='text-xl font-bold text-white'>
+                      Actualizar Seguimiento
+                    </h3>
+                    <p className='text-gray-400 text-sm mt-1'>
+                      {editTracking.plateNumber} - {editTracking.brand}{' '}
+                      {editTracking.model}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowTrackingModal(false)}
+                    className='text-gray-400 hover:text-white text-2xl'
+                  >
+                    ✕
+                  </button>
+                </div>
 
-              <div className='flex gap-3 pt-6 mt-6 border-t border-gray-700'>
-                <button
-                  onClick={() => setShowTrackingModal(false)}
-                  className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleSaveTrackingEdit}
-                  className='flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium'
-                >
-                  💾 Guardar Seguimiento
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                <TrackingForm
+                  tracking={editTracking}
+                  setTracking={
+                    setEditTracking as VehicleSetter<VehicleInTracking>
+                  }
+                />
+
+                <div className='flex gap-3 pt-6 mt-6 border-t border-gray-700'>
+                  <button
+                    onClick={() => setShowTrackingModal(false)}
+                    className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleSaveTrackingEdit}
+                    className='flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium'
+                  >
+                    💾 Guardar Seguimiento
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </Portal>
     </>
   )
 }

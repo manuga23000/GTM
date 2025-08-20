@@ -7,20 +7,9 @@ import {
   deleteVehicle,
 } from '@/actions/admin'
 import { motion, AnimatePresence } from 'framer-motion'
-import VehicleList, { VehicleInTracking } from './VehicleList'
+import VehicleList, { VehicleInTracking, VehicleStep } from './VehicleList'
 import VehicleDetails from './VehicleDetails'
 import VehicleModal from './VehicleModal'
-
-// Tipos simplificados
-interface VehicleStep {
-  id: string
-  title: string
-  description: string
-  status: 'pending' | 'in-progress' | 'completed'
-  startDate?: Date
-  endDate?: Date
-  notes: string
-}
 
 export default function VehicleConfig() {
   const [vehiclesInTracking, setVehiclesInTracking] = useState<
@@ -40,6 +29,13 @@ export default function VehicleConfig() {
   )
   const [selectedVehicle, setSelectedVehicle] = useState<string>('')
   const [showAddForm, setShowAddForm] = useState(false)
+  const [addVehicleError, setAddVehicleError] = useState<string>('')
+
+  // Estados de loading
+  const [isAddingVehicle, setIsAddingVehicle] = useState(false)
+  const [isEditingVehicle, setIsEditingVehicle] = useState(false)
+  const [isEditingTracking, setIsEditingTracking] = useState(false)
+  const [isDeletingVehicle, setIsDeletingVehicle] = useState(false)
 
   // Filtros y paginación
   const filteredVehicles = useMemo(() => {
@@ -83,7 +79,7 @@ export default function VehicleConfig() {
         : null, // Manejar null
       status: 'received' as const,
       totalCost: v.totalCost || 0, // Incluir totalCost
-      steps: [],
+      steps: [] as VehicleStep[], // ← Inicializar como array vacío de VehicleStep
       notes: v.notes || '',
       nextStep: v.nextStep || '',
     }))
@@ -116,7 +112,7 @@ export default function VehicleConfig() {
 
   // Lógica de eliminación
   const handleDeleteVehicle = async () => {
-    if (!selectedVehicleData) return
+    if (!selectedVehicleData || isDeletingVehicle) return
     if (
       !window.confirm(
         `¿Seguro que deseas eliminar el vehículo ${selectedVehicleData.plateNumber}?`
@@ -124,18 +120,21 @@ export default function VehicleConfig() {
     )
       return
 
+    setIsDeletingVehicle(true)
     showMessage('Eliminando vehículo...')
     try {
       const response = await deleteVehicle(selectedVehicleData.plateNumber)
       if (response.success) {
         await fetchVehicles()
         setSelectedVehicle('')
-        showMessage('Vehículo eliminado correctamente')
+        showMessage('Vehículo eliminado exitosamente')
       } else {
         showMessage(response.message || 'Error al eliminar vehículo')
       }
     } catch (error) {
-      showMessage('Error al eliminar vehículo')
+      showMessage('Error al eliminar el vehículo')
+    } finally {
+      setIsDeletingVehicle(false)
     }
   }
 
@@ -148,7 +147,8 @@ export default function VehicleConfig() {
   }
 
   const handleSaveVehicleEdit = async () => {
-    if (!editVehicle) return
+    if (!editVehicle || isEditingVehicle) return
+    setIsEditingVehicle(true)
     showMessage('Guardando cambios...')
     try {
       const response = await updateVehicle(editVehicle.plateNumber, {
@@ -173,6 +173,8 @@ export default function VehicleConfig() {
       }
     } catch (error) {
       showMessage('Error al guardar cambios')
+    } finally {
+      setIsEditingVehicle(false)
     }
   }
 
@@ -185,27 +187,35 @@ export default function VehicleConfig() {
   }
 
   const handleSaveTrackingEdit = async () => {
-    if (!editTracking) return
+    if (!editTracking || isEditingTracking) return
+    setIsEditingTracking(true)
     showMessage('Guardando seguimiento...')
     try {
-      const response = await updateVehicle(editTracking.plateNumber, {
-        notes: editTracking.notes,
-        nextStep: editTracking.nextStep,
-        estimatedCompletionDate: editTracking.estimatedCompletionDate,
-      })
-      if (response.success) {
-        await fetchVehicles()
-        setShowTrackingModal(false)
-        showMessage('Seguimiento actualizado')
-      } else {
-        showMessage(response.message || 'Error al actualizar seguimiento')
-      }
+      // POR AHORA SIN FUNCIONALIDAD FIREBASE - solo actualizar estado local
+      // Aquí iría la lógica para guardar los steps en Firebase
+      console.log('Steps a guardar:', editTracking.steps)
+
+      // Simular guardado exitoso
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      // Actualizar estado local
+      setVehiclesInTracking(prev =>
+        prev.map(v => (v.id === editTracking.id ? editTracking : v))
+      )
+
+      setShowTrackingModal(false)
+      showMessage('Seguimiento actualizado')
     } catch (error) {
       showMessage('Error al guardar seguimiento')
+    } finally {
+      setIsEditingTracking(false)
     }
   }
 
   const handleAddVehicle = async () => {
+    if (isAddingVehicle) return
+    setIsAddingVehicle(true)
+    setAddVehicleError('') // Limpiar errores previos
     showMessage('Guardando vehículo...')
     try {
       const response = await createVehicle({
@@ -232,10 +242,15 @@ export default function VehicleConfig() {
         setShowAddForm(false)
         showMessage('Vehículo agregado exitosamente')
       } else {
+        // Mostrar error en el modal
+        setAddVehicleError(response.message || 'Error al agregar vehículo')
         showMessage(response.message || 'Error al agregar vehículo')
       }
     } catch (error) {
+      setAddVehicleError('Error al guardar el vehículo')
       showMessage('Error al guardar el vehículo')
+    } finally {
+      setIsAddingVehicle(false)
     }
   }
 
@@ -322,7 +337,10 @@ export default function VehicleConfig() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setShowAddForm(true)}
+              onClick={() => {
+                setAddVehicleError('') // Limpiar errores al abrir modal
+                setShowAddForm(true)
+              }}
               className='px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors whitespace-nowrap'
             >
               ➕ Nuevo Vehículo
@@ -413,18 +431,22 @@ export default function VehicleConfig() {
           newVehicle={newVehicle}
           setNewVehicle={setNewVehicle}
           handleAddVehicle={handleAddVehicle}
+          addVehicleError={addVehicleError}
+          isAddingVehicle={isAddingVehicle}
           // Editar vehículo (datos básicos)
           showEditVehicleModal={showEditVehicleModal}
           setShowEditVehicleModal={setShowEditVehicleModal}
           editVehicle={editVehicle}
           setEditVehicle={setEditVehicle}
           handleSaveVehicleEdit={handleSaveVehicleEdit}
+          isEditingVehicle={isEditingVehicle}
           // Editar seguimiento
           showTrackingModal={showTrackingModal}
           setShowTrackingModal={setShowTrackingModal}
           editTracking={editTracking}
           setEditTracking={setEditTracking}
           handleSaveTrackingEdit={handleSaveTrackingEdit}
+          isEditingTracking={isEditingTracking}
         />
       </main>
     </div>

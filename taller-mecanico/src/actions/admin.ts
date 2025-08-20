@@ -414,6 +414,16 @@ export async function createVehicle(
       .toUpperCase()
     const docRef = doc(db, 'vehicles', normalizedPlate)
 
+    // Verificar si ya existe un vehículo con esta patente
+    const existingVehicle = await getDoc(docRef)
+    if (existingVehicle.exists()) {
+      return {
+        success: false,
+        message: `Ya existe un vehículo con la patente ${normalizedPlate}`,
+        error: 'DUPLICATE_PLATE',
+      }
+    }
+
     // Preparar datos con todos los campos incluido totalCost
     const dataToSave = {
       ...vehicleData,

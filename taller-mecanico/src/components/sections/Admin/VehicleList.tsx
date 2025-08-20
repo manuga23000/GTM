@@ -1,5 +1,14 @@
 import { motion } from 'framer-motion'
 
+export interface VehicleStep {
+  id: string
+  title: string
+  description: string
+  status: 'completed' // Siempre completado
+  date: Date
+  notes?: string
+}
+
 export interface VehicleInTracking {
   id: string
   plateNumber: string // obligatorio
@@ -14,7 +23,7 @@ export interface VehicleInTracking {
   estimatedCompletionDate?: Date | null // Cambiar undefined por null
   status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'
   totalCost?: number // Campo de costo agregado
-  steps: unknown[]
+  steps: VehicleStep[]
   notes: string
   nextStep?: string
 }

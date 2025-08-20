@@ -43,6 +43,15 @@ interface NewVehicleData {
   estimatedCompletionDate: Date | null
 }
 
+interface VehicleStep {
+  id: string
+  title: string
+  description: string
+  status: 'completed' // Siempre completado
+  date: Date
+  notes?: string
+}
+
 interface VehicleInTracking {
   id: string
   plateNumber: string
@@ -57,7 +66,7 @@ interface VehicleInTracking {
   estimatedCompletionDate?: Date | null
   status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'
   totalCost?: number
-  steps: unknown[]
+  steps: VehicleStep[]
   notes: string
   nextStep?: string
 }
@@ -71,6 +80,8 @@ interface VehicleModalProps {
   newVehicle: NewVehicleData
   setNewVehicle: VehicleSetter<NewVehicleData>
   handleAddVehicle: () => void
+  addVehicleError: string
+  isAddingVehicle: boolean
 
   // Props para editar vehículo
   showEditVehicleModal: boolean
@@ -78,6 +89,7 @@ interface VehicleModalProps {
   editVehicle: VehicleInTracking | null
   setEditVehicle: VehicleSetter<VehicleInTracking | null>
   handleSaveVehicleEdit: () => void
+  isEditingVehicle: boolean
 
   // Props para editar seguimiento
   showTrackingModal: boolean
@@ -85,9 +97,10 @@ interface VehicleModalProps {
   editTracking: VehicleInTracking | null
   setEditTracking: VehicleSetter<VehicleInTracking | null>
   handleSaveTrackingEdit: () => void
+  isEditingTracking: boolean
 }
 
-// Componente para formulario de seguimiento (copiado del original)
+// Componente para formulario de seguimiento SIMPLE
 const TrackingForm = ({
   tracking,
   setTracking,
@@ -95,72 +108,304 @@ const TrackingForm = ({
   tracking: VehicleInTracking
   setTracking: VehicleSetter<VehicleInTracking>
 }) => {
-  const formatDate = (date: string | Date | null | undefined): string => {
-    if (!date) return ''
-    if (typeof date === 'string') return date.slice(0, 10)
-    if (date instanceof Date) return date.toISOString().slice(0, 10)
-    return ''
+  const [nextStepInput, setNextStepInput] = useState('')
+  const [newStep, setNewStep] = useState({
+    title: '',
+  })
+  const [editingStepId, setEditingStepId] = useState<string | null>(null)
+  const [editingStepTitle, setEditingStepTitle] = useState<string>('')
+  const [editingNextStep, setEditingNextStep] = useState<boolean>(false)
+  const [editingNextStepValue, setEditingNextStepValue] = useState<string>('')
+
+  const formatDate = (date: Date): string => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
   }
 
-  const handleTrackingUpdate = (updates: Partial<VehicleInTracking>) => {
-    setTracking((prev: VehicleInTracking) => ({
+  const parseDate = (dateString: string): Date => {
+    return new Date(dateString + 'T12:00:00')
+  }
+
+  const handleAddStep = () => {
+    if (!newStep.title.trim()) return
+    const step: VehicleStep = {
+      id: Date.now().toString(),
+      title: newStep.title.trim(),
+      description: '', // No hay descripción
+      status: 'completed',
+      date: new Date(), // Fecha actual
+      notes: '',
+    }
+    setTracking(prev => ({
       ...prev,
-      ...updates,
+      steps: [...prev.steps, step],
     }))
+    setNewStep({ title: '' })
+  }
+
+  const handleDeleteStep = (stepId: string) => {
+    if (confirm('¿Seguro que deseas eliminar este trabajo?')) {
+      setTracking(prev => ({
+        ...prev,
+        steps: prev.steps.filter(step => step.id !== stepId),
+      }))
+    }
+  }
+
+  const handleEditStep = (stepId: string) => {
+    const step = tracking.steps.find(s => s.id === stepId)
+    if (step) {
+      setEditingStepId(stepId)
+      setEditingStepTitle(step.title)
+    }
+  }
+
+  const handleSaveEditStep = () => {
+    if (!editingStepId) return
+    setTracking(prev => ({
+      ...prev,
+      steps: prev.steps.map(step =>
+        step.id === editingStepId
+          ? { ...step, title: editingStepTitle.trim() }
+          : step
+      ),
+    }))
+    setEditingStepId(null)
+    setEditingStepTitle('')
+  }
+
+  const handleCancelEditStep = () => {
+    setEditingStepId(null)
+    setEditingStepTitle('')
   }
 
   return (
     <div className='space-y-6'>
-      {/* Trabajos realizados / Notas */}
-      <div>
-        <label className='block text-gray-300 text-sm mb-2 font-medium'>
-          📝 Trabajos realizados / Notas
+      {/* Agregar trabajo realizado */}
+      <div className='flex flex-col items-center justify-center py-2 w-full max-w-md mx-auto'>
+        <label className='text-green-300 font-medium mb-1 text-sm self-start'>
+          Agregar trabajo realizado
         </label>
-        <textarea
-          value={tracking.notes || ''}
-          onChange={e => handleTrackingUpdate({ notes: e.target.value })}
-          placeholder='Detalle de trabajos realizados, diagnósticos, reparaciones realizadas...'
-          className='w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white resize-none focus:border-blue-500 focus:outline-none'
-          rows={4}
-        />
-        <p className='text-xs text-gray-400 mt-1'>
-          Describe qué trabajos se han realizado hasta ahora
-        </p>
-      </div>
-
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-        {/* Próximo paso */}
-        <div>
-          <label className='block text-gray-300 text-sm mb-2 font-medium'>
-            ➡️ Próximo paso
-          </label>
+        <div className='flex flex-row items-center gap-2 w-full'>
           <input
             type='text'
-            value={tracking.nextStep || ''}
-            onChange={e => handleTrackingUpdate({ nextStep: e.target.value })}
-            placeholder='Ej: Esperar repuesto, Llamar cliente...'
-            className='w-full h-10 p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none'
+            placeholder='Agregar trabajo realizado...'
+            value={newStep.title}
+            onChange={e => setNewStep({ title: e.target.value })}
+            className='flex-1 px-4 py-2 bg-gray-700 border border-green-400 rounded text-white text-base shadow'
+            onKeyDown={e => {
+              if (e.key === 'Enter') handleAddStep()
+            }}
+            maxLength={60}
+            autoFocus
           />
+          <button
+            onClick={handleAddStep}
+            disabled={!newStep.title.trim()}
+            className='px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-base disabled:opacity-50 disabled:cursor-not-allowed'
+            style={{ minWidth: '48px' }}
+          >
+            ➕
+          </button>
         </div>
+      </div>
 
-        {/* Fecha estimada de finalización */}
-        <div>
-          <label className='block text-gray-300 text-sm mb-2 font-medium'>
-            📅 Fecha estimada
-          </label>
-          <input
-            type='date'
-            value={formatDate(tracking.estimatedCompletionDate)}
-            onChange={e =>
-              handleTrackingUpdate({
-                estimatedCompletionDate: e.target.value
-                  ? new Date(e.target.value)
-                  : null,
-              })
-            }
-            className='w-full h-10 p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:border-blue-500 focus:outline-none'
-          />
+      {/* Lista de trabajos realizados */}
+      <div className='space-y-2 max-h-48 overflow-y-auto mb-4'>
+        {tracking.steps.map(step => (
+          <motion.div
+            key={step.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className='bg-gray-700/50 p-2 rounded border border-gray-600 flex items-center justify-between text-xs'
+          >
+            <div className='flex items-center gap-2 w-full'>
+              <span className='text-base'>✅</span>
+              {editingStepId === step.id ? (
+                <>
+                  <input
+                    type='text'
+                    value={editingStepTitle}
+                    onChange={e => setEditingStepTitle(e.target.value)}
+                    className='flex-1 px-2 py-1 bg-gray-800 border border-green-400 rounded text-white text-xs shadow mr-2'
+                    maxLength={60}
+                    autoFocus
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') handleSaveEditStep()
+                      if (e.key === 'Escape') handleCancelEditStep()
+                    }}
+                  />
+                  <button
+                    onClick={handleSaveEditStep}
+                    className='text-green-400 hover:text-green-300 text-xs p-1'
+                    title='Guardar'
+                    disabled={!editingStepTitle.trim()}
+                  >
+                    💾
+                  </button>
+                  <button
+                    onClick={handleCancelEditStep}
+                    className='text-gray-400 hover:text-gray-300 text-xs p-1 ml-1'
+                    title='Cancelar'
+                  >
+                    ❌
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className='text-white flex-1'>{step.title}</span>
+                  <button
+                    onClick={() => handleEditStep(step.id)}
+                    className='text-yellow-400 hover:text-yellow-300 text-xs p-1 ml-1'
+                    title='Editar'
+                  >
+                    ✏️
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() => handleDeleteStep(step.id)}
+                className='text-red-400 hover:text-red-300 text-xs p-1 ml-2'
+                title='Eliminar'
+              >
+                🗑️
+              </button>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Próximo paso (bloque separado) */}
+      <div className='bg-blue-900/30 p-4 rounded border border-blue-500/30 mt-6 max-w-md mx-auto flex flex-col items-start'>
+        <div className='flex flex-row items-center w-full mb-2'>
+          <span className='text-blue-300 font-medium text-sm'>Próximo paso</span>
         </div>
+        <div className='flex flex-row items-center gap-2 w-full'>
+          {editingNextStep ? (
+            <>
+              <input
+                type='text'
+                value={editingNextStepValue}
+                onChange={e => setEditingNextStepValue(e.target.value)}
+                className='flex-1 px-4 py-2 bg-gray-700 border border-blue-400 rounded text-white text-base shadow'
+                maxLength={60}
+                autoFocus
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    if (editingNextStepValue.trim()) {
+                      setTracking(prev => ({ ...prev, nextStep: editingNextStepValue.trim() }))
+                      setEditingNextStep(false)
+                    }
+                  }
+                  if (e.key === 'Escape') {
+                    setEditingNextStep(false)
+                    setEditingNextStepValue(tracking.nextStep || '')
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  if (editingNextStepValue.trim()) {
+                    setTracking(prev => ({ ...prev, nextStep: editingNextStepValue.trim() }))
+                    setEditingNextStep(false)
+                  }
+                }}
+                disabled={!editingNextStepValue.trim()}
+                className='text-green-400 hover:text-green-300 text-base p-2 rounded'
+                title='Guardar'
+              >
+                💾
+              </button>
+              <button
+                onClick={() => {
+                  setEditingNextStep(false)
+                  setEditingNextStepValue(tracking.nextStep || '')
+                }}
+                className='text-gray-400 hover:text-gray-300 text-base p-2 rounded'
+                title='Cancelar'
+              >
+                ❌
+              </button>
+            </>
+          ) : tracking.nextStep ? (
+            <>
+              <span className='text-white flex-1'>{tracking.nextStep}</span>
+              <button
+                onClick={() => {
+                  setEditingNextStep(true)
+                  setEditingNextStepValue(tracking.nextStep || '')
+                }}
+                className='text-yellow-400 hover:text-yellow-300 text-base p-2 rounded ml-1'
+                title='Editar'
+              >
+                ✏️
+              </button>
+              <button
+                onClick={() => setTracking(prev => ({ ...prev, nextStep: '' }))}
+                className='text-red-400 hover:text-red-300 text-base p-2 rounded ml-1'
+                title='Borrar próximo paso'
+              >
+                🗑️
+              </button>
+            </>
+          ) : (
+            <>
+              <input
+                type='text'
+                placeholder='Agregar próximo paso...'
+                value={nextStepInput}
+                onChange={e => setNextStepInput(e.target.value)}
+                className='flex-1 px-4 py-2 bg-gray-700 border border-blue-400 rounded text-white text-base shadow'
+                maxLength={60}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && nextStepInput.trim()) {
+                    setTracking(prev => ({ ...prev, nextStep: nextStepInput.trim() }))
+                    setNextStepInput('')
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  if (nextStepInput.trim()) {
+                    setTracking(prev => ({ ...prev, nextStep: nextStepInput.trim() }))
+                    setNextStepInput('')
+                  }
+                }}
+                disabled={!nextStepInput.trim()}
+                className='px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-base disabled:opacity-50 disabled:cursor-not-allowed'
+                style={{ minWidth: '48px' }}
+              >
+                ➕
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Fecha estimada */}
+      <div className='bg-purple-900/30 p-2 rounded border border-purple-500/30'>
+        <h5 className='text-purple-300 font-medium mb-1 text-xs'>
+          🕒 Fecha estimada de finalización
+        </h5>
+        <input
+          type='date'
+          value={
+            tracking.estimatedCompletionDate
+              ? formatDate(tracking.estimatedCompletionDate)
+              : ''
+          }
+          onChange={e =>
+            setTracking(prev => ({
+              ...prev,
+              estimatedCompletionDate: e.target.value
+                ? parseDate(e.target.value)
+                : null,
+            }))
+          }
+          className='w-full p-1 bg-gray-700 border border-gray-600 rounded text-white text-xs'
+        />
       </div>
     </div>
   )
@@ -172,16 +417,20 @@ export default function VehicleModal({
   newVehicle,
   setNewVehicle,
   handleAddVehicle,
+  addVehicleError,
+  isAddingVehicle,
   showEditVehicleModal,
   setShowEditVehicleModal,
   editVehicle,
   setEditVehicle,
   handleSaveVehicleEdit,
+  isEditingVehicle,
   showTrackingModal,
   setShowTrackingModal,
   editTracking,
   setEditTracking,
   handleSaveTrackingEdit,
+  isEditingTracking,
 }: VehicleModalProps) {
   // Bloquear scroll cuando cualquier modal esté abierto
   useEffect(() => {
@@ -277,9 +526,21 @@ export default function VehicleModal({
 
                 <VehicleForm
                   vehicle={newVehicle}
-                  setVehicle={setNewVehicle}
+                  setVehicle={setNewVehicle as any}
                   isEdit={false}
                 />
+
+                {/* Mostrar mensaje de error */}
+                {addVehicleError && (
+                  <div className='mt-4 p-3 bg-red-600 bg-opacity-20 border border-red-500 rounded-lg'>
+                    <div className='flex items-center gap-2'>
+                      <span className='text-red-400 text-lg'>⚠️</span>
+                      <p className='text-red-300 text-sm font-medium'>
+                        {addVehicleError}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <div className='flex gap-3 pt-4 mt-6 border-t border-gray-700'>
                   <button
@@ -290,14 +551,21 @@ export default function VehicleModal({
                   </button>
                   <button
                     onClick={handleAddVehicle}
-                    disabled={!isValidVehicle(newVehicle)}
+                    disabled={!isValidVehicle(newVehicle) || isAddingVehicle}
                     className={`flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium ${
-                      !isValidVehicle(newVehicle)
+                      !isValidVehicle(newVehicle) || isAddingVehicle
                         ? 'opacity-50 cursor-not-allowed'
                         : ''
                     }`}
                   >
-                    ✅ Crear Vehículo
+                    {isAddingVehicle ? (
+                      <div className='flex items-center justify-center gap-2'>
+                        <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                        Creando...
+                      </div>
+                    ) : (
+                      '✅ Crear Vehículo'
+                    )}
                   </button>
                 </div>
               </motion.div>
@@ -368,9 +636,7 @@ export default function VehicleModal({
 
                 <VehicleForm
                   vehicle={editVehicle}
-                  setVehicle={
-                    setEditVehicle as VehicleSetter<VehicleInTracking>
-                  }
+                  setVehicle={setEditVehicle as any}
                   isEdit={true}
                 />
 
@@ -383,9 +649,19 @@ export default function VehicleModal({
                   </button>
                   <button
                     onClick={handleSaveVehicleEdit}
-                    className='flex-1 px-4 py-3 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors font-medium'
+                    disabled={isEditingVehicle}
+                    className={`flex-1 px-4 py-3 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors font-medium ${
+                      isEditingVehicle ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                   >
-                    💾 Guardar Cambios
+                    {isEditingVehicle ? (
+                      <div className='flex items-center justify-center gap-2'>
+                        <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                        Guardando...
+                      </div>
+                    ) : (
+                      '💾 Guardar Cambios'
+                    )}
                   </button>
                 </div>
               </motion.div>
@@ -457,9 +733,7 @@ export default function VehicleModal({
 
                 <TrackingForm
                   tracking={editTracking}
-                  setTracking={
-                    setEditTracking as VehicleSetter<VehicleInTracking>
-                  }
+                  setTracking={setEditTracking as any}
                 />
 
                 <div className='flex gap-3 pt-6 mt-6 border-t border-gray-700'>
@@ -471,9 +745,19 @@ export default function VehicleModal({
                   </button>
                   <button
                     onClick={handleSaveTrackingEdit}
-                    className='flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium'
+                    disabled={isEditingTracking}
+                    className={`flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium ${
+                      isEditingTracking ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                   >
-                    💾 Guardar Seguimiento
+                    {isEditingTracking ? (
+                      <div className='flex items-center justify-center gap-2'>
+                        <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                        Guardando...
+                      </div>
+                    ) : (
+                      '💾 Guardar'
+                    )}
                   </button>
                 </div>
               </motion.div>

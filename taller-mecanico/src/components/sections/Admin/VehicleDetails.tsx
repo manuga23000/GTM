@@ -1,5 +1,32 @@
 import { motion } from 'framer-motion'
-import { VehicleInTracking } from './VehicleList'
+
+interface VehicleStep {
+  id: string
+  title: string
+  description: string
+  status: 'completed' // Siempre completado
+  date: Date
+  notes?: string
+}
+
+interface VehicleInTracking {
+  id: string
+  plateNumber: string
+  clientName: string
+  brand?: string
+  model?: string
+  year?: number
+  clientPhone?: string
+  serviceType?: string
+  chassisNumber?: string
+  entryDate: Date
+  estimatedCompletionDate?: Date | null
+  status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'
+  totalCost?: number
+  steps: VehicleStep[]
+  notes: string
+  nextStep?: string
+}
 
 interface VehicleDetailsProps {
   vehicle: VehicleInTracking
@@ -16,6 +43,8 @@ export default function VehicleDetails({
   onEditTracking,
   onDeleteVehicle,
 }: VehicleDetailsProps) {
+  const totalSteps = vehicle.steps.length
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -119,35 +148,78 @@ export default function VehicleDetails({
 
       {/* Sección de seguimiento (solo lectura) */}
       <div className='border-t border-gray-700 pt-6'>
-        <h4 className='text-lg font-semibold text-white mb-4'>
-          Estado del Seguimiento
-        </h4>
+        <div className='flex justify-between items-center mb-4'>
+          <h4 className='text-lg font-semibold text-white'>
+            Trabajos Realizados
+          </h4>
+          {totalSteps > 0 && (
+            <div className='text-sm text-gray-400'>
+              {totalSteps} trabajo{totalSteps !== 1 ? 's' : ''} registrado
+              {totalSteps !== 1 ? 's' : ''}
+            </div>
+          )}
+        </div>
 
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-          {/* Trabajos realizados / Notas */}
+          {/* Lista de trabajos realizados */}
           <div className='bg-gray-700/50 p-4 rounded-lg'>
-            <h5 className='text-white font-medium mb-2 flex items-center'>
-              📝 Trabajos Realizados
+            <h5 className='text-white font-medium mb-3 flex items-center'>
+              🔧 Lista de Trabajos
             </h5>
-            <div className='text-gray-300 text-sm bg-gray-800 p-3 rounded border min-h-[100px] whitespace-pre-wrap'>
-              {vehicle.notes || 'Sin trabajos registrados'}
-            </div>
+
+            {vehicle.steps.length === 0 ? (
+              <div className='text-center py-8 bg-gray-800 rounded border-2 border-dashed border-gray-600'>
+                <p className='text-gray-400 mb-2'>📋</p>
+                <p className='text-gray-400 text-sm'>
+                  No hay trabajos registrados
+                </p>
+                <p className='text-gray-500 text-xs mt-1'>
+                  Usa "Seguimiento" para agregar trabajos
+                </p>
+              </div>
+            ) : (
+              <div className='space-y-3 max-h-80 overflow-y-auto'>
+                {vehicle.steps
+                  .sort(
+                    (a, b) =>
+                      new Date(a.date).getTime() - new Date(b.date).getTime()
+                  )
+                  .map((step, index) => (
+                    <motion.div
+                      key={step.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className='bg-gray-800 p-3 rounded border border-gray-600'
+                    >
+                      <div className='flex items-start justify-between mb-2'>
+                        <div className='flex items-center gap-2 flex-1'>
+                          <span className='text-lg'>✅</span>
+                          <div className='flex-1'>
+                            <h6 className='text-white font-medium text-sm'>
+                              {step.title}
+                            </h6>
+                          </div>
+                        </div>
+                        <span className='text-gray-400 text-xs'>
+                          {step.date.toLocaleDateString('es-AR')}
+                        </span>
+                      </div>
+                      <p className='text-gray-300 text-sm mt-2'>
+                        {step.description}
+                      </p>
+                    </motion.div>
+                  ))}
+              </div>
+            )}
           </div>
 
-          {/* Próximo paso y fecha */}
+          {/* Información adicional */}
           <div className='space-y-4'>
-            <div className='bg-gray-700/50 p-4 rounded-lg'>
-              <h5 className='text-white font-medium mb-2 flex items-center'>
-                ➡️ Próximo Paso
-              </h5>
-              <div className='text-gray-300 text-sm bg-gray-800 p-3 rounded border'>
-                {vehicle.nextStep || 'Sin próximo paso definido'}
-              </div>
-            </div>
-
+            {/* Fecha estimada */}
             <div className='bg-purple-900/30 p-4 rounded-lg border border-purple-500/30'>
               <h5 className='text-purple-300 font-medium mb-2'>
-                🕒 Fecha Estimada
+                🕒 Fecha Estimada de Finalización
               </h5>
               <div className='text-white font-medium'>
                 {vehicle.estimatedCompletionDate
@@ -163,8 +235,43 @@ export default function VehicleDetails({
                   : 'No definida'}
               </div>
             </div>
+
+            {/* Próximo paso */}
+            <div className='bg-blue-100/80 p-4 rounded-lg border border-blue-300/70 mb-2'>
+              <h5 className='text-blue-700 font-semibold mb-2 flex items-center gap-2'>
+                <span>🔜</span> Próximo paso
+              </h5>
+              <div className='text-blue-900 font-medium text-base min-h-[1.5em]'>
+                {vehicle.nextStep && vehicle.nextStep.trim()
+                  ? vehicle.nextStep
+                  : <span className='text-blue-400 italic'>No definido</span>}
+              </div>
+            </div>
+
+            {/* Resumen */}
+            <div className='bg-green-900/30 p-4 rounded border border-green-500/30 text-center'>
+              <div className='text-green-300 font-bold text-2xl'>
+                {totalSteps}
+              </div>
+              <div className='text-green-200 text-sm'>
+                Trabajo{totalSteps !== 1 ? 's' : ''} Realizado
+                {totalSteps !== 1 ? 's' : ''}
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Mantener notas legacy si existen */}
+        {vehicle.notes && vehicle.notes.trim() && (
+          <div className='mt-6 p-4 bg-blue-900/20 rounded-lg border border-blue-500/30'>
+            <h5 className='text-blue-300 font-medium mb-2'>
+              📄 Notas Adicionales
+            </h5>
+            <div className='text-blue-100 text-sm whitespace-pre-wrap'>
+              {vehicle.notes}
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
   )

@@ -1,6 +1,6 @@
 // src/components/sections/Admin/VehicleForm.tsx
 'use client'
-import React from 'react'
+import React, { useEffect } from 'react'
 
 // Tipos para vehículo nuevo (antes de guardar)
 interface NewVehicleData {
@@ -45,13 +45,27 @@ interface VehicleFormProps {
   vehicle: NewVehicleData | VehicleInTracking
   setVehicle: VehicleSetter<NewVehicleData> | VehicleSetter<VehicleInTracking>
   isEdit?: boolean
+  onValidationChange?: (hasErrors: boolean) => void
 }
 
 export default function VehicleForm({
   vehicle,
   setVehicle,
   isEdit = false,
+  onValidationChange,
 }: VehicleFormProps) {
+  // Validar fechas
+  const entryDate = isEdit && 'entryDate' in vehicle ? vehicle.entryDate : 'createdAt' in vehicle ? vehicle.createdAt : new Date()
+  const estimatedDate = vehicle.estimatedCompletionDate
+  
+  const hasDateError = estimatedDate && entryDate && new Date(entryDate) > new Date(estimatedDate)
+  
+  // Notificar al componente padre sobre cambios en la validación
+  useEffect(() => {
+    if (onValidationChange) {
+      onValidationChange(!!hasDateError)
+    }
+  }, [hasDateError, onValidationChange])
   const formatPlateNumber = (value: string): string => {
     let formatted = value.toUpperCase().replace(/[^A-Z0-9]/g, '')
     if (formatted.length <= 7) {
@@ -72,7 +86,13 @@ export default function VehicleForm({
   const formatDate = (date: string | Date | null | undefined): string => {
     if (!date) return ''
     if (typeof date === 'string') return date.slice(0, 10)
-    if (date instanceof Date) return date.toISOString().slice(0, 10)
+    if (date instanceof Date) {
+      // Usar fecha local en lugar de UTC para evitar desfase de zona horaria
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    }
     return ''
   }
 
@@ -100,6 +120,18 @@ export default function VehicleForm({
 
   return (
     <div className='space-y-4'>
+      {/* Mostrar error de validación de fechas */}
+      {hasDateError && (
+        <div className='p-3 bg-red-600 bg-opacity-20 border border-red-500 rounded-lg'>
+          <div className='flex items-center gap-2'>
+            <span className='text-red-400 text-lg'>⚠️</span>
+            <p className='text-red-300 text-sm font-medium'>
+              La fecha de ingreso no puede ser posterior a la fecha estimada de finalización
+            </p>
+          </div>
+        </div>
+      )}
+      
       {/* Fechas */}
       <div className='grid grid-cols-2 gap-3'>
         <div>
@@ -117,9 +149,13 @@ export default function VehicleForm({
             )}
             onChange={e => {
               const fieldName = isEdit ? 'entryDate' : 'createdAt'
-              handleVehicleUpdate({ [fieldName]: e.target.value })
+              // Crear fecha local para evitar problemas de zona horaria
+              const localDate = e.target.value ? new Date(e.target.value + 'T12:00:00') : new Date()
+              handleVehicleUpdate({ [fieldName]: localDate })
             }}
-            className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
+            className={`w-full h-9 p-2.5 bg-gray-700 border rounded-lg text-white ${
+              hasDateError ? 'border-red-500' : 'border-gray-600'
+            }`}
           />
         </div>
         <div>
@@ -132,11 +168,13 @@ export default function VehicleForm({
             onChange={e =>
               handleVehicleUpdate({
                 estimatedCompletionDate: e.target.value
-                  ? new Date(e.target.value)
+                  ? new Date(e.target.value + 'T12:00:00') // Usar mediodía para evitar problemas de zona horaria
                   : null,
               })
             }
-            className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
+            className={`w-full h-9 p-2.5 bg-gray-700 border rounded-lg text-white ${
+              hasDateError ? 'border-red-500' : 'border-gray-600'
+            }`}
           />
         </div>
       </div>

@@ -1,6 +1,17 @@
-// actions/types/types.ts
-export interface Turno {
+export interface AdminResponse {
+  success: boolean
+  message: string
+  error?: string
+}
+
+export interface BaseEntity {
   id?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+// === TURNOS ===
+export interface Turno extends BaseEntity {
   name: string
   email: string
   phone: string
@@ -11,9 +22,7 @@ export interface Turno {
   time: string
   message: string
   status: 'pending' | 'cancelled' | 'completed' | 'reprogrammed'
-  createdAt: Date
-  updatedAt: Date
-  cancelToken: string // Token único para cancelar el turno
+  cancelToken: string
 }
 
 export interface TurnoInput {
@@ -26,13 +35,10 @@ export interface TurnoInput {
   date: Date | null
   time: string
   message: string
-  cancelToken: string // Token único para cancelar el turno
+  cancelToken: string
 }
 
-export interface TurnoResponse {
-  success: boolean
-  message: string
-  error?: string
+export interface TurnoResponse extends AdminResponse {
   turno?: Turno
 }
 
@@ -44,17 +50,14 @@ export interface AvailabilityCheck {
   usedSlots: number
 }
 
-// NUEVOS TIPOS PARA CONFIGURACIÓN DE SERVICIOS
-export interface ServiceConfig {
-  id?: string
+// === CONFIGURACIÓN DE SERVICIOS ===
+export interface ServiceConfig extends BaseEntity {
   serviceName: string
   maxPerDay: number | null
   maxPerWeek: number | null
   requiresDate: boolean
-  allowedDays: number[] // 1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes
+  allowedDays: number[] // 1=Lunes, 2=Martes, etc.
   isActive: boolean
-  createdAt: Date
-  updatedAt: Date
 }
 
 export interface ServiceConfigInput {
@@ -66,14 +69,20 @@ export interface ServiceConfigInput {
   isActive: boolean
 }
 
-export interface ServiceConfigResponse {
-  success: boolean
-  message: string
-  error?: string
+export interface ServiceConfigResponse extends AdminResponse {
   config?: ServiceConfig
 }
 
-// TIPO ACTUALIZADO PARA ALTA DE VEHÍCULO (INCLUYE COSTO)
+// === VEHÍCULOS ===
+export interface VehicleStep {
+  id: string
+  title: string
+  description?: string
+  status: 'completed' | 'pending' | 'in-progress'
+  date: Date
+  notes?: string
+}
+
 export interface VehicleInput {
   plateNumber: string // obligatorio
   clientName: string // obligatorio
@@ -83,9 +92,45 @@ export interface VehicleInput {
   clientPhone?: string
   serviceType?: string
   chassisNumber?: string
-  totalCost?: number // NUEVO: campo de costo total
+  totalCost?: number
   createdAt?: Date
-  estimatedCompletionDate?: Date | null // Cambiar undefined por null para Firebase
+  estimatedCompletionDate?: Date | null
   notes?: string
   nextStep?: string
+  steps?: VehicleStep[]
+}
+
+// === SEGUIMIENTO ===
+export interface TimelineItem {
+  id: number
+  fecha: string
+  hora: string
+  estado: string
+  descripcion: string
+  completado: boolean
+}
+
+export interface ImagenItem {
+  id: number
+  url: string
+  fecha: string
+  descripcion: string
+  tipo: 'antes' | 'proceso' | 'despues'
+}
+
+export interface SeguimientoData {
+  patente: string
+  modelo: string
+  marca: string
+  año: string
+  cliente: string
+  fechaIngreso: string
+  estadoActual?: string
+  telefono?: string
+  tipoServicio?: string
+  trabajosRealizados?: string[]
+  proximoPaso?: string
+  fechaEstimadaEntrega?: string
+  timeline?: TimelineItem[]
+  imagenes?: ImagenItem[]
 }

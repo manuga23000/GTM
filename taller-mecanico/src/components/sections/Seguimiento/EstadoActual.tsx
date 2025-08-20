@@ -142,7 +142,9 @@ export default function EstadoActual({ data }: EstadoActualProps) {
                 className='bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg text-center'
               >
                 <div className='text-2xl font-bold mb-1'>
-                  {formatearFecha(data.fechaEstimadaEntrega)}
+                  {data.fechaEstimadaEntrega && !isNaN(new Date(data.fechaEstimadaEntrega).getTime())
+                    ? formatearFecha(data.fechaEstimadaEntrega)
+                    : 'Todavía no hay fecha estimada de entrega'}
                 </div>
                 <div className='text-purple-100 text-sm'>
                   Fecha estimada de finalización

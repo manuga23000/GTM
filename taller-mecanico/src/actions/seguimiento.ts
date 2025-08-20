@@ -105,12 +105,42 @@ export async function getSeguimientoByPatente(
       estadoActual: data.status || 'received',
       telefono: data.clientPhone || '',
       tipoServicio: data.serviceType || 'Reparación general',
-      trabajosRealizados: data.trabajosRealizados || [],
-      proximoPaso: data.proximoPaso || '',
-      fechaEstimadaEntrega: data.fechaEstimadaEntrega
-        ? formatearFecha(data.fechaEstimadaEntrega)
-        : '',
-      timeline: data.timeline || [],
+      // Si existen steps, mapearlos a trabajos y timeline
+      trabajosRealizados: Array.isArray(data.steps)
+        ? data.steps.map((step: any) => step.title || step.description || 'Trabajo sin título')
+        : (data.trabajosRealizados || []),
+      proximoPaso: data.nextStep || data.proximoPaso || '',
+      fechaEstimadaEntrega: data.estimatedCompletionDate
+        ? formatearFecha(data.estimatedCompletionDate)
+        : (data.fechaEstimadaEntrega ? formatearFecha(data.fechaEstimadaEntrega) : ''),
+      timeline: Array.isArray(data.steps)
+        ? data.steps.map((step: any, idx: number) => ({
+            id: idx + 1,
+            fecha: step.date
+              ? (step.date instanceof Date
+                  ? step.date.toISOString().split('T')[0]
+                  : step.date?.toDate
+                  ? step.date.toDate().toISOString().split('T')[0]
+                  : typeof step.date === 'string'
+                  ? new Date(step.date).toISOString().split('T')[0]
+                  : ''
+                )
+              : '',
+            hora: step.date
+              ? (step.date instanceof Date
+                  ? step.date.toTimeString().slice(0,5)
+                  : step.date?.toDate
+                  ? step.date.toDate().toTimeString().slice(0,5)
+                  : typeof step.date === 'string'
+                  ? new Date(step.date).toTimeString().slice(0,5)
+                  : ''
+                )
+              : '',
+            estado: step.status || 'pendiente',
+            descripcion: step.title || step.description || '',
+            completado: step.status === 'completed',
+          }))
+        : (data.timeline || []),
       imagenes: data.imagenes || [],
     }
 

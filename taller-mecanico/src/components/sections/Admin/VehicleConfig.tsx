@@ -5,7 +5,7 @@ import {
   getAllVehicles,
   updateVehicle,
   deleteVehicle,
-} from '@/actions/admin'
+} from '@/actions/vehicle'
 import { motion, AnimatePresence } from 'framer-motion'
 import VehicleList, { VehicleInTracking, VehicleStep } from './VehicleList'
 import VehicleDetails from './VehicleDetails'
@@ -79,7 +79,7 @@ export default function VehicleConfig() {
         : null, // Manejar null
       status: 'received' as const,
       totalCost: v.totalCost || 0, // Incluir totalCost
-      steps: [] as VehicleStep[], // ← Inicializar como array vacío de VehicleStep
+      steps: v.steps || [], // ← Usar los steps reales normalizados del backend
       notes: v.notes || '',
       nextStep: v.nextStep || '',
     }))
@@ -179,11 +179,10 @@ export default function VehicleConfig() {
   }
 
   // Lógica de edición de seguimiento (separada)
-  const handleOpenTrackingEdit = () => {
-    if (selectedVehicleData) {
-      setEditTracking({ ...selectedVehicleData })
-      setShowTrackingModal(true)
-    }
+  const handleOpenTrackingEdit = (vehicle: VehicleInTracking) => {
+    console.log('DEBUG - editTracking al abrir modal:', vehicle)
+    setEditTracking(vehicle)
+    setShowTrackingModal(true)
   }
 
   const handleSaveTrackingEdit = async () => {
@@ -191,20 +190,26 @@ export default function VehicleConfig() {
     setIsEditingTracking(true)
     showMessage('Guardando seguimiento...')
     try {
-      // POR AHORA SIN FUNCIONALIDAD FIREBASE - solo actualizar estado local
-      // Aquí iría la lógica para guardar los steps en Firebase
-      console.log('Steps a guardar:', editTracking.steps)
+      // Guardar cambios de seguimiento en Firebase
+      const updateResult = await updateVehicle(editTracking.plateNumber, {
+        steps: editTracking.steps,
+        nextStep: editTracking.nextStep,
+        notes: editTracking.notes,
+        estimatedCompletionDate: editTracking.estimatedCompletionDate,
+      })
 
-      // Simular guardado exitoso
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // Actualizar estado local
-      setVehiclesInTracking(prev =>
-        prev.map(v => (v.id === editTracking.id ? editTracking : v))
-      )
-
-      setShowTrackingModal(false)
-      showMessage('Seguimiento actualizado')
+      if (updateResult.success) {
+        // Actualizar estado local solo si el guardado fue exitoso
+        setVehiclesInTracking(prev =>
+          prev.map(v => (v.id === editTracking.id ? editTracking : v))
+        )
+        setShowTrackingModal(false)
+        showMessage('Seguimiento actualizado')
+      } else {
+        showMessage(
+          'Error al guardar seguimiento: ' + (updateResult.message || '')
+        )
+      }
     } catch (error) {
       showMessage('Error al guardar seguimiento')
     } finally {
@@ -418,7 +423,7 @@ export default function VehicleConfig() {
               vehicle={selectedVehicleData}
               onClose={() => setSelectedVehicle('')}
               onEditVehicle={handleOpenEditVehicle}
-              onEditTracking={handleOpenTrackingEdit}
+              onEditTracking={() => handleOpenTrackingEdit(selectedVehicleData)} // ← así le pasas el dato
               onDeleteVehicle={handleDeleteVehicle}
             />
           )}

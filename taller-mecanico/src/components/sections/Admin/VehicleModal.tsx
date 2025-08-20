@@ -280,7 +280,9 @@ const TrackingForm = ({
       {/* Próximo paso (bloque separado) */}
       <div className='bg-blue-900/30 p-4 rounded border border-blue-500/30 mt-6 max-w-md mx-auto flex flex-col items-start'>
         <div className='flex flex-row items-center w-full mb-2'>
-          <span className='text-blue-300 font-medium text-sm'>Próximo paso</span>
+          <span className='text-blue-300 font-medium text-sm'>
+            Próximo paso
+          </span>
         </div>
         <div className='flex flex-row items-center gap-2 w-full'>
           {editingNextStep ? (
@@ -295,7 +297,10 @@ const TrackingForm = ({
                 onKeyDown={e => {
                   if (e.key === 'Enter') {
                     if (editingNextStepValue.trim()) {
-                      setTracking(prev => ({ ...prev, nextStep: editingNextStepValue.trim() }))
+                      setTracking(prev => ({
+                        ...prev,
+                        nextStep: editingNextStepValue.trim(),
+                      }))
                       setEditingNextStep(false)
                     }
                   }
@@ -308,7 +313,10 @@ const TrackingForm = ({
               <button
                 onClick={() => {
                   if (editingNextStepValue.trim()) {
-                    setTracking(prev => ({ ...prev, nextStep: editingNextStepValue.trim() }))
+                    setTracking(prev => ({
+                      ...prev,
+                      nextStep: editingNextStepValue.trim(),
+                    }))
                     setEditingNextStep(false)
                   }
                 }}
@@ -361,7 +369,10 @@ const TrackingForm = ({
                 maxLength={60}
                 onKeyDown={e => {
                   if (e.key === 'Enter' && nextStepInput.trim()) {
-                    setTracking(prev => ({ ...prev, nextStep: nextStepInput.trim() }))
+                    setTracking(prev => ({
+                      ...prev,
+                      nextStep: nextStepInput.trim(),
+                    }))
                     setNextStepInput('')
                   }
                 }}
@@ -369,7 +380,10 @@ const TrackingForm = ({
               <button
                 onClick={() => {
                   if (nextStepInput.trim()) {
-                    setTracking(prev => ({ ...prev, nextStep: nextStepInput.trim() }))
+                    setTracking(prev => ({
+                      ...prev,
+                      nextStep: nextStepInput.trim(),
+                    }))
                     setNextStepInput('')
                   }
                 }}

@@ -7,6 +7,7 @@ import SeguimientoHeader from '@/components/sections/Seguimiento/SeguimientoHead
 import EstadoActual from '@/components/sections/Seguimiento/EstadoActual'
 import TimelineProgreso from '@/components/sections/Seguimiento/TimelineProgreso'
 import Navbar from '@/components/layout/Navbar'
+import LoadingScreen from '@/components/ui/LoadingScreen'
 
 interface SeguimientoData {
   patente: string
@@ -21,6 +22,7 @@ interface SeguimientoData {
   fechaEstimadaEntrega: string
   timeline: TimelineItem[]
   imagenes: ImagenItem[]
+  updatedAt?: string // Agregado campo para última actualización
 }
 
 interface TimelineItem {
@@ -53,186 +55,57 @@ export default function SeguimientoPage() {
       try {
         setError(null)
 
-        // Intentar cargar datos reales desde backend
-        try {
-          const { getSeguimientoByPatente } = await import(
-            '@/actions/seguimiento'
-          )
-          const data = await getSeguimientoByPatente(patente)
+        const { getSeguimientoByPatente } = await import(
+          '@/actions/seguimiento'
+        )
+        const data = await getSeguimientoByPatente(patente)
 
-          if (data) {
-            // Mapear el estado de Firebase a un estado más descriptivo
-            const mapearEstado = (status: string) => {
-              switch (status?.toLowerCase()) {
-                case 'received':
-                  return 'Vehículo recibido'
-                case 'diagnosis':
-                  return 'En diagnóstico'
-                case 'repair':
-                  return 'En reparación'
-                case 'quality_control':
-                  return 'Control de calidad'
-                case 'ready':
-                  return 'Listo para entrega'
-                default:
-                  return 'Vehículo recibido'
-              }
-            }
+        if (!data) {
+          setError('not_found')
+          setLoading(false)
+          return
+        }
 
-            // Generar timeline básico basado en el estado actual
-            const generarTimeline = (
-              estado: string,
-              fechaIngreso: string
-            ): TimelineItem[] => {
-              const fecha = new Date(fechaIngreso)
-              const timeline: TimelineItem[] = [
-                {
-                  id: 1,
-                  fecha: fechaIngreso,
-                  hora: '09:00',
-                  estado: 'Vehículo recibido',
-                  descripcion: 'Recepción del vehículo en el taller',
-                  completado: true,
-                },
-              ]
-
-              if (estado !== 'Vehículo recibido') {
-                const fechaDiagnostico = new Date(fecha)
-                fechaDiagnostico.setDate(fecha.getDate() + 1)
-                timeline.push({
-                  id: 2,
-                  fecha: fechaDiagnostico.toISOString().split('T')[0],
-                  hora: '10:00',
-                  estado: 'Diagnóstico iniciado',
-                  descripcion: 'Evaluación inicial del vehículo',
-                  completado: true,
-                })
-              }
-
-              return timeline
-            }
-
-            const estadoMapeado = mapearEstado(data.estadoActual || 'received')
-
-            setSeguimientoData({
-              patente: data.patente,
-              modelo: data.modelo,
-              marca: data.marca,
-              año: data.año,
-              cliente: data.cliente,
-              fechaIngreso: data.fechaIngreso,
-              estadoActual: estadoMapeado,
-              trabajosRealizados: data.trabajosRealizados && data.trabajosRealizados.length > 0 ? data.trabajosRealizados : ['Sin trabajos registrados'],
-              proximoPaso: data.proximoPaso || 'Sin información',
-              fechaEstimadaEntrega: data.fechaEstimadaEntrega || '',
-              timeline: data.timeline && data.timeline.length > 0 ? data.timeline : [],
-              imagenes: data.imagenes && data.imagenes.length > 0 ? data.imagenes : [],
-            })
-            setLoading(false)
-            return
-          } else {
-            // No se encontraron datos en Firebase
-            setError('not_found')
-            setLoading(false)
-            return
+        // Mapear el estado de Firebase a un estado más descriptivo
+        const mapearEstado = (status: string) => {
+          switch (status?.toLowerCase()) {
+            case 'received':
+              return 'Vehículo recibido'
+            case 'diagnosis':
+              return 'En diagnóstico'
+            case 'repair':
+              return 'En reparación'
+            case 'quality_control':
+              return 'Control de calidad'
+            case 'ready':
+              return 'Listo para entrega'
+            default:
+              return 'Vehículo recibido'
           }
-        } catch (importError) {
-          setError('backend_error')
         }
 
-        // Si hay error de backend, usar datos mock para desarrollo
-        const mockData: SeguimientoData = {
-          patente: patente.toUpperCase(),
-          modelo: 'Corolla',
-          marca: 'Toyota',
-          año: '2018',
-          cliente: 'Juan Pérez',
-          fechaIngreso: '2025-08-09',
-          estadoActual: 'En reparación',
-          trabajosRealizados: [
-            'Diagnóstico inicial completado',
-            'Desmontaje de caja automática',
-            'Identificación de válvula solenoide defectuosa',
-          ],
-          proximoPaso: 'Reemplazo de componentes defectuosos',
-          fechaEstimadaEntrega: '2025-08-15',
-          timeline: [
-            {
-              id: 1,
-              fecha: '2025-08-09',
-              hora: '09:30',
-              estado: 'Vehículo recibido',
-              descripcion: 'Recepción del vehículo en el taller',
-              completado: true,
-            },
-            {
-              id: 2,
-              fecha: '2025-08-10',
-              hora: '14:30',
-              estado: 'Diagnóstico iniciado',
-              descripcion: 'Inicio del diagnóstico de caja automática',
-              completado: true,
-            },
-            {
-              id: 3,
-              fecha: '2025-08-11',
-              hora: '10:15',
-              estado: 'Diagnóstico completado',
-              descripcion:
-                'Problema identificado: válvula solenoide defectuosa',
-              completado: true,
-            },
-            {
-              id: 4,
-              fecha: '2025-08-12',
-              hora: '08:00',
-              estado: 'Reparación en curso',
-              descripcion: 'Inicio de reparación y reemplazo de componentes',
-              completado: true,
-            },
-            {
-              id: 5,
-              fecha: '2025-08-14',
-              hora: '16:00',
-              estado: 'Control de calidad',
-              descripcion: 'Pruebas finales y verificación del funcionamiento',
-              completado: false,
-            },
-            {
-              id: 6,
-              fecha: '2025-08-15',
-              hora: '10:00',
-              estado: 'Listo para entrega',
-              descripcion: 'Vehículo listo para ser retirado',
-              completado: false,
-            },
-          ],
-          imagenes: [
-            {
-              id: 1,
-              url: '/images/seguimiento/antes1.jpg',
-              fecha: '2025-08-10',
-              descripcion: 'Estado inicial del vehículo',
-              tipo: 'antes',
-            },
-            {
-              id: 2,
-              url: '/images/seguimiento/proceso1.jpg',
-              fecha: '2025-08-12',
-              descripcion: 'Desmontaje de la caja automática',
-              tipo: 'proceso',
-            },
-            {
-              id: 3,
-              url: '/images/seguimiento/proceso2.jpg',
-              fecha: '2025-08-12',
-              descripcion: 'Válvula solenoide defectuosa identificada',
-              tipo: 'proceso',
-            },
-          ],
-        }
+        const estadoMapeado = mapearEstado(data.estadoActual || 'received')
 
-        setSeguimientoData(mockData)
+        setSeguimientoData({
+          patente: data.patente,
+          modelo: data.modelo,
+          marca: data.marca,
+          año: data.año,
+          cliente: data.cliente,
+          fechaIngreso: data.fechaIngreso,
+          estadoActual: estadoMapeado,
+          trabajosRealizados:
+            data.trabajosRealizados && data.trabajosRealizados.length > 0
+              ? data.trabajosRealizados
+              : ['Sin trabajos registrados'],
+          proximoPaso: data.proximoPaso || 'Sin información',
+          fechaEstimadaEntrega: data.fechaEstimadaEntrega || '',
+          timeline:
+            data.timeline && data.timeline.length > 0 ? data.timeline : [],
+          imagenes:
+            data.imagenes && data.imagenes.length > 0 ? data.imagenes : [],
+          updatedAt: data.updatedAt || '', // Pasar el campo updatedAt
+        })
       } catch (error) {
         console.error('Error cargando datos:', error)
         setError('general_error')
@@ -244,29 +117,19 @@ export default function SeguimientoPage() {
     cargarDatos()
   }, [patente])
 
-  // Loading state
+  // Loading state con LoadingScreen de la home
   if (loading) {
     return (
       <>
         <Navbar />
-        <div
-          className='min-h-screen bg-gray-50 flex items-center justify-center'
-          style={{ paddingTop: '120px' }}
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            className='w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full'
-          />
-          <span className='ml-4 text-gray-600 text-lg'>
-            Cargando seguimiento...
-          </span>
+        <div className='fixed inset-0 bg-black z-50 flex items-center justify-center'>
+          <LoadingScreen onLoadingComplete={() => {}} duration={1200} />
         </div>
       </>
     )
   }
 
-  // Error states
+  // Error: Patente no encontrada
   if (error === 'not_found') {
     return (
       <>
@@ -322,6 +185,7 @@ export default function SeguimientoPage() {
     )
   }
 
+  // Error general del sistema
   if (error === 'general_error') {
     return (
       <>
@@ -380,8 +244,18 @@ export default function SeguimientoPage() {
           }}
         />
         <div className='max-w-5xl mx-auto px-4 pt-4 space-y-8'>
-          <EstadoActual data={seguimientoData} />
+          <EstadoActual
+            data={{
+              estadoActual: seguimientoData.estadoActual,
+              proximoPaso: seguimientoData.proximoPaso,
+              fechaEstimadaEntrega: seguimientoData.fechaEstimadaEntrega,
+              trabajosRealizados: seguimientoData.trabajosRealizados,
+              updatedAt: seguimientoData.updatedAt, // Pasar updatedAt al componente
+            }}
+          />
           <TimelineProgreso timeline={seguimientoData.timeline} />
+          {/* Separador blanco visual entre timeline y footer */}
+          <div className='h-8 md:h-12 w-full' />
         </div>
       </main>
     </>

@@ -33,7 +33,7 @@ export default function TimelineProgreso({ timeline }: TimelineProgresoProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.2 }}
-      className='bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden'
+      className='bg-white rounded-2xl border border-gray-100 overflow-hidden'
     >
       {/* Header */}
       <div className='bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6'>

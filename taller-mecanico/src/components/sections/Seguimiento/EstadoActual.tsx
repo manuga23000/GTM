@@ -9,6 +9,7 @@ interface EstadoActualProps {
     proximoPaso: string
     fechaEstimadaEntrega: string
     trabajosRealizados: string[]
+    updatedAt?: string
   }
 }
 
@@ -20,6 +21,21 @@ export default function EstadoActual({ data }: EstadoActualProps) {
       month: 'long',
       year: 'numeric',
     })
+  }
+
+  const formatearHoraActualizacion = (fecha: string) => {
+    if (!fecha) return 'Sin información'
+
+    const date = new Date(fecha)
+
+    // Formato: DD/MM/YY, HH:MM
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const year = String(date.getFullYear()).slice(-2) // Solo los últimos 2 dígitos
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+
+    return `${day}/${month}/${year}, ${hours}:${minutes}`
   }
 
   const getEstadoColor = (estado: string) => {
@@ -46,9 +62,44 @@ export default function EstadoActual({ data }: EstadoActualProps) {
       transition={{ duration: 0.6 }}
       className='bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden'
     >
-      {/* Header del estado */}
-      <div className='bg-gradient-to-r from-red-600 to-red-700 text-white p-6'>
-        <div className='flex items-center justify-between'>
+      {/* Header del estado - Simplificado */}
+      <div className='bg-gradient-to-r from-red-600 to-red-700 text-white p-4 sm:p-6'>
+        {/* Layout para móvil - Vertical */}
+        <div className='block md:hidden'>
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+            className='text-center space-y-2'
+          >
+            {/* Título centrado */}
+            <div className='flex items-center justify-center'>
+              <div
+                className={`w-3 h-3 rounded-full ${getEstadoColor(
+                  data.estadoActual
+                )} mr-2 animate-pulse`}
+              />
+              <h2 className='text-lg font-bold'>Estado Actual</h2>
+            </div>
+
+            {/* Última actualización */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className='space-y-1'
+            >
+              <div className='text-sm text-red-100'>Última actualización</div>
+              <div className='text-sm md:text-xs text-red-100'>
+                <FaClock className='inline mr-1' />
+                {formatearHoraActualizacion(data.updatedAt || '')}
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* Layout para desktop - Horizontal simplificado */}
+        <div className='hidden md:flex items-center justify-between'>
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -71,17 +122,16 @@ export default function EstadoActual({ data }: EstadoActualProps) {
             transition={{ delay: 0.3 }}
             className='text-right'
           >
-            <div className='text-3xl font-bold'>{data.estadoActual}</div>
-            <div className='text-red-100 text-sm'>
-              <FaClock className='inline mr-1' />
-              Hoy, 14:30
+            <div className='text-red-100 text-sm md:text-lg flex items-center'>
+              <FaClock className='mr-1' />
+              {formatearHoraActualizacion(data.updatedAt || '')}
             </div>
           </motion.div>
         </div>
       </div>
 
-      <div className='p-6'>
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
+      <div className='p-4 sm:p-6'>
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8'>
           {/* Trabajos realizados */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -102,7 +152,9 @@ export default function EstadoActual({ data }: EstadoActualProps) {
                   className='flex items-start bg-green-50 p-3 rounded-lg border-l-4 border-green-500'
                 >
                   <FaCheckCircle className='text-green-500 mt-1 mr-3 flex-shrink-0' />
-                  <span className='text-gray-700'>{trabajo}</span>
+                  <span className='text-gray-700 text-sm sm:text-base'>
+                    {trabajo}
+                  </span>
                 </motion.div>
               ))}
             </div>
@@ -124,7 +176,7 @@ export default function EstadoActual({ data }: EstadoActualProps) {
               <div className='bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500'>
                 <div className='flex items-start'>
                   <FaTools className='text-blue-500 mt-1 mr-3 flex-shrink-0' />
-                  <span className='text-gray-700 font-medium'>
+                  <span className='text-gray-700 font-medium text-sm sm:text-base'>
                     {data.proximoPaso}
                   </span>
                 </div>
@@ -141,12 +193,13 @@ export default function EstadoActual({ data }: EstadoActualProps) {
                 whileHover={{ scale: 1.02 }}
                 className='bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-lg text-center'
               >
-                <div className='text-2xl font-bold mb-1'>
-                  {data.fechaEstimadaEntrega && !isNaN(new Date(data.fechaEstimadaEntrega).getTime())
+                <div className='text-lg sm:text-2xl font-bold mb-1 leading-tight'>
+                  {data.fechaEstimadaEntrega &&
+                  !isNaN(new Date(data.fechaEstimadaEntrega).getTime())
                     ? formatearFecha(data.fechaEstimadaEntrega)
                     : 'Todavía no hay fecha estimada de entrega'}
                 </div>
-                <div className='text-purple-100 text-sm'>
+                <div className='text-purple-100 text-xs sm:text-sm'>
                   Fecha estimada de finalización
                 </div>
               </motion.div>
@@ -161,7 +214,7 @@ export default function EstadoActual({ data }: EstadoActualProps) {
           transition={{ delay: 0.8 }}
           className='mt-6 bg-gray-50 p-4 rounded-lg border border-gray-200'
         >
-          <p className='text-gray-600 text-sm text-center'>
+          <p className='text-gray-600 text-xs sm:text-sm text-center'>
             <strong>Nota:</strong> Las fechas son estimativas y pueden variar
             según la disponibilidad de repuestos y la complejidad de los
             trabajos. Te notificaremos ante cualquier cambio.

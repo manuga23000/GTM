@@ -2,7 +2,6 @@
 'use client'
 import { motion } from 'framer-motion'
 import { FaCar, FaCalendarAlt, FaUser } from 'react-icons/fa'
-import Image from 'next/image'
 
 interface SeguimientoHeaderProps {
   data: {
@@ -20,7 +19,8 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
     const date = new Date(fecha)
     return date.toLocaleDateString('es-AR', {
       day: '2-digit',
-      month: 'short',
+      month: '2-digit',
+      year: 'numeric',
     })
   }
 
@@ -31,17 +31,6 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
       year: 'numeric',
     })
   }
-
-  const calcularDiasEnTaller = (fechaIngreso: string) => {
-    const inicio = new Date(fechaIngreso)
-    const hoy = new Date()
-    const diferencia = Math.floor(
-      (hoy.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24)
-    )
-    return Math.max(0, diferencia)
-  }
-
-  const diasEnTaller = calcularDiasEnTaller(data.fechaIngreso)
 
   return (
     <motion.header
@@ -61,30 +50,11 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
         />
       </div>
 
-      <div className='relative max-w-7xl mx-auto px-4 py-8'>
-        <div className='flex items-center mb-6'>
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            className='mr-4'
-          >
-            <Image
-              src='/images/header/LOGO GTM.png'
-              alt='GTM Logo'
-              width={50}
-              height={50}
-              className='h-12 w-auto'
-            />
-          </motion.div>
-          <div>
-            <h1 className='text-2xl md:text-3xl font-bold'>
-              Seguimiento de Vehículo
-            </h1>
-            <p className='text-gray-300'>
-              GTM - Tu aliado automotriz de confianza
-            </p>
-          </div>
+      <div className='relative max-w-7xl mx-auto px-4 py-3 md:py-6'>
+        <div className='mb-3 mt-3 md:mb-4'>
+          <h1 className='text-xl text-center md:text-2xl lg:text-3xl font-bold'>
+            Seguimiento de Vehículo
+          </h1>
         </div>
 
         {/* Info principal del vehículo */}
@@ -92,23 +62,29 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className='bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20'
+          className='bg-white/10 backdrop-blur-sm rounded-2xl p-3 md:p-4 border border-white/20'
         >
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-            {/* Patente y días en taller */}
+          {/* Layout mobile: patente centrada arriba */}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className='text-center mb-3 md:hidden'
+          >
+            <div className='inline-flex items-center bg-red-600 text-white px-4 py-2 rounded-lg text-xl font-bold tracking-wider'>
+              <FaCar className='mr-2 text-lg' />
+              {data.patente}
+            </div>
+          </motion.div>
+
+          {/* Layout desktop: grid de 3 columnas */}
+          <div className='hidden md:grid md:grid-cols-3 gap-4 items-center'>
+            {/* Patente */}
             <motion.div
               whileHover={{ scale: 1.02 }}
               className='text-center md:text-left'
             >
-              <div className='inline-flex items-center bg-red-600 text-white px-6 py-3 rounded-lg text-2xl font-bold tracking-wider mb-3'>
-                <FaCar className='mr-3' />
+              <div className='inline-flex items-center bg-red-600 text-white px-6 py-3 rounded-lg text-2xl font-bold tracking-wider'>
+                <FaCar className='mr-3 text-xl' />
                 {data.patente}
-              </div>
-              <div className='text-gray-300'>
-                <p className='text-sm mb-1'>Días en taller</p>
-                <p className='text-white font-bold text-xl'>
-                  {diasEnTaller} días
-                </p>
               </div>
             </motion.div>
 
@@ -117,15 +93,15 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className='text-center md:text-left'
+              className='text-center'
             >
-              <h3 className='text-2xl font-bold mb-2'>
+              <h3 className='text-xl font-bold mb-1'>
                 {data.marca} {data.modelo}
               </h3>
-              <p className='text-gray-300 text-lg mb-3'>Año {data.año}</p>
-              <div className='flex items-center justify-center md:justify-start text-gray-300'>
-                <FaUser className='mr-2' />
-                <span className='font-medium'>{data.cliente}</span>
+              <p className='text-gray-300 text-base mb-2'>Año {data.año}</p>
+              <div className='flex items-center justify-center text-gray-300'>
+                <FaUser className='mr-2 text-sm' />
+                <span className='font-medium text-base'>{data.cliente}</span>
               </div>
             </motion.div>
 
@@ -137,12 +113,52 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
               className='text-center md:text-right'
             >
               <div className='inline-flex items-center bg-gray-700 text-white px-4 py-3 rounded-lg'>
-                <FaCalendarAlt className='mr-3' />
+                <FaCalendarAlt className='mr-3 text-base' />
                 <div>
                   <div className='text-sm text-gray-300 mb-1'>
                     Fecha de Ingreso
                   </div>
-                  <div className='font-bold text-lg'>
+                  <div className='font-bold text-base'>
+                    {formatearFecha(data.fechaIngreso)}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Layout mobile: info del vehículo y fecha */}
+          <div className='grid grid-cols-1 gap-3 md:hidden'>
+            {/* Info del vehículo */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className='text-center'
+            >
+              <h3 className='text-lg font-bold mb-1'>
+                {data.marca} {data.modelo}
+              </h3>
+              <p className='text-gray-300 text-sm mb-2'>Año {data.año}</p>
+              <div className='flex items-center justify-center text-gray-300'>
+                <FaUser className='mr-2 text-sm' />
+                <span className='font-medium text-sm'>{data.cliente}</span>
+              </div>
+            </motion.div>
+
+            {/* Fecha de ingreso */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className='text-center'
+            >
+              <div className='inline-flex items-center bg-gray-700 text-white px-3 py-2 rounded-lg'>
+                <FaCalendarAlt className='mr-2 text-sm' />
+                <div>
+                  <div className='text-xs text-gray-300 mb-1'>
+                    Fecha de Ingreso
+                  </div>
+                  <div className='font-bold text-sm'>
                     {formatearFecha(data.fechaIngreso)}
                   </div>
                 </div>
@@ -155,7 +171,7 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ delay: 0.8, duration: 0.8 }}
-            className='mt-6 h-1 bg-gradient-to-r from-red-600 to-red-600 rounded-full'
+            className='mt-3 md:mt-4 h-1 bg-gradient-to-r from-red-600 to-red-600 rounded-full'
           />
         </motion.div>
 
@@ -164,7 +180,7 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9 }}
-          className='flex justify-center mt-4'
+          className='flex justify-center mt-1 md:mt-2'
         ></motion.div>
       </div>
     </motion.header>

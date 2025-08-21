@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import VehicleList, { VehicleInTracking, VehicleStep } from './VehicleList'
 import VehicleDetails from './VehicleDetails'
 import VehicleModal from './VehicleModal'
+import { deleteFileFromStorage } from '@/lib/storageUtils'
 
 export default function VehicleConfig() {
   const [vehiclesInTracking, setVehiclesInTracking] = useState<
@@ -62,28 +63,48 @@ export default function VehicleConfig() {
   }, [searchTerm])
 
   const fetchVehicles = async () => {
-    const backendVehicles = await getAllVehicles()
-    const mapped = backendVehicles.map(v => ({
-      id: v.plateNumber,
-      plateNumber: v.plateNumber,
-      brand: v.brand || '',
-      model: v.model || '',
-      year: v.year || new Date().getFullYear(),
-      clientName: v.clientName,
-      clientPhone: v.clientPhone || '',
-      serviceType: v.serviceType || '',
-      chassisNumber: v.chassisNumber || '',
-      entryDate: v.createdAt ? new Date(v.createdAt) : new Date(),
-      estimatedCompletionDate: v.estimatedCompletionDate
-        ? new Date(v.estimatedCompletionDate)
-        : null, // Manejar null
-      status: 'received' as const,
-      totalCost: v.totalCost || 0, // Incluir totalCost
-      steps: v.steps || [], // ← Usar los steps reales normalizados del backend
-      notes: v.notes || '',
-      nextStep: v.nextStep || '',
-    }))
-    setVehiclesInTracking(mapped)
+    try {
+      const backendVehicles = await getAllVehicles()
+      const mapped = backendVehicles.map(v => ({
+        id: v.plateNumber,
+        plateNumber: v.plateNumber,
+        brand: v.brand || '',
+        model: v.model || '',
+        year: v.year || new Date().getFullYear(),
+        clientName: v.clientName,
+        clientPhone: v.clientPhone || '',
+        serviceType: v.serviceType || '',
+        chassisNumber: v.chassisNumber || '',
+        entryDate: v.createdAt ? new Date(v.createdAt) : new Date(),
+        estimatedCompletionDate: v.estimatedCompletionDate
+          ? new Date(v.estimatedCompletionDate)
+          : null,
+        status: 'received' as const,
+        totalCost: v.totalCost || 0,
+        steps: (v.steps || []).map(step => ({
+          ...step,
+          date:
+            step.date instanceof Date
+              ? step.date
+              : step.date
+              ? new Date(step.date)
+              : new Date(), // SEGURO: Siempre una fecha válida
+          files: (step.files || []).map(file => ({
+            ...file,
+            uploadedAt:
+              file.uploadedAt instanceof Date
+                ? file.uploadedAt
+                : new Date(file.uploadedAt),
+          })),
+        })),
+        notes: v.notes || '',
+        nextStep: v.nextStep || '',
+      }))
+      setVehiclesInTracking(mapped)
+    } catch (error) {
+      console.error('Error fetching vehicles:', error)
+      showMessage('Error al cargar vehículos')
+    }
   }
 
   const [newVehicle, setNewVehicle] = useState({
@@ -110,28 +131,47 @@ export default function VehicleConfig() {
     setTimeout(() => setMessage(''), duration)
   }
 
-  // Lógica de eliminación
+  // ACTUALIZADA: Lógica de eliminación con limpieza de archivos
   const handleDeleteVehicle = async () => {
     if (!selectedVehicleData || isDeletingVehicle) return
-    if (
-      !window.confirm(
-        `¿Seguro que deseas eliminar el vehículo ${selectedVehicleData.plateNumber}?`
-      )
-    )
-      return
+
+    const fileCount = selectedVehicleData.steps.reduce((acc, step) => {
+      return acc + (step.files?.length || 0)
+    }, 0)
+
+    const confirmMessage =
+      fileCount > 0
+        ? `¿Seguro que deseas eliminar el vehículo ${
+            selectedVehicleData.plateNumber
+          }?\n\nEsto también eliminará ${fileCount} archivo${
+            fileCount !== 1 ? 's' : ''
+          } multimedia asociado${fileCount !== 1 ? 's' : ''}.`
+        : `¿Seguro que deseas eliminar el vehículo ${selectedVehicleData.plateNumber}?`
+
+    if (!window.confirm(confirmMessage)) return
 
     setIsDeletingVehicle(true)
-    showMessage('Eliminando vehículo...')
+    showMessage('Eliminando vehículo y archivos...')
+
     try {
+      // La función deleteVehicle ya maneja la limpieza de archivos de Storage
       const response = await deleteVehicle(selectedVehicleData.plateNumber)
+
       if (response.success) {
         await fetchVehicles()
         setSelectedVehicle('')
-        showMessage('Vehículo eliminado exitosamente')
+        showMessage(
+          fileCount > 0
+            ? `Vehículo y ${fileCount} archivo${
+                fileCount !== 1 ? 's' : ''
+              } eliminado${fileCount !== 1 ? 's' : ''} exitosamente`
+            : 'Vehículo eliminado exitosamente'
+        )
       } else {
         showMessage(response.message || 'Error al eliminar vehículo')
       }
     } catch (error) {
+      console.error('Error deleting vehicle:', error)
       showMessage('Error al eliminar el vehículo')
     } finally {
       setIsDeletingVehicle(false)
@@ -160,7 +200,7 @@ export default function VehicleConfig() {
         clientPhone: editVehicle.clientPhone,
         serviceType: editVehicle.serviceType,
         chassisNumber: editVehicle.chassisNumber,
-        totalCost: editVehicle.totalCost, // Incluir totalCost
+        totalCost: editVehicle.totalCost,
         createdAt: editVehicle.entryDate,
         estimatedCompletionDate: editVehicle.estimatedCompletionDate,
       })
@@ -178,10 +218,22 @@ export default function VehicleConfig() {
     }
   }
 
-  // Lógica de edición de seguimiento (separada)
+  // ACTUALIZADA: Lógica de edición de seguimiento con manejo de archivos
   const handleOpenTrackingEdit = (vehicle: VehicleInTracking) => {
     console.log('DEBUG - editTracking al abrir modal:', vehicle)
-    setEditTracking(vehicle)
+    setEditTracking({
+      ...vehicle,
+      steps: vehicle.steps.map(step => ({
+        ...step,
+        files: (step.files || []).map(file => ({
+          ...file,
+          uploadedAt:
+            file.uploadedAt instanceof Date
+              ? file.uploadedAt
+              : new Date(file.uploadedAt),
+        })),
+      })),
+    })
     setShowTrackingModal(true)
   }
 
@@ -189,20 +241,29 @@ export default function VehicleConfig() {
     if (!editTracking || isEditingTracking) return
     setIsEditingTracking(true)
     showMessage('Guardando seguimiento...')
+
     try {
-      // Guardar cambios de seguimiento en Firebase
+      // Normalizar fechas de archivos antes de guardar
+      const normalizedSteps = editTracking.steps.map(step => ({
+        ...step,
+        files: (step.files || []).map(file => ({
+          ...file,
+          uploadedAt:
+            file.uploadedAt instanceof Date
+              ? file.uploadedAt
+              : new Date(file.uploadedAt),
+        })),
+      }))
+
       const updateResult = await updateVehicle(editTracking.plateNumber, {
-        steps: editTracking.steps,
+        steps: normalizedSteps,
         nextStep: editTracking.nextStep,
         notes: editTracking.notes,
         estimatedCompletionDate: editTracking.estimatedCompletionDate,
       })
 
       if (updateResult.success) {
-        // Actualizar estado local solo si el guardado fue exitoso
-        setVehiclesInTracking(prev =>
-          prev.map(v => (v.id === editTracking.id ? editTracking : v))
-        )
+        await fetchVehicles()
         setShowTrackingModal(false)
         showMessage('Seguimiento actualizado')
       } else {
@@ -211,6 +272,7 @@ export default function VehicleConfig() {
         )
       }
     } catch (error) {
+      console.error('Error saving tracking:', error)
       showMessage('Error al guardar seguimiento')
     } finally {
       setIsEditingTracking(false)
@@ -220,14 +282,17 @@ export default function VehicleConfig() {
   const handleAddVehicle = async () => {
     if (isAddingVehicle) return
     setIsAddingVehicle(true)
-    setAddVehicleError('') // Limpiar errores previos
+    setAddVehicleError('')
     showMessage('Guardando vehículo...')
+
     try {
       const response = await createVehicle({
         ...newVehicle,
         createdAt: newVehicle.createdAt,
-        totalCost: newVehicle.totalCost, // Asegurar que se incluya totalCost
+        totalCost: newVehicle.totalCost,
+        steps: [], // Inicializar con array vacío
       })
+
       if (response.success) {
         await fetchVehicles()
         setNewVehicle({
@@ -247,7 +312,6 @@ export default function VehicleConfig() {
         setShowAddForm(false)
         showMessage('Vehículo agregado exitosamente')
       } else {
-        // Mostrar error en el modal
         setAddVehicleError(response.message || 'Error al agregar vehículo')
         showMessage(response.message || 'Error al agregar vehículo')
       }
@@ -343,7 +407,7 @@ export default function VehicleConfig() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => {
-                setAddVehicleError('') // Limpiar errores al abrir modal
+                setAddVehicleError('')
                 setShowAddForm(true)
               }}
               className='px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors whitespace-nowrap'
@@ -423,7 +487,7 @@ export default function VehicleConfig() {
               vehicle={selectedVehicleData}
               onClose={() => setSelectedVehicle('')}
               onEditVehicle={handleOpenEditVehicle}
-              onEditTracking={() => handleOpenTrackingEdit(selectedVehicleData)} // ← así le pasas el dato
+              onEditTracking={() => handleOpenTrackingEdit(selectedVehicleData)}
               onDeleteVehicle={handleDeleteVehicle}
             />
           )}

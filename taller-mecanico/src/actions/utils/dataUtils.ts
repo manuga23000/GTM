@@ -1,22 +1,144 @@
 import { VehicleInput } from '../types/types'
 
 /**
- * Filtrar valores undefined para Firebase
+ * NUEVO: Validar datos antes de enviar a Firestore
+ * Detecta valores undefined anidados
+ */
+export function validateFirestoreData(obj: any, path = ''): string[] {
+  const errors: string[] = []
+
+  if (obj === undefined) {
+    errors.push(`Valor undefined en: ${path}`)
+    return errors
+  }
+
+  if (obj === null || typeof obj !== 'object') {
+    return errors
+  }
+
+  if (Array.isArray(obj)) {
+    obj.forEach((item, index) => {
+      errors.push(...validateFirestoreData(item, `${path}[${index}]`))
+    })
+  } else {
+    Object.entries(obj).forEach(([key, value]) => {
+      const currentPath = path ? `${path}.${key}` : key
+      if (value === undefined) {
+        errors.push(`Valor undefined en: ${currentPath}`)
+      } else {
+        errors.push(...validateFirestoreData(value, currentPath))
+      }
+    })
+  }
+
+  return errors
+}
+
+/**
+ * NUEVO: Limpiar datos de archivo para Firestore
+ * Elimina campos undefined y valida tipos
+ */
+export function cleanStepFileForFirestore(file: any): any {
+  const cleanFile: any = {
+    id: file.id || '',
+    fileName: file.fileName || 'archivo',
+    type: file.type === 'video' ? 'video' : 'image',
+    url: file.url || '',
+    storageRef: file.storageRef || '',
+    uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(),
+    size: typeof file.size === 'number' ? file.size : 0,
+  }
+
+  // Solo agregar thumbnailUrl si existe y no es undefined
+  if (file.thumbnailUrl && typeof file.thumbnailUrl === 'string') {
+    cleanFile.thumbnailUrl = file.thumbnailUrl
+  }
+
+  // Solo agregar dimensions si es válido
+  if (
+    file.dimensions &&
+    typeof file.dimensions.width === 'number' &&
+    typeof file.dimensions.height === 'number' &&
+    file.dimensions.width > 0 &&
+    file.dimensions.height > 0
+  ) {
+    cleanFile.dimensions = {
+      width: file.dimensions.width,
+      height: file.dimensions.height,
+    }
+  }
+
+  return cleanFile
+}
+
+/**
+ * NUEVO: Limpiar step completo para Firestore
+ */
+export function cleanStepForFirestore(step: any): any {
+  const cleanStep: any = {
+    id: step.id || '',
+    title: step.title || '',
+    description: step.description || '',
+    status: step.status || 'completed',
+    date: step.date instanceof Date ? step.date : new Date(),
+    notes: step.notes || '',
+  }
+
+  // Limpiar archivos si existen
+  if (Array.isArray(step.files) && step.files.length > 0) {
+    cleanStep.files = step.files.map(cleanStepFileForFirestore)
+  }
+
+  return cleanStep
+}
+
+/**
+ * Filtrar valores undefined para Firebase (MEJORADO - recursivo)
  */
 export function filterUndefinedValues(
   obj: Record<string, unknown>
 ): Record<string, unknown> {
   const filtered: Record<string, unknown> = {}
+
   for (const [key, value] of Object.entries(obj)) {
-    if (value !== undefined) {
+    if (value === undefined || value === null) {
+      continue // Saltar valores undefined y null
+    }
+
+    if (Array.isArray(value)) {
+      // Filtrar arrays recursivamente
+      const filteredArray = value
+        .filter(item => item !== undefined && item !== null)
+        .map(item => {
+          if (typeof item === 'object' && item !== null) {
+            return filterUndefinedValues(item as Record<string, unknown>)
+          }
+          return item
+        })
+
+      if (filteredArray.length > 0) {
+        filtered[key] = filteredArray
+      }
+    } else if (typeof value === 'object' && value !== null) {
+      // Filtrar objetos recursivamente
+      const filteredObject = filterUndefinedValues(
+        value as Record<string, unknown>
+      )
+      if (Object.keys(filteredObject).length > 0) {
+        filtered[key] = filteredObject
+      }
+    } else {
+      // Valores primitivos válidos
       filtered[key] = value
     }
   }
+
   return filtered
 }
 
 /**
  * Normalizar datos de vehículo desde Firebase
+ * ACTUALIZADO: Maneja archivos de Storage en los steps
  */
 export function normalizeVehicleData(data: any): VehicleInput {
   return {
@@ -57,7 +179,8 @@ export function normalizeVehicleData(data: any): VehicleInput {
       ? data.steps.map((step: any) => ({
           id: typeof step.id === 'string' ? step.id : '',
           title: typeof step.title === 'string' ? step.title : '',
-          description: typeof step.description === 'string' ? step.description : '',
+          description:
+            typeof step.description === 'string' ? step.description : '',
           status: ['completed', 'pending', 'in-progress'].includes(step.status)
             ? step.status
             : 'pending',
@@ -68,28 +191,109 @@ export function normalizeVehicleData(data: any): VehicleInput {
               ? step.date.toDate()
               : step.date
               ? new Date(step.date)
-              : null,
+              : new Date(), // SEGURO: Siempre devuelve una fecha válida
           notes: typeof step.notes === 'string' ? step.notes : '',
+          // ACTUALIZADO: Normalizar archivos del step con thumbnails y dimensiones
+          files: Array.isArray(step.files)
+            ? step.files.map((file: any) => ({
+                id: typeof file.id === 'string' ? file.id : '',
+                fileName:
+                  typeof file.fileName === 'string' ? file.fileName : 'archivo',
+                type: ['image', 'video'].includes(file.type)
+                  ? file.type
+                  : 'image',
+                url: typeof file.url === 'string' ? file.url : '',
+                thumbnailUrl:
+                  typeof file.thumbnailUrl === 'string'
+                    ? file.thumbnailUrl
+                    : undefined, // NUEVO
+                storageRef:
+                  typeof file.storageRef === 'string' ? file.storageRef : '',
+                uploadedAt:
+                  file.uploadedAt instanceof Date
+                    ? file.uploadedAt
+                    : file.uploadedAt?.toDate
+                    ? file.uploadedAt.toDate()
+                    : file.uploadedAt
+                    ? new Date(file.uploadedAt)
+                    : new Date(),
+                size: typeof file.size === 'number' ? file.size : 0,
+                dimensions:
+                  file.dimensions && typeof file.dimensions === 'object' // NUEVO
+                    ? {
+                        width:
+                          typeof file.dimensions.width === 'number'
+                            ? file.dimensions.width
+                            : 0,
+                        height:
+                          typeof file.dimensions.height === 'number'
+                            ? file.dimensions.height
+                            : 0,
+                      }
+                    : undefined,
+              }))
+            : [],
         }))
-      : (typeof data.steps === 'object' && data.steps !== null
-        ? Object.values(data.steps).map((step: any) => ({
-            id: typeof step.id === 'string' ? step.id : '',
-            title: typeof step.title === 'string' ? step.title : '',
-            description: typeof step.description === 'string' ? step.description : '',
-            status: ['completed', 'pending', 'in-progress'].includes(step.status)
-              ? step.status
-              : 'pending',
-            date:
-              step.date instanceof Date
-                ? step.date
-                : step.date?.toDate
-                ? step.date.toDate()
-                : step.date
-                ? new Date(step.date)
-                : null,
-            notes: typeof step.notes === 'string' ? step.notes : '',
-          }))
-        : []),
+      : typeof data.steps === 'object' && data.steps !== null
+      ? Object.values(data.steps).map((step: any) => ({
+          id: typeof step.id === 'string' ? step.id : '',
+          title: typeof step.title === 'string' ? step.title : '',
+          description:
+            typeof step.description === 'string' ? step.description : '',
+          status: ['completed', 'pending', 'in-progress'].includes(step.status)
+            ? step.status
+            : 'pending',
+          date:
+            step.date instanceof Date
+              ? step.date
+              : step.date?.toDate
+              ? step.date.toDate()
+              : step.date
+              ? new Date(step.date)
+              : new Date(), // SEGURO: Siempre devuelve una fecha válida
+          notes: typeof step.notes === 'string' ? step.notes : '',
+          // ACTUALIZADO: Normalizar archivos del step (legacy) con thumbnails
+          files: Array.isArray(step.files)
+            ? step.files.map((file: any) => ({
+                id: typeof file.id === 'string' ? file.id : '',
+                fileName:
+                  typeof file.fileName === 'string' ? file.fileName : 'archivo',
+                type: ['image', 'video'].includes(file.type)
+                  ? file.type
+                  : 'image',
+                url: typeof file.url === 'string' ? file.url : '',
+                thumbnailUrl:
+                  typeof file.thumbnailUrl === 'string'
+                    ? file.thumbnailUrl
+                    : undefined, // NUEVO
+                storageRef:
+                  typeof file.storageRef === 'string' ? file.storageRef : '',
+                uploadedAt:
+                  file.uploadedAt instanceof Date
+                    ? file.uploadedAt
+                    : file.uploadedAt?.toDate
+                    ? file.uploadedAt.toDate()
+                    : file.uploadedAt
+                    ? new Date(file.uploadedAt)
+                    : new Date(),
+                size: typeof file.size === 'number' ? file.size : 0,
+                dimensions:
+                  file.dimensions && typeof file.dimensions === 'object' // NUEVO
+                    ? {
+                        width:
+                          typeof file.dimensions.width === 'number'
+                            ? file.dimensions.width
+                            : 0,
+                        height:
+                          typeof file.dimensions.height === 'number'
+                            ? file.dimensions.height
+                            : 0,
+                      }
+                    : undefined,
+              }))
+            : [],
+        }))
+      : [],
   }
 }
 
@@ -112,4 +316,52 @@ export function formatDateForFirestore(date: unknown): Date | null {
   }
 
   return null
+}
+
+/**
+ * NUEVO: Limpiar URLs temporales de archivos
+ * Útil para evitar memory leaks
+ */
+export function cleanupTempUrls(files: { tempUrl?: string }[]): void {
+  files.forEach(file => {
+    if (file.tempUrl && file.tempUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(file.tempUrl)
+    }
+  })
+}
+
+/**
+ * NUEVO: Convertir bytes a formato legible
+ */
+export function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes'
+
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
+}
+
+/**
+ * NUEVO: Validar estructura de archivo del step
+ */
+export function isValidStepFile(file: any): boolean {
+  return (
+    typeof file === 'object' &&
+    file !== null &&
+    typeof file.id === 'string' &&
+    typeof file.fileName === 'string' &&
+    ['image', 'video'].includes(file.type) &&
+    typeof file.url === 'string' &&
+    typeof file.storageRef === 'string' &&
+    (file.uploadedAt instanceof Date || typeof file.uploadedAt === 'string') &&
+    typeof file.size === 'number'
+  )
+}
+
+export interface AdminResponse {
+  success: boolean
+  message: string
+  error?: string
 }

@@ -11,8 +11,20 @@ import {
   Timestamp,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import { VehicleInput, VehicleStep, AdminResponse } from './types/types'
-import { filterUndefinedValues, normalizeVehicleData } from './utils/dataUtils'
+import {
+  VehicleInput,
+  VehicleStep,
+  StepFile,
+  AdminResponse,
+} from './types/types'
+import {
+  filterUndefinedValues,
+  normalizeVehicleData,
+  cleanStepForFirestore,
+  cleanStepFileForFirestore,
+  validateFirestoreData,
+} from './utils/dataUtils'
+import { deleteFileFromStorage } from '@/lib/storageUtils'
 
 const COLLECTION_NAME = 'vehicles'
 
@@ -95,10 +107,31 @@ export async function createVehicle(
       plateNumber: normalizedPlate,
       createdAt: vehicleData.createdAt || new Date(),
       totalCost: vehicleData.totalCost || 0,
+      steps: vehicleData.steps || [], // Asegurar que steps sea un array
     }
 
+    // MEJORADO: Aplicar filtro recursivo
     const filteredData = filterUndefinedValues(dataToSave)
-    await setDoc(docRef, filteredData)
+
+    // VALIDACIÓN: Verificar que no queden undefined
+    const validationErrors = validateFirestoreData(filteredData)
+    if (validationErrors.length > 0) {
+      console.error(
+        '❌ Datos con undefined detectados en creación:',
+        validationErrors
+      )
+      console.error(
+        '📋 Datos problemáticos:',
+        JSON.stringify(filteredData, null, 2)
+      )
+
+      // Aplicar filtro doble
+      const doubleFiltered = filterUndefinedValues(filteredData)
+      await setDoc(docRef, doubleFiltered)
+    } else {
+      console.log('✅ Datos de creación validados correctamente')
+      await setDoc(docRef, filteredData)
+    }
 
     return {
       success: true,
@@ -115,7 +148,7 @@ export async function createVehicle(
 }
 
 /**
- * Actualizar vehículo existente
+ * ACTUALIZADO: Actualizar vehículo existente con manejo de archivos
  */
 export async function updateVehicle(
   plateNumber: string,
@@ -132,6 +165,13 @@ export async function updateVehicle(
 
     const docRef = doc(db, COLLECTION_NAME, plateNumber)
 
+    // MEJORADO: Si se están actualizando los steps, usar funciones de limpieza
+    if (updateData.steps) {
+      updateData.steps = updateData.steps.map(step =>
+        cleanStepForFirestore(step)
+      )
+    }
+
     const dataToUpdate = {
       ...updateData,
       plateNumber,
@@ -142,8 +182,25 @@ export async function updateVehicle(
       dataToUpdate.totalCost = Number(updateData.totalCost) || 0
     }
 
+    // CRÍTICO: Aplicar filtro recursivo para eliminar todos los undefined
     const filteredData = filterUndefinedValues(dataToUpdate)
-    await setDoc(docRef, filteredData, { merge: true })
+
+    // VALIDACIÓN ADICIONAL: Verificar que no queden undefined
+    const validationErrors = validateFirestoreData(filteredData)
+    if (validationErrors.length > 0) {
+      console.error('❌ Datos con undefined detectados:', validationErrors)
+      console.error(
+        '📋 Datos problemáticos:',
+        JSON.stringify(filteredData, null, 2)
+      )
+
+      // Aplicar filtro una vez más para asegurar limpieza
+      const doubleFiltered = filterUndefinedValues(filteredData)
+      await setDoc(docRef, doubleFiltered, { merge: true })
+    } else {
+      console.log('✅ Datos validados correctamente para Firestore')
+      await setDoc(docRef, filteredData, { merge: true })
+    }
 
     return {
       success: true,
@@ -160,7 +217,7 @@ export async function updateVehicle(
 }
 
 /**
- * Eliminar vehículo
+ * ACTUALIZADO: Eliminar vehículo con limpieza de archivos de Storage
  */
 export async function deleteVehicle(
   plateNumber: string
@@ -174,6 +231,30 @@ export async function deleteVehicle(
       }
     }
 
+    // Obtener el vehículo para limpiar archivos
+    const vehicle = await getVehicleByPlate(plateNumber)
+
+    if (vehicle && vehicle.steps) {
+      // Recopilar todas las URLs de archivos para eliminar de Storage
+      const allFiles: StepFile[] = []
+      vehicle.steps.forEach(step => {
+        if (step.files) {
+          allFiles.push(...step.files)
+        }
+      })
+
+      // Eliminar archivos de Storage de forma paralela
+      if (allFiles.length > 0) {
+        console.log(
+          `Eliminando ${allFiles.length} archivos de Storage para vehículo ${plateNumber}`
+        )
+        await Promise.allSettled(
+          allFiles.map(file => deleteFileFromStorage(file.url))
+        )
+      }
+    }
+
+    // Eliminar documento de Firestore
     const docRef = doc(db, COLLECTION_NAME, plateNumber)
     await deleteDoc(docRef)
 
@@ -243,7 +324,7 @@ export async function searchVehicles(criteria: {
 }
 
 /**
- * Agregar paso/trabajo realizado a un vehículo
+ * NUEVO: Agregar paso/trabajo realizado a un vehículo
  */
 export async function addVehicleStep(
   plateNumber: string,
@@ -262,6 +343,7 @@ export async function addVehicleStep(
     const newStep: VehicleStep = {
       ...step,
       id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36),
+      files: step.files || [], // Asegurar que files esté presente
     }
 
     const updatedSteps = [...(vehicle.steps || []), newStep]
@@ -274,5 +356,93 @@ export async function addVehicleStep(
       message: 'Error al agregar el paso',
       error: 'INTERNAL_ERROR',
     }
+  }
+}
+
+/**
+ * NUEVO: Eliminar paso específico de un vehículo con limpieza de archivos
+ */
+export async function removeVehicleStep(
+  plateNumber: string,
+  stepId: string
+): Promise<AdminResponse> {
+  try {
+    const vehicle = await getVehicleByPlate(plateNumber)
+    if (!vehicle) {
+      return {
+        success: false,
+        message: 'Vehículo no encontrado',
+        error: 'VEHICLE_NOT_FOUND',
+      }
+    }
+
+    // Encontrar el step a eliminar para limpiar sus archivos
+    const stepToDelete = vehicle.steps?.find(s => s.id === stepId)
+    if (stepToDelete?.files) {
+      // Eliminar archivos de Storage
+      await Promise.allSettled(
+        stepToDelete.files.map(file => deleteFileFromStorage(file.url))
+      )
+    }
+
+    // Filtrar steps
+    const updatedSteps = (vehicle.steps || []).filter(
+      step => step.id !== stepId
+    )
+
+    return await updateVehicle(plateNumber, { steps: updatedSteps })
+  } catch (error) {
+    console.error('Error eliminando paso:', error)
+    return {
+      success: false,
+      message: 'Error al eliminar el paso',
+      error: 'INTERNAL_ERROR',
+    }
+  }
+}
+
+/**
+ * NUEVO: Obtener estadísticas de archivos de un vehículo
+ */
+export async function getVehicleFileStats(plateNumber: string): Promise<{
+  totalFiles: number
+  totalImages: number
+  totalVideos: number
+  totalSize: number
+} | null> {
+  try {
+    const vehicle = await getVehicleByPlate(plateNumber)
+    if (!vehicle || !vehicle.steps) {
+      return null
+    }
+
+    let totalFiles = 0
+    let totalImages = 0
+    let totalVideos = 0
+    let totalSize = 0
+
+    vehicle.steps.forEach(step => {
+      if (step.files) {
+        step.files.forEach(file => {
+          totalFiles++
+          totalSize += file.size
+          if (file.type === 'image') {
+            totalImages++
+          } else if (file.type === 'video') {
+            totalVideos++
+          }
+        })
+      }
+    })
+
+    return {
+      totalFiles,
+      totalImages,
+      totalVideos,
+      totalSize,
+    }
+  } catch (error) {
+    console.error('Error obteniendo estadísticas de archivos:', error)
+    return null
   }
 }

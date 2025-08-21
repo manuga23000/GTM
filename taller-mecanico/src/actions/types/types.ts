@@ -73,6 +73,35 @@ export interface ServiceConfigResponse extends AdminResponse {
   config?: ServiceConfig
 }
 
+// === ARCHIVOS DE STORAGE ===
+// ACTUALIZADO: Interface para archivos del step (con Storage y thumbnails)
+export interface StepFile {
+  id: string
+  fileName: string // Nombre original del archivo
+  type: 'image' | 'video'
+  url: string // URL de Firebase Storage (permanente)
+  thumbnailUrl?: string // URL del thumbnail (solo para imágenes)
+  storageRef: string // Referencia en Storage para eliminar
+  uploadedAt: Date // Fecha de subida
+  size: number // Tamaño del archivo en bytes
+  dimensions?: {
+    // Dimensiones originales (solo para imágenes)
+    width: number
+    height: number
+  }
+}
+
+// NUEVO: Interface para archivos en proceso de subida (temporal)
+export interface PendingStepFile {
+  id: string
+  file: File
+  type: 'image' | 'video'
+  tempUrl: string // URL temporal para preview
+  uploadProgress?: number // Progreso de subida (0-100)
+  uploading?: boolean // Si está subiendo
+  error?: string // Error de subida
+}
+
 // === VEHÍCULOS ===
 export interface VehicleStep {
   id: string
@@ -81,6 +110,7 @@ export interface VehicleStep {
   status: 'completed' | 'pending' | 'in-progress'
   date: Date
   notes?: string
+  files?: StepFile[] // ACTUALIZADO: archivos de Storage
 }
 
 export interface VehicleInput {
@@ -133,4 +163,5 @@ export interface SeguimientoData {
   fechaEstimadaEntrega?: string
   timeline?: TimelineItem[]
   imagenes?: ImagenItem[]
+  updatedAt?: string // Agregado campo para última actualización
 }

@@ -7,8 +7,6 @@ import {
   deleteDoc,
   query,
   where,
-  orderBy,
-  Timestamp,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import {
@@ -20,8 +18,6 @@ import {
 import {
   filterUndefinedValues,
   normalizeVehicleData,
-  cleanStepForFirestore,
-  cleanStepFileForFirestore,
   validateFirestoreData,
 } from './utils/dataUtils'
 import { deleteFileFromStorage } from '@/lib/storageUtils'
@@ -148,6 +144,31 @@ export async function createVehicle(
 }
 
 /**
+ * Helper function para limpiar steps para Firestore
+ */
+function cleanStepsForFirestore(steps: VehicleStep[]): VehicleStep[] {
+  return steps.map(step => ({
+    id: step.id || '',
+    title: step.title || '',
+    description: step.description || '',
+    status: step.status || 'completed',
+    date: step.date instanceof Date ? step.date : new Date(),
+    notes: step.notes || '',
+    files: step.files ? step.files.map(file => ({
+      id: file.id || '',
+      fileName: file.fileName || 'archivo',
+      type: file.type === 'video' ? 'video' as const : 'image' as const,
+      url: file.url || '',
+      storageRef: file.storageRef || '',
+      uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(),
+      size: typeof file.size === 'number' ? file.size : 0,
+      ...(file.thumbnailUrl && { thumbnailUrl: file.thumbnailUrl }),
+      ...(file.dimensions && { dimensions: file.dimensions })
+    })) : []
+  }))
+}
+
+/**
  * ACTUALIZADO: Actualizar vehículo existente con manejo de archivos
  */
 export async function updateVehicle(
@@ -165,15 +186,14 @@ export async function updateVehicle(
 
     const docRef = doc(db, COLLECTION_NAME, plateNumber)
 
-    // MEJORADO: Si se están actualizando los steps, usar funciones de limpieza
+    // CORREGIDO: Si se están actualizando los steps, limpiarlos correctamente
+    let cleanedData = { ...updateData }
     if (updateData.steps) {
-      updateData.steps = updateData.steps.map(step =>
-        cleanStepForFirestore(step)
-      )
+      cleanedData.steps = cleanStepsForFirestore(updateData.steps)
     }
 
     const dataToUpdate = {
-      ...updateData,
+      ...cleanedData,
       plateNumber,
       updatedAt: new Date(),
     }

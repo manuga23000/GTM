@@ -36,6 +36,18 @@ export interface SeguimientoData {
   updatedAt?: string // Agregado campo para última actualización
 }
 
+// Interface específica para objetos de Firebase
+interface FirebaseStep {
+  title?: string
+  description?: string
+  status?: string
+  date?: FirebaseTimestamp | Date | string
+}
+
+interface FirebaseTimestamp {
+  toDate(): Date
+}
+
 /**
  * Obtiene los datos de seguimiento de un vehículo por patente
  * @param patente Patente del vehículo (debe coincidir con el ID del documento)
@@ -58,18 +70,14 @@ export async function getSeguimientoByPatente(
 
     const data = docSnap.data()
 
-    interface FirestoreTimestamp {
-      toDate(): Date
-    }
-
     const isFirestoreTimestamp = (
       value: unknown
-    ): value is FirestoreTimestamp => {
+    ): value is FirebaseTimestamp => {
       return (
         typeof value === 'object' &&
         value !== null &&
         'toDate' in value &&
-        typeof (value as Record<string, unknown>).toDate === 'function'
+        typeof (value as FirebaseTimestamp).toDate === 'function'
       )
     }
 
@@ -109,7 +117,7 @@ export async function getSeguimientoByPatente(
       // Si existen steps, mapearlos a trabajos y timeline
       trabajosRealizados: Array.isArray(data.steps)
         ? data.steps.map(
-            (step: any) =>
+            (step: FirebaseStep) =>
               step.title || step.description || 'Trabajo sin título'
           )
         : data.trabajosRealizados || [],
@@ -124,12 +132,12 @@ export async function getSeguimientoByPatente(
         ? formatearFecha(data.updatedAt)
         : formatearFecha(data.createdAt),
       timeline: Array.isArray(data.steps)
-        ? data.steps.map((step: any, idx: number) => ({
+        ? data.steps.map((step: FirebaseStep, idx: number) => ({
             id: idx + 1,
             fecha: step.date
               ? step.date instanceof Date
                 ? step.date.toISOString().split('T')[0]
-                : step.date?.toDate
+                : isFirestoreTimestamp(step.date)
                 ? step.date.toDate().toISOString().split('T')[0]
                 : typeof step.date === 'string'
                 ? new Date(step.date).toISOString().split('T')[0]
@@ -138,7 +146,7 @@ export async function getSeguimientoByPatente(
             hora: step.date
               ? step.date instanceof Date
                 ? step.date.toTimeString().slice(0, 5)
-                : step.date?.toDate
+                : isFirestoreTimestamp(step.date)
                 ? step.date.toDate().toTimeString().slice(0, 5)
                 : typeof step.date === 'string'
                 ? new Date(step.date).toTimeString().slice(0, 5)

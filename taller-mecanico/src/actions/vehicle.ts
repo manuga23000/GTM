@@ -7,8 +7,6 @@ import {
   deleteDoc,
   query,
   where,
-  orderBy,
-  Timestamp,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import {
@@ -21,7 +19,6 @@ import {
   filterUndefinedValues,
   normalizeVehicleData,
   cleanStepForFirestore,
-  cleanStepFileForFirestore,
   validateFirestoreData,
 } from './utils/dataUtils'
 import { deleteFileFromStorage } from '@/lib/storageUtils'
@@ -282,7 +279,7 @@ export async function searchVehicles(criteria: {
 }): Promise<VehicleInput[]> {
   try {
     // Construir query paso a paso
-    let queryRef = collection(db, COLLECTION_NAME)
+    const queryRef = collection(db, COLLECTION_NAME)
 
     // Crear array de constraints
     const constraints = []

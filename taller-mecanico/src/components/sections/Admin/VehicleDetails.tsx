@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 
 // ACTUALIZADO: Interface para archivos del step (con Storage y thumbnails)
 interface StepFile {
@@ -64,12 +65,13 @@ const StepFileDisplay = ({ files }: { files: StepFile[] }) => {
       {files.map(file => (
         <div key={file.id} className='relative group'>
           {file.type === 'image' ? (
-            <img
+            <Image
               // OPTIMIZADO: Usar thumbnail para vista previa
               src={file.thumbnailUrl || file.url}
               alt={file.fileName}
-              className='w-16 h-16 object-cover rounded border border-gray-500 cursor-pointer hover:border-blue-400 transition-colors'
-              loading='lazy' // Lazy loading
+              width={64}
+              height={64}
+              className='object-cover rounded border border-gray-500 cursor-pointer hover:border-blue-400 transition-colors'
               onClick={() => {
                 // MEJORADO: Abrir imagen original en modal fullscreen
                 const modal = document.createElement('div')
@@ -391,7 +393,7 @@ export default function VehicleDetails({
                   No hay trabajos registrados
                 </p>
                 <p className='text-gray-500 text-xs mt-1'>
-                  Usa 'Seguimiento' para agregar trabajos
+                  Usa &apos;Seguimiento&apos; para agregar trabajos
                 </p>
               </div>
             ) : (

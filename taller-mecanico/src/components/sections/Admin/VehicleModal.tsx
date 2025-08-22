@@ -1,4 +1,3 @@
-
 // src/components/sections/Admin/VehicleModal.tsx
 // REEMPLAZA TODO EL CONTENIDO DEL ARCHIVO ACTUAL
 'use client'
@@ -938,70 +937,6 @@ const TrackingForm = ({
   )
 }
 
-// NUEVO: Componente Modal Base para evitar redundancia y mejorar posicionamiento
-const ModalBase = ({
-  isOpen,
-  onClose,
-  children,
-  title,
-  subtitle,
-}: {
-  isOpen: boolean
-  onClose: () => void
-  children: React.ReactNode
-  title: string
-  subtitle?: string
-}) => {
-  if (!isOpen) return null
-
-  return (
-    <Portal>
-      <AnimatePresence>
-        <div
-          className='fixed inset-0 z-[99999] flex items-center justify-center p-4'
-          onClick={onClose}
-        >
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className='absolute inset-0 bg-black/80 backdrop-blur-sm'
-          />
-          
-          {/* Modal Content */}
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            className='relative bg-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl'
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className='flex justify-between items-center mb-4'>
-              <div>
-                <h3 className='text-xl font-bold text-white'>{title}</h3>
-                {subtitle && (
-                  <p className='text-gray-400 text-sm mt-1'>{subtitle}</p>
-                )}
-              </div>
-              <button
-                onClick={onClose}
-                className='text-gray-400 hover:text-white text-2xl transition-colors'
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Content */}
-            {children}
-          </motion.div>
-        </div>
-      </AnimatePresence>
-    </Portal>
-  )
-}
-
 export default function VehicleModal({
   showAddForm,
   setShowAddForm,
@@ -1056,146 +991,306 @@ export default function VehicleModal({
   return (
     <>
       {/* Modal agregar nuevo vehículo */}
-      <ModalBase
-        isOpen={showAddForm}
-        onClose={() => setShowAddForm(false)}
-        title='Crear Nuevo Vehículo'
-        subtitle='Ingresa los datos del nuevo vehículo al sistema'
-      >
-        <VehicleForm
-          vehicle={newVehicle}
-          setVehicle={setNewVehicle as any}
-          isEdit={false}
-        />
+      <Portal>
+        <AnimatePresence>
+          {showAddForm && (
+            <div
+              className='fixed z-[99999]'
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1rem',
+              }}
+              onClick={() => setShowAddForm(false)}
+            >
+              <div
+                className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+              />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className='relative bg-gray-800 rounded-xl p-6 w-full shadow-2xl'
+                style={{
+                  maxWidth: '32rem',
+                  maxHeight: '90vh',
+                  overflowY: 'auto',
+                  position: 'relative',
+                  zIndex: 1,
+                }}
+                onClick={e => e.stopPropagation()}
+              >
+                <div className='flex justify-between items-center mb-4'>
+                  <div>
+                    <h3 className='text-xl font-bold text-white'>
+                      Crear Nuevo Vehículo
+                    </h3>
+                    <p className='text-gray-400 text-sm mt-1'>
+                      Ingresa los datos del nuevo vehículo al sistema
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowAddForm(false)}
+                    className='text-gray-400 hover:text-white text-2xl'
+                  >
+                    ✕
+                  </button>
+                </div>
 
-        {/* Mostrar mensaje de error */}
-        {addVehicleError && (
-          <div className='mt-4 p-3 bg-red-600 bg-opacity-20 border border-red-500 rounded-lg'>
-            <div className='flex items-center gap-2'>
-              <span className='text-red-400 text-lg'>⚠️</span>
-              <p className='text-red-300 text-sm font-medium'>
-                {addVehicleError}
-              </p>
+                <VehicleForm
+                  vehicle={newVehicle}
+                  setVehicle={setNewVehicle as any}
+                  isEdit={false}
+                />
+
+                {/* Mostrar mensaje de error */}
+                {addVehicleError && (
+                  <div className='mt-4 p-3 bg-red-600 bg-opacity-20 border border-red-500 rounded-lg'>
+                    <div className='flex items-center gap-2'>
+                      <span className='text-red-400 text-lg'>⚠️</span>
+                      <p className='text-red-300 text-sm font-medium'>
+                        {addVehicleError}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className='flex gap-3 pt-4 mt-6 border-t border-gray-700'>
+                  <button
+                    onClick={() => setShowAddForm(false)}
+                    className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleAddVehicle}
+                    disabled={!isValidVehicle(newVehicle) || isAddingVehicle}
+                    className={`flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium ${
+                      !isValidVehicle(newVehicle) || isAddingVehicle
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                    }`}
+                  >
+                    {isAddingVehicle ? (
+                      <div className='flex items-center justify-center gap-2'>
+                        <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                        Creando...
+                      </div>
+                    ) : (
+                      '✅ Crear Vehículo'
+                    )}
+                  </button>
+                </div>
+              </motion.div>
             </div>
-          </div>
-        )}
-
-        <div className='flex gap-3 pt-4 mt-6 border-t border-gray-700'>
-          <button
-            onClick={() => setShowAddForm(false)}
-            className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleAddVehicle}
-            disabled={!isValidVehicle(newVehicle) || isAddingVehicle}
-            className={`flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium ${
-              !isValidVehicle(newVehicle) || isAddingVehicle
-                ? 'opacity-50 cursor-not-allowed'
-                : ''
-            }`}
-          >
-            {isAddingVehicle ? (
-              <div className='flex items-center justify-center gap-2'>
-                <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
-                Creando...
-              </div>
-            ) : (
-              '✅ Crear Vehículo'
-            )}
-          </button>
-        </div>
-      </ModalBase>
+          )}
+        </AnimatePresence>
+      </Portal>
 
       {/* Modal editar vehículo (datos básicos) */}
-      <ModalBase
-        isOpen={showEditVehicleModal && !!editVehicle}
-        onClose={() => setShowEditVehicleModal(false)}
-        title='Editar Datos del Vehículo'
-        subtitle='Modificar información básica del vehículo'
-      >
-        {editVehicle && (
-          <>
-            <VehicleForm
-              vehicle={editVehicle}
-              setVehicle={setEditVehicle as any}
-              isEdit={true}
-            />
-
-            <div className='flex gap-3 pt-4 mt-6 border-t border-gray-700'>
-              <button
-                onClick={() => setShowEditVehicleModal(false)}
-                className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
+      <Portal>
+        <AnimatePresence>
+          {showEditVehicleModal && editVehicle && (
+            <div
+              className='fixed z-[99999]'
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1rem',
+              }}
+              onClick={() => setShowEditVehicleModal(false)}
+            >
+              <div
+                className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+              />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className='relative bg-gray-800 rounded-xl p-6 w-full shadow-2xl'
+                style={{
+                  maxWidth: '32rem',
+                  maxHeight: '90vh',
+                  overflowY: 'auto',
+                  position: 'relative',
+                  zIndex: 1,
+                }}
+                onClick={e => e.stopPropagation()}
               >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSaveVehicleEdit}
-                disabled={isEditingVehicle}
-                className={`flex-1 px-4 py-3 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors font-medium ${
-                  isEditingVehicle ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                {isEditingVehicle ? (
-                  <div className='flex items-center justify-center gap-2'>
-                    <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
-                    Guardando...
+                <div className='flex justify-between items-center mb-4'>
+                  <div>
+                    <h3 className='text-xl font-bold text-white'>
+                      Editar Datos del Vehículo
+                    </h3>
+                    <p className='text-gray-400 text-sm mt-1'>
+                      Modificar información básica del vehículo
+                    </p>
                   </div>
-                ) : (
-                  '💾 Guardar Cambios'
-                )}
-              </button>
+                  <button
+                    onClick={() => setShowEditVehicleModal(false)}
+                    className='text-gray-400 hover:text-white text-2xl'
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <VehicleForm
+                  vehicle={editVehicle}
+                  setVehicle={setEditVehicle as any}
+                  isEdit={true}
+                />
+
+                <div className='flex gap-3 pt-4 mt-6 border-t border-gray-700'>
+                  <button
+                    onClick={() => setShowEditVehicleModal(false)}
+                    className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleSaveVehicleEdit}
+                    disabled={isEditingVehicle}
+                    className={`flex-1 px-4 py-3 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors font-medium ${
+                      isEditingVehicle ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {isEditingVehicle ? (
+                      <div className='flex items-center justify-center gap-2'>
+                        <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                        Guardando...
+                      </div>
+                    ) : (
+                      '💾 Guardar Cambios'
+                    )}
+                  </button>
+                </div>
+              </motion.div>
             </div>
-          </>
-        )}
-      </ModalBase>
+          )}
+        </AnimatePresence>
+      </Portal>
 
       {/* Modal editar seguimiento */}
-      <ModalBase
-        isOpen={showTrackingModal && !!editTracking}
-        onClose={() => setShowTrackingModal(false)}
-        title='Actualizar Seguimiento'
-        subtitle={
-          editTracking
-            ? `${editTracking.plateNumber} - ${editTracking.brand} ${editTracking.model}`
-            : undefined
-        }
-      >
-        {editTracking && (
-          <>
-            <TrackingForm
-              tracking={editTracking}
-              setTracking={setEditTracking as any}
-            />
-
-            <div className='flex gap-3 pt-6 mt-6 border-t border-gray-700'>
-              <button
-                onClick={() => setShowTrackingModal(false)}
-                className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
+      <Portal>
+        <AnimatePresence>
+          {showTrackingModal && editTracking && (
+            <div
+              className='fixed z-[99999]'
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1rem',
+              }}
+              onClick={() => setShowTrackingModal(false)}
+            >
+              <div
+                className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+              />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className='relative bg-gray-800 rounded-xl p-6 w-full shadow-2xl'
+                style={{
+                  maxWidth: '32rem',
+                  maxHeight: '90vh',
+                  overflowY: 'auto',
+                  position: 'relative',
+                  zIndex: 1,
+                }}
+                onClick={e => e.stopPropagation()}
               >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSaveTrackingEdit}
-                disabled={isEditingTracking}
-                className={`flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium ${
-                  isEditingTracking ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                {isEditingTracking ? (
-                  <div className='flex items-center justify-center gap-2'>
-                    <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
-                    Guardando...
+                <div className='flex justify-between items-center mb-6'>
+                  <div>
+                    <h3 className='text-xl font-bold text-white'>
+                      Actualizar Seguimiento
+                    </h3>
+                    <p className='text-gray-400 text-sm mt-1'>
+                      {editTracking.plateNumber} - {editTracking.brand}{' '}
+                      {editTracking.model}
+                    </p>
                   </div>
-                ) : (
-                  '💾 Guardar'
-                )}
-              </button>
+                  <button
+                    onClick={() => setShowTrackingModal(false)}
+                    className='text-gray-400 hover:text-white text-2xl'
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <TrackingForm
+                  tracking={editTracking}
+                  setTracking={setEditTracking as any}
+                />
+
+                <div className='flex gap-3 pt-6 mt-6 border-t border-gray-700'>
+                  <button
+                    onClick={() => setShowTrackingModal(false)}
+                    className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleSaveTrackingEdit}
+                    disabled={isEditingTracking}
+                    className={`flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium ${
+                      isEditingTracking ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {isEditingTracking ? (
+                      <div className='flex items-center justify-center gap-2'>
+                        <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                        Guardando...
+                      </div>
+                    ) : (
+                      '💾 Guardar'
+                    )}
+                  </button>
+                </div>
+              </motion.div>
             </div>
-          </>
-        )}
-      </ModalBase>
+          )}
+        </AnimatePresence>
+      </Portal>
     </>
   )
 }

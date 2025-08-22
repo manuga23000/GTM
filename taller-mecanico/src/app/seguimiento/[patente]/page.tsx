@@ -5,26 +5,12 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import SeguimientoHeader from '@/components/sections/Seguimiento/SeguimientoHeader'
 import EstadoActual from '@/components/sections/Seguimiento/EstadoActual'
-import TimelineProgreso from '@/components/sections/Seguimiento/TimelineProgreso'
+//import TimelineProgreso from '@/components/sections/Seguimiento/TimelineProgreso'
 import Navbar from '@/components/layout/Navbar'
 import LoadingScreen from '@/components/ui/LoadingScreen'
+import { SeguimientoData, TrabajoRealizado } from '@/actions/seguimiento'
 
-interface SeguimientoData {
-  patente: string
-  modelo: string
-  marca: string
-  año: string
-  cliente: string
-  fechaIngreso: string
-  estadoActual: string
-  trabajosRealizados: string[]
-  proximoPaso: string
-  fechaEstimadaEntrega: string
-  timeline: TimelineItem[]
-  imagenes: ImagenItem[]
-  updatedAt?: string // Agregado campo para última actualización
-}
-
+// ACTUALIZADO: Usar los tipos importados
 interface TimelineItem {
   id: number
   fecha: string
@@ -86,25 +72,17 @@ export default function SeguimientoPage() {
 
         const estadoMapeado = mapearEstado(data.estadoActual || 'received')
 
+        // ACTUALIZADO: Usar los datos tal como vienen, ya incluyen archivos
         setSeguimientoData({
-          patente: data.patente,
-          modelo: data.modelo,
-          marca: data.marca,
-          año: data.año,
-          cliente: data.cliente,
-          fechaIngreso: data.fechaIngreso,
+          ...data,
           estadoActual: estadoMapeado,
-          trabajosRealizados:
-            data.trabajosRealizados && data.trabajosRealizados.length > 0
-              ? data.trabajosRealizados
-              : ['Sin trabajos registrados'],
+          // Asegurar que trabajosRealizados tenga la estructura correcta
+          trabajosRealizados: data.trabajosRealizados && data.trabajosRealizados.length > 0 
+            ? data.trabajosRealizados 
+            : [],
           proximoPaso: data.proximoPaso || 'Sin información',
-          fechaEstimadaEntrega: data.fechaEstimadaEntrega || '',
-          timeline:
-            data.timeline && data.timeline.length > 0 ? data.timeline : [],
-          imagenes:
-            data.imagenes && data.imagenes.length > 0 ? data.imagenes : [],
-          updatedAt: data.updatedAt || '', // Pasar el campo updatedAt
+          timeline: data.timeline && data.timeline.length > 0 ? data.timeline : [],
+          imagenes: data.imagenes && data.imagenes.length > 0 ? data.imagenes : [],
         })
       } catch (error) {
         console.error('Error cargando datos:', error)
@@ -246,14 +224,16 @@ export default function SeguimientoPage() {
         <div className='max-w-5xl mx-auto px-4 pt-4 space-y-8'>
           <EstadoActual
             data={{
-              estadoActual: seguimientoData.estadoActual,
-              proximoPaso: seguimientoData.proximoPaso,
-              fechaEstimadaEntrega: seguimientoData.fechaEstimadaEntrega,
-              trabajosRealizados: seguimientoData.trabajosRealizados,
+              estadoActual: seguimientoData.estadoActual || 'Sin estado',
+              proximoPaso: seguimientoData.proximoPaso || 'Sin información',
+              fechaEstimadaEntrega: seguimientoData.fechaEstimadaEntrega || '',
+              trabajosRealizados: seguimientoData.trabajosRealizados || [], // ACTUALIZADO: usar el nuevo formato
               updatedAt: seguimientoData.updatedAt, // Pasar updatedAt al componente
             }}
           />
-          <TimelineProgreso timeline={seguimientoData.timeline} />
+           {/*
+          <TimelineProgreso timeline={seguimientoData.timeline || []} />
+          */}
           {/* Separador blanco visual entre timeline y footer */}
           <div className='h-8 md:h-12 w-full' />
         </div>

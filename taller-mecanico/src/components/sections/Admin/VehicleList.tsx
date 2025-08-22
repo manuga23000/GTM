@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 
-// ACTUALIZADO: Interface para archivos del step (con thumbnails)
+// ACTUALIZADO: Interface para archivos del step (con Storage y thumbnails)
 export interface StepFile {
   id: string
   fileName: string
@@ -72,23 +72,6 @@ export default function VehicleList({
       ) : (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
           {vehicles.map(vehicle => {
-            // ACTUALIZADO: Contar archivos totales en todos los steps con más detalle
-            const fileStats = vehicle.steps.reduce(
-              (acc, step) => {
-                const stepFiles = step.files || []
-                return {
-                  total: acc.total + stepFiles.length,
-                  images:
-                    acc.images +
-                    stepFiles.filter(f => f.type === 'image').length,
-                  videos:
-                    acc.videos +
-                    stepFiles.filter(f => f.type === 'video').length,
-                }
-              },
-              { total: 0, images: 0, videos: 0 }
-            )
-
             return (
               <motion.div
                 key={vehicle.id}
@@ -121,27 +104,6 @@ export default function VehicleList({
                     >
                       {getStatusText(vehicle.status)}
                     </span>
-                    {/* ACTUALIZADO: Mostrar contador de archivos mejorado */}
-                    {fileStats.total > 0 && (
-                      <div className='flex items-center gap-1'>
-                        <div className='flex items-center gap-1 text-xs text-gray-400 bg-gray-600 px-2 py-1 rounded'>
-                          <span>📎</span>
-                          <span>{fileStats.total}</span>
-                          {fileStats.images > 0 && (
-                            <>
-                              <span className='text-green-400'>📷</span>
-                              <span>{fileStats.images}</span>
-                            </>
-                          )}
-                          {fileStats.videos > 0 && (
-                            <>
-                              <span className='text-purple-400'>🎥</span>
-                              <span>{fileStats.videos}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
                 <div className='space-y-1 text-sm'>
@@ -153,26 +115,10 @@ export default function VehicleList({
                     <p className='text-gray-500'>
                       Ingreso: {vehicle.entryDate.toLocaleDateString('es-AR')}
                     </p>
-                    {/* NUEVO: Mostrar cantidad de trabajos realizados */}
-                    {vehicle.steps.length > 0 && (
-                      <span className='text-blue-400 text-xs bg-blue-900/30 px-2 py-1 rounded'>
-                        {vehicle.steps.length} trabajo
-                        {vehicle.steps.length !== 1 ? 's' : ''}
-                      </span>
-                    )}
                   </div>
                   {vehicle.totalCost && vehicle.totalCost > 0 && (
                     <p className='text-green-400 font-medium'>
                       ${vehicle.totalCost.toLocaleString()}
-                    </p>
-                  )}
-                  {/* NUEVO: Mostrar próximo paso si existe */}
-                  {vehicle.nextStep && (
-                    <p className='text-yellow-400 text-xs italic bg-yellow-900/20 px-2 py-1 rounded mt-2'>
-                      🔜{' '}
-                      {vehicle.nextStep.length > 40
-                        ? vehicle.nextStep.substring(0, 40) + '...'
-                        : vehicle.nextStep}
                     </p>
                   )}
                 </div>

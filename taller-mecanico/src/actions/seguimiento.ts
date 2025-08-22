@@ -2,6 +2,31 @@
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 
+// Tipos para archivos de trabajos
+export interface StepFile {
+  id: string
+  fileName: string
+  type: 'image' | 'video'
+  url: string
+  thumbnailUrl?: string
+  storageRef: string
+  uploadedAt: Date
+  size: number
+  dimensions?: {
+    width: number
+    height: number
+  }
+}
+
+// Trabajo realizado con archivos
+export interface TrabajoRealizado {
+  id: string
+  titulo: string
+  descripcion?: string
+  fecha: string
+  archivos: StepFile[]
+}
+
 // Tipo para datos de seguimiento que coincide con la estructura de Firebase
 export interface TimelineItem {
   id: number
@@ -11,6 +36,7 @@ export interface TimelineItem {
   descripcion: string
   completado: boolean
 }
+
 export interface ImagenItem {
   id: number
   url: string
@@ -18,6 +44,7 @@ export interface ImagenItem {
   descripcion: string
   tipo: 'antes' | 'proceso' | 'despues'
 }
+
 export interface SeguimientoData {
   patente: string
   modelo: string
@@ -28,12 +55,12 @@ export interface SeguimientoData {
   estadoActual?: string
   telefono?: string
   tipoServicio?: string
-  trabajosRealizados?: string[]
+  trabajosRealizados?: TrabajoRealizado[] // CAMBIADO: ahora incluye archivos
   proximoPaso?: string
   fechaEstimadaEntrega?: string
   timeline?: TimelineItem[]
   imagenes?: ImagenItem[]
-  updatedAt?: string // Agregado campo para última actualización
+  updatedAt?: string
 }
 
 /**
@@ -95,6 +122,46 @@ export async function getSeguimientoByPatente(
       return new Date().toISOString()
     }
 
+    // NUEVO: Mapear steps a trabajos realizados con archivos
+    const mapearTrabajosRealizados = (steps: any[]): TrabajoRealizado[] => {
+      if (!Array.isArray(steps) || steps.length === 0) {
+        return []
+      }
+
+      return steps
+        .filter(step => step && step.title) // Solo steps válidos
+        .map((step, index) => ({
+          id: step.id || `step-${index}`,
+          titulo: step.title,
+          descripcion: step.description || step.notes,
+          fecha: formatearFecha(step.date),
+          archivos: Array.isArray(step.files)
+            ? step.files.map((file: any) => ({
+                id: file.id || `file-${Math.random()}`,
+                fileName: file.fileName || 'archivo',
+                type: file.type === 'video' ? 'video' : 'image',
+                url: file.url || '',
+                thumbnailUrl: file.thumbnailUrl,
+                storageRef: file.storageRef || '',
+                uploadedAt: file.uploadedAt instanceof Date 
+                  ? file.uploadedAt 
+                  : file.uploadedAt?.toDate
+                  ? file.uploadedAt.toDate()
+                  : file.uploadedAt 
+                  ? new Date(file.uploadedAt)
+                  : new Date(),
+                size: typeof file.size === 'number' ? file.size : 0,
+                dimensions: file.dimensions && typeof file.dimensions === 'object'
+                  ? {
+                      width: typeof file.dimensions.width === 'number' ? file.dimensions.width : 0,
+                      height: typeof file.dimensions.height === 'number' ? file.dimensions.height : 0,
+                    }
+                  : undefined,
+              }))
+            : [],
+        }))
+    }
+
     // Mapear los datos de Firebase a nuestro formato
     const seguimientoData: SeguimientoData = {
       patente: data.plateNumber || patenteNormalizada,
@@ -106,12 +173,9 @@ export async function getSeguimientoByPatente(
       estadoActual: data.status || 'received',
       telefono: data.clientPhone || '',
       tipoServicio: data.serviceType || 'Reparación general',
-      // Si existen steps, mapearlos a trabajos y timeline
+      // ACTUALIZADO: Mapear steps con archivos
       trabajosRealizados: Array.isArray(data.steps)
-        ? data.steps.map(
-            (step: any) =>
-              step.title || step.description || 'Trabajo sin título'
-          )
+        ? mapearTrabajosRealizados(data.steps)
         : data.trabajosRealizados || [],
       proximoPaso: data.nextStep || data.proximoPaso || '',
       fechaEstimadaEntrega: data.estimatedCompletionDate

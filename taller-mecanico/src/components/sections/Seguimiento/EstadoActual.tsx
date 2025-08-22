@@ -2,13 +2,15 @@
 'use client'
 import { motion } from 'framer-motion'
 import { FaTools, FaClock, FaCheckCircle, FaArrowRight } from 'react-icons/fa'
+import { TrabajoRealizado } from '@/actions/seguimiento'
+import FileViewer from './FileViewer'
 
 interface EstadoActualProps {
   data: {
     estadoActual: string
     proximoPaso: string
     fechaEstimadaEntrega: string
-    trabajosRealizados: string[]
+    trabajosRealizados: TrabajoRealizado[] // ACTUALIZADO: nuevo tipo
     updatedAt?: string
   }
 }
@@ -36,6 +38,14 @@ export default function EstadoActual({ data }: EstadoActualProps) {
     const minutes = String(date.getMinutes()).padStart(2, '0')
 
     return `${day}/${month}/${year}, ${hours}:${minutes}`
+  }
+
+  const formatearFechaTrabajo = (fecha: string) => {
+    return new Date(fecha).toLocaleDateString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    })
   }
 
   const getEstadoColor = (estado: string) => {
@@ -132,7 +142,7 @@ export default function EstadoActual({ data }: EstadoActualProps) {
 
       <div className='p-4 sm:p-6'>
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8'>
-          {/* Trabajos realizados */}
+          {/* Trabajos realizados CON ARCHIVOS */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -142,21 +152,62 @@ export default function EstadoActual({ data }: EstadoActualProps) {
               <FaCheckCircle className='text-green-500 mr-2' />
               Trabajos Realizados
             </h3>
-            <div className='space-y-3'>
-              {data.trabajosRealizados.map((trabajo, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 + index * 0.1 }}
-                  className='flex items-start bg-green-50 p-3 rounded-lg border-l-4 border-green-500'
-                >
-                  <FaCheckCircle className='text-green-500 mt-1 mr-3 flex-shrink-0' />
-                  <span className='text-gray-700 text-sm sm:text-base'>
-                    {trabajo}
-                  </span>
-                </motion.div>
-              ))}
+            <div className='space-y-4'>
+              {data.trabajosRealizados && data.trabajosRealizados.length > 0 ? (
+                data.trabajosRealizados.map((trabajo, index) => (
+                  <motion.div
+                    key={trabajo.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + index * 0.1 }}
+                    className='bg-green-50 p-4 rounded-lg border-l-4 border-green-500'
+                  >
+                    {/* Header del trabajo */}
+                    <div className="flex items-start">
+                      <FaCheckCircle className='text-green-500 mt-1 mr-3 flex-shrink-0' />
+                      <div className="flex-1">
+                        {/* Cuando hay archivos: layout sin fecha */}
+                        {trabajo.archivos && trabajo.archivos.length > 0 ? (
+                          <div>
+                            <h4 className='text-gray-800 font-medium text-sm sm:text-base mb-1'>
+                              {trabajo.titulo}
+                            </h4>
+                            {trabajo.descripcion && (
+                              <p className='text-gray-600 text-sm mb-2'>
+                                {trabajo.descripcion}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          /* Cuando NO hay archivos: layout centrado */
+                          <div className="text-center">
+                            <h4 className='text-gray-800 font-medium text-sm sm:text-base mb-1'>
+                              {trabajo.titulo}
+                            </h4>
+                            {trabajo.descripcion && (
+                              <p className='text-gray-600 text-sm mb-2'>
+                                {trabajo.descripcion}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Archivos del trabajo */}
+                    {trabajo.archivos && trabajo.archivos.length > 0 && (
+                      <FileViewer archivos={trabajo.archivos} />
+                    )}
+                  </motion.div>
+                ))
+              ) : (
+                <div className='bg-gray-50 p-4 rounded-lg border-l-4 border-gray-300 text-center'>
+                  <div className='flex items-center justify-center text-gray-500'>
+                    <FaTools className='mr-2' />
+                    <span className='text-sm'>No hay trabajos registrados aún</span>
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
 
@@ -177,7 +228,7 @@ export default function EstadoActual({ data }: EstadoActualProps) {
                 <div className='flex items-start'>
                   <FaTools className='text-blue-500 mt-1 mr-3 flex-shrink-0' />
                   <span className='text-gray-700 font-medium text-sm sm:text-base'>
-                    {data.proximoPaso}
+                    {data.proximoPaso || 'Sin información disponible'}
                   </span>
                 </div>
               </div>
@@ -207,18 +258,27 @@ export default function EstadoActual({ data }: EstadoActualProps) {
           </motion.div>
         </div>
 
-        {/* Nota informativa */}
+        {/* Nota informativa COMBINADA */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
           className='mt-6 bg-gray-50 p-4 rounded-lg border border-gray-200'
         >
-          <p className='text-gray-600 text-xs sm:text-sm text-center'>
-            <strong>Nota:</strong> Las fechas son estimativas y pueden variar
-            según la disponibilidad de repuestos y la complejidad de los
-            trabajos. Te notificaremos ante cualquier cambio.
-          </p>
+          <div className='space-y-2'>
+            <p className='text-gray-600 text-xs sm:text-sm text-center'>
+              <strong>Nota:</strong> Las fechas son estimativas y pueden variar
+              según la disponibilidad de repuestos y la complejidad de los
+              trabajos. Te notificaremos ante cualquier cambio.
+            </p>
+            
+            {/* Nota sobre archivos - Solo si hay archivos */}
+            {data.trabajosRealizados && data.trabajosRealizados.some(trabajo => trabajo.archivos && trabajo.archivos.length > 0) && (
+              <p className="text-gray-600 text-xs sm:text-sm text-center">
+                <strong>📋 Nota:</strong> Los archivos adjuntos se conservan durante 30 días después de la entrega del vehículo.
+              </p>
+            )}
+          </div>
         </motion.div>
       </div>
     </motion.section>

@@ -116,6 +116,7 @@ interface VehicleInTracking {
 
 type VehicleSetter<T> = (value: T | ((prev: T) => T)) => void
 
+
 interface VehicleModalProps {
   // Props para agregar nuevo vehículo
   showAddForm: boolean
@@ -1259,7 +1260,7 @@ export default function VehicleModal({
 
                 <TrackingForm
                   tracking={editTracking}
-                  setTracking={setEditTracking as any}
+                  setTracking={setEditTracking as VehicleSetter<VehicleInTracking>}
                 />
 
                 <div className='flex gap-3 pt-6 mt-6 border-t border-gray-700'>

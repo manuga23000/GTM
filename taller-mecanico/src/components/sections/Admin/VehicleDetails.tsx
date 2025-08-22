@@ -109,8 +109,8 @@ const StepFileDisplay = ({ files }: { files: StepFile[] }) => {
                 infoBar.className =
                   'absolute bottom-4 left-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded text-sm'
                 infoBar.innerHTML = `
-                  <div class=&quot;font-medium&quot;>${file.fileName}</div>
-                  <div class=&quot;text-xs text-gray-300 flex justify-between&quot;>
+                  <div class="font-medium">${file.fileName}</div>
+                  <div class="text-xs text-gray-300 flex justify-between">
                     <span>${(file.size / 1024 / 1024).toFixed(1)}MB</span>
                     <span>${new Date(file.uploadedAt).toLocaleDateString(
                       'es-AR'
@@ -160,8 +160,8 @@ const StepFileDisplay = ({ files }: { files: StepFile[] }) => {
                 infoBar.className =
                   'absolute bottom-4 left-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded text-sm'
                 infoBar.innerHTML = `
-                  <div class=&quot;font-medium&quot;>${file.fileName}</div>
-                  <div class=&quot;text-xs text-gray-300 flex justify-between&quot;>
+                  <div class="font-medium">${file.fileName}</div>
+                  <div class="text-xs text-gray-300 flex justify-between">
                     <span>${(file.size / 1024 / 1024).toFixed(1)}MB</span>
                     <span>${new Date(file.uploadedAt).toLocaleDateString(
                       'es-AR'
@@ -391,7 +391,7 @@ export default function VehicleDetails({
                   No hay trabajos registrados
                 </p>
                 <p className='text-gray-500 text-xs mt-1'>
-                  Usa &quot;Seguimiento&quot; para agregar trabajos
+                  Usa "Seguimiento" para agregar trabajos
                 </p>
               </div>
             ) : (

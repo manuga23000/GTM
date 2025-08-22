@@ -187,12 +187,15 @@ export async function updateVehicle(
     const docRef = doc(db, COLLECTION_NAME, plateNumber)
 
     // CORREGIDO: Si se están actualizando los steps, limpiarlos correctamente
+    let cleanedData = { ...updateData }
+    if (updateData.steps) {
+      cleanedData.steps = cleanStepsForFirestore(updateData.steps)
+    }
+
     const dataToUpdate = {
-      ...updateData,
+      ...cleanedData,
       plateNumber,
       updatedAt: new Date(),
-      // CORREGIDO: aplicar limpieza directamente si existen steps
-      ...(updateData.steps && { steps: cleanStepsForFirestore(updateData.steps) })
     }
 
     if (updateData.totalCost !== undefined) {

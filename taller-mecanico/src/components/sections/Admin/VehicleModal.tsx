@@ -1064,8 +1064,7 @@ export default function VehicleModal({
       >
         <VehicleForm
           vehicle={newVehicle}
-          setVehicle={// eslint-disable-next-line @typescript-eslint/no-explicit-any
-            setNewVehicle as any}
+          setVehicle={setNewVehicle as any}
           isEdit={false}
         />
 
@@ -1120,8 +1119,7 @@ export default function VehicleModal({
           <>
             <VehicleForm
               vehicle={editVehicle}
-              setVehicle={// eslint-disable-next-line @typescript-eslint/no-explicit-any
-                setEditVehicle as any}
+              setVehicle={setEditVehicle as any}
               isEdit={true}
             />
 
@@ -1168,8 +1166,7 @@ export default function VehicleModal({
           <>
             <TrackingForm
               tracking={editTracking}
-              setTracking={// eslint-disable-next-line @typescript-eslint/no-explicit-any
-                setEditTracking as any}
+              setTracking={setEditTracking as any}
             />
 
             <div className='flex gap-3 pt-6 mt-6 border-t border-gray-700'>

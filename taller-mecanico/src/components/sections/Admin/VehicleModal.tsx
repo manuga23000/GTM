@@ -1052,7 +1052,7 @@ export default function VehicleModal({
 
                 <VehicleForm
                   vehicle={newVehicle}
-                  setVehicle={setNewVehicle as any}
+                  setVehicle={setNewVehicle as VehicleSetter<NewVehicleData>}
                   isEdit={false}
                 />
 
@@ -1162,7 +1162,7 @@ export default function VehicleModal({
 
                 <VehicleForm
                   vehicle={editVehicle}
-                  setVehicle={setEditVehicle as any}
+                setVehicle={setNewVehicle as VehicleSetter<NewVehicleData>}
                   isEdit={true}
                 />
 

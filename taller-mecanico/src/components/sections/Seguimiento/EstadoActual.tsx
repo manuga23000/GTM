@@ -275,7 +275,7 @@ export default function EstadoActual({ data }: EstadoActualProps) {
             {/* Nota sobre archivos - Solo si hay archivos */}
             {data.trabajosRealizados && data.trabajosRealizados.some(trabajo => trabajo.archivos && trabajo.archivos.length > 0) && (
               <p className="text-gray-600 text-xs sm:text-sm text-center">
-                <strong>📋 Nota:</strong> Los archivos adjuntos se conservan durante 30 días después de la entrega del vehículo.
+                <strong></strong> Los archivos adjuntos se conservan durante 30 días después de la entrega del vehículo.
               </p>
             )}
           </div>

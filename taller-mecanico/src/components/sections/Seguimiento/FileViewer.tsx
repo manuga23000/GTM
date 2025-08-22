@@ -211,7 +211,7 @@ const FileGallery = ({
             <div className="text-center">
               <h3 className="font-medium text-lg mb-1">{currentFile.fileName}</h3>
               <p className="text-sm text-gray-300">
-                Usa las flechas o desliza para navegar • Haz clic en "Descargar" para guardar
+                Usa las flechas o desliza para navegar • Haz clic en 'Descargar' para guardar
               </p>
             </div>
           </div>

@@ -282,7 +282,7 @@ export async function searchVehicles(criteria: {
 }): Promise<VehicleInput[]> {
   try {
     // Construir query paso a paso
-    const queryRef = collection(db, COLLECTION_NAME)
+    let queryRef = collection(db, COLLECTION_NAME)
 
     // Crear array de constraints
     const constraints = []

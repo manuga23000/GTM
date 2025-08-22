@@ -63,55 +63,6 @@ export function useVehicleFiles({
     setPendingFiles(new Map())
   }, [pendingFiles])
 
-  const validateFiles = useCallback(
-    (
-      files: File[],
-      currentFileCount: number,
-      hasVideo: boolean
-    ): { validFiles: File[]; errors: string[] } => {
-      const validFiles: File[] = []
-      const errors: string[] = []
-
-      for (const file of files) {
-        // Verificar límite de archivos
-        if (currentFileCount + validFiles.length >= maxFilesPerStep) {
-          errors.push(`Máximo ${maxFilesPerStep} archivos por trabajo`)
-          break
-        }
-
-        // Validar tipo
-        if (!validateFileType(file)) {
-          errors.push(`${file.name}: Tipo de archivo no permitido`)
-          continue
-        }
-
-        // Validar tamaño
-        if (!validateFileSize(file, maxFileSize)) {
-          errors.push(
-            `${file.name}: Tamaño muy grande (máximo ${maxFileSize}MB)`
-          )
-          continue
-        }
-
-        // Validar video único
-        const isVideo = getFileType(file) === 'video'
-        if (
-          isVideo &&
-          !allowMultipleVideos &&
-          (hasVideo || validFiles.some(f => getFileType(f) === 'video'))
-        ) {
-          errors.push(`Solo se permite un video por trabajo`)
-          continue
-        }
-
-        validFiles.push(file)
-      }
-
-      return { validFiles, errors }
-    },
-    [maxFilesPerStep, maxFileSize, allowMultipleVideos]
-  )
-
   const uploadFiles = useCallback(
     async (stepId: string, files: File[]): Promise<StepFile[]> => {
       if (!files.length) return []
@@ -148,7 +99,7 @@ export function useVehicleFiles({
             stepId
           )
 
-          const downloadURL = await uploadFileToStorage(
+          const uploadResult = await uploadFileToStorage(
             pendingFile.file,
             fileName,
             progress => {
@@ -167,15 +118,19 @@ export function useVehicleFiles({
             }
           )
 
-          // Archivo subido exitosamente
+          // CORREGIDO: Archivo subido exitosamente usando la estructura completa de uploadResult
           const uploadedFile: StepFile = {
             id: pendingFile.id,
-            fileName: pendingFile.file.name,
+            fileName: uploadResult.metadata.name,
             type: pendingFile.type,
-            url: downloadURL,
+            url: uploadResult.url,
             storageRef: fileName,
             uploadedAt: new Date(),
-            size: pendingFile.file.size,
+            size: uploadResult.metadata.size,
+            // NUEVO: Agregar thumbnailUrl si existe
+            ...(uploadResult.thumbnailUrl && { thumbnailUrl: uploadResult.thumbnailUrl }),
+            // NUEVO: Agregar dimensions si existen
+            ...(uploadResult.metadata.dimensions && { dimensions: uploadResult.metadata.dimensions })
           }
 
           uploadedFiles.push(uploadedFile)

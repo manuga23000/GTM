@@ -74,6 +74,12 @@ interface RawFirestoreVehicle {
 
 type ValidationObject = Record<string, unknown> | unknown[] | unknown
 
+// Type guard for valid step status
+function isValidStepStatus(status: unknown): status is 'completed' | 'pending' | 'in-progress' {
+  return typeof status === 'string' && 
+         ['completed', 'pending', 'in-progress'].includes(status as string)
+}
+
 /**
  * NUEVO: Validar datos antes de enviar a Firestore
  * Detecta valores undefined anidados
@@ -257,8 +263,8 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
           title: typeof step.title === 'string' ? step.title : '',
           description:
             typeof step.description === 'string' ? step.description : '',
-          status: (['completed', 'pending', 'in-progress'] as const).includes(step.status as any)
-            ? (step.status as 'completed' | 'pending' | 'in-progress')
+          status: isValidStepStatus(step.status)
+            ? step.status
             : 'pending',
           date:
             step.date instanceof Date
@@ -316,8 +322,8 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
           title: typeof step.title === 'string' ? step.title : '',
           description:
             typeof step.description === 'string' ? step.description : '',
-          status: (['completed', 'pending', 'in-progress'] as const).includes(step.status as any)
-            ? (step.status as 'completed' | 'pending' | 'in-progress')
+          status: isValidStepStatus(step.status)
+            ? step.status
             : 'pending',
           date:
             step.date instanceof Date

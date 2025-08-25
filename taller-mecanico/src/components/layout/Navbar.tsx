@@ -166,7 +166,7 @@ export default function Navbar() {
               CONTACTO
               <span className='absolute bottom-0 left-0 w-full h-0.5 bg-red-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300'></span>
             </Link>
-            {/* 
+         
             <Link
               href='/seguimiento'
               className='relative text-white hover:text-red-500 px-4 h-full flex items-center text-sm font-semibold tracking-wide transition-all duration-300 group whitespace-nowrap'
@@ -174,7 +174,7 @@ export default function Navbar() {
               SEGUIMIENTO
               <span className='absolute bottom-0 left-0 w-full h-0.5 bg-red-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300'></span>
             </Link>
- */}
+
           </div>
 
           {/* Mobile menu button */}
@@ -317,7 +317,7 @@ export default function Navbar() {
                 </motion.div>
 
                 <motion.div variants={menuItemVariants}>
-                  {/* 
+                 
                   <Link
                     href='/seguimiento'
                     className='flex items-center justify-between text-white hover:text-red-400 px-4 py-4 text-base font-semibold tracking-wide transition-all duration-300 rounded-xl hover:bg-white/10 active:bg-white/20 group'
@@ -338,7 +338,7 @@ export default function Navbar() {
                       />
                     </svg>
                   </Link>
-                   */}
+                  
                 </motion.div>
               </div>
             </motion.div>

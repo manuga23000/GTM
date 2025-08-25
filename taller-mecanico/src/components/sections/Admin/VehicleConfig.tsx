@@ -240,7 +240,7 @@ export default function VehicleConfig() {
 
   // ACTUALIZADA: Lógica de edición de seguimiento con manejo de archivos
   const handleOpenTrackingEdit = (vehicle: VehicleInTracking) => {
-    console.log('DEBUG - editTracking al abrir modal:', vehicle)
+  
     setEditTracking({
       ...vehicle,
       steps: vehicle.steps.map(step => ({

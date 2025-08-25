@@ -126,7 +126,7 @@ export async function createVehicle(
       const doubleFiltered = filterUndefinedValues(filteredData)
       await setDoc(docRef, doubleFiltered)
     } else {
-      console.log('✅ Datos de creación validados correctamente')
+   
       await setDoc(docRef, filteredData)
     }
 
@@ -195,7 +195,7 @@ export async function updateVehicle(
       const doubleFiltered = filterUndefinedValues(filteredData)
       await setDoc(docRef, doubleFiltered, { merge: true })
     } else {
-      console.log('✅ Datos validados correctamente para Firestore')
+      ('✅ Datos validados correctamente para Firestore')
       await setDoc(docRef, filteredData, { merge: true })
     }
 
@@ -242,9 +242,7 @@ export async function deleteVehicle(
 
       // Eliminar archivos de Storage de forma paralela
       if (allFiles.length > 0) {
-        console.log(
-          `Eliminando ${allFiles.length} archivos de Storage para vehículo ${plateNumber}`
-        )
+      s
         await Promise.allSettled(
           allFiles.map(file => deleteFileFromStorage(file.url))
         )

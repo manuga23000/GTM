@@ -48,15 +48,10 @@ export default function TurnosFormulario() {
   // Cargar configuraciones de servicios
   const loadServiceConfigs = async () => {
     try {
-      console.log(
-        '🔥 Firebase Status Check - Intentando conectar a Firebase para cargar configuraciones de servicios...'
-      )
+   
       const configs = await getAllServiceConfigs()
       setServiceConfigs(configs)
-      console.log(
-        '✅ Firebase Status Check - Firebase funcionando correctamente. Configuraciones cargadas:',
-        configs.length
-      )
+    
     } catch (error) {
       console.error(
         '❌ Firebase Status Check - Error conectando a Firebase:',
@@ -119,9 +114,7 @@ export default function TurnosFormulario() {
     }
 
     try {
-      console.log(
-        '🔥 Firebase Status Check - Verificando disponibilidad en Firebase...'
-      )
+    
       const availabilityPromises: Promise<{
         dateString: string
         service: string
@@ -230,9 +223,7 @@ export default function TurnosFormulario() {
       })
 
       setAvailabilityCache(newCache)
-      console.log(
-        '✅ Firebase Status Check - Disponibilidad cargada correctamente desde Firebase'
-      )
+    
     } catch (error) {
       console.error(
         '❌ Firebase Status Check - Error cargando disponibilidad desde Firebase:',
@@ -311,9 +302,7 @@ export default function TurnosFormulario() {
     setIsLoading(true)
     setStatus({ type: null, message: '' })
 
-    console.log(
-      '🔥 Firebase Status Check - Intentando crear turno en Firebase...'
-    )
+  
     try {
       // Validación básica - Solo servicio obligatorio para testing
       if (!formData.service) {
@@ -382,9 +371,7 @@ export default function TurnosFormulario() {
 
       try {
         const result = await createTurno(formData)
-        console.log(
-          '✅ Firebase Status Check - Turno creado exitosamente en Firebase'
-        )
+     
 
         if (result.success) {
           setShowSuccessModal(true)

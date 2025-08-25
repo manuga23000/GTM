@@ -70,10 +70,7 @@ class ScrollManager {
     // Remover clases conflictivas
     document.body.classList.remove('loading')
 
-    console.log(
-      '🔒 Scroll locked by:',
-      this.locks.map(l => `${l.id}(${l.priority})`).join(', ')
-    )
+ 
   }
 
   private disableScrollLock() {
@@ -82,7 +79,7 @@ class ScrollManager {
     document.body.style.paddingRight = this.originalStyles.bodyPaddingRight
     document.documentElement.style.overflow = this.originalStyles.htmlOverflow
 
-    console.log('🔓 Scroll unlocked')
+
   }
 
   hasLocks(): boolean {

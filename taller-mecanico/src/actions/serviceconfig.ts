@@ -344,7 +344,6 @@ export async function updateServiceConfig(
 
     await updateDoc(docRef, updateData)
 
-    console.log(`✅ Configuración actualizada para: ${serviceName}`)
 
     return {
       success: true,
@@ -368,7 +367,6 @@ export async function updateServiceConfig(
  */
 export async function cleanDuplicateConfigs(): Promise<ServiceConfigResponse> {
   try {
-    console.log('🧹 Limpiando configuraciones duplicadas...')
 
     const allConfigs = await getAllServiceConfigs()
     const serviceGroups = new Map<string, ServiceConfig[]>()
@@ -384,9 +382,7 @@ export async function cleanDuplicateConfigs(): Promise<ServiceConfigResponse> {
     // Para cada grupo, mantener solo la más reciente
     for (const [serviceName, configs] of serviceGroups) {
       if (configs.length > 1) {
-        console.log(
-          `🔍 Encontradas ${configs.length} configuraciones para ${serviceName}`
-        )
+      
 
         // Ordenar por fecha de actualización (más reciente primero)
         configs.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
@@ -395,14 +391,9 @@ export async function cleanDuplicateConfigs(): Promise<ServiceConfigResponse> {
         const toKeep = configs[0]
         const toDelete = configs.slice(1)
 
-        console.log(
-          `✅ Manteniendo configuración ${toKeep.id} para ${serviceName}`
-        )
 
         for (const configToDelete of toDelete) {
-          console.log(
-            `🗑️ Eliminando configuración duplicada ${configToDelete.id}`
-          )
+       
           await deleteDoc(doc(db, COLLECTION_NAME, configToDelete.id!))
         }
       }

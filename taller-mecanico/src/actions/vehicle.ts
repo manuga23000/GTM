@@ -242,7 +242,7 @@ export async function deleteVehicle(
 
       // Eliminar archivos de Storage de forma paralela
       if (allFiles.length > 0) {
-      s
+      
         await Promise.allSettled(
           allFiles.map(file => deleteFileFromStorage(file.url))
         )

@@ -1,12 +1,45 @@
 // components/sections/Seguimiento/FileViewer.tsx
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaDownload, FaTimes, FaChevronLeft, FaChevronRight, FaImage, FaVideo } from 'react-icons/fa'
 import { StepFile } from '@/actions/seguimiento'
 
 interface FileViewerProps {
   archivos: StepFile[]
+}
+
+// Hook para precargar imágenes
+const useImagePreloader = (urls: string[]) => {
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set())
+  
+  useEffect(() => {
+    if (!urls.length) return
+    
+    const imageUrls = urls.filter(url => url.includes('image') || url.match(/\.(jpg|jpeg|png|gif|webp)$/i))
+    if (!imageUrls.length) return
+    
+    const imagePromises = imageUrls.map(url => {
+      return new Promise<string>((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => resolve(url)
+        img.onerror = () => reject(url)
+        img.src = url
+      })
+    })
+
+    Promise.allSettled(imagePromises).then(results => {
+      const loaded = new Set<string>()
+      results.forEach((result) => {
+        if (result.status === 'fulfilled') {
+          loaded.add(result.value)
+        }
+      })
+      setLoadedImages(loaded)
+    })
+  }, [urls.join(',')]) // Usar join para evitar referencias cambiantes del array
+
+  return loadedImages
 }
 
 // Componente para galería de archivos
@@ -24,38 +57,56 @@ const FileGallery = ({
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
+  const [isZooming, setIsZooming] = useState(false)
+  const [imageLoaded, setImageLoaded] = useState(false)
 
   const currentFile = archivos[currentIndex]
+  
+  // Memoizar URLs para evitar re-renders
+  const imageUrls = useMemo(() => 
+    archivos.filter(f => f.type === 'image').map(f => f.url), 
+    [archivos]
+  )
+  const loadedImages = useImagePreloader(imageUrls)
 
   useEffect(() => {
     setCurrentIndex(initialIndex)
-  }, [initialIndex, isOpen])
+  }, [initialIndex])
 
-  // Navegación con teclado
+  // Reset image loaded state when changing images
+  useEffect(() => {
+    if (currentFile?.type === 'image') {
+      setImageLoaded(loadedImages.has(currentFile.url))
+    } else {
+      setImageLoaded(true) // Videos no necesitan precarga
+    }
+  }, [currentFile?.url, currentFile?.type, loadedImages])
+
+  const goToNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % archivos.length)
+  }, [archivos.length])
+
+  const goToPrevious = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + archivos.length) % archivos.length)
+  }, [archivos.length])
+
+  // Navegación con teclado - memoizar la función
+  const handleKeyPress = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'ArrowLeft') {
+      goToPrevious()
+    } else if (e.key === 'ArrowRight') {
+      goToNext()
+    } else if (e.key === 'Escape') {
+      onClose()
+    }
+  }, [goToPrevious, goToNext, onClose])
+
   useEffect(() => {
     if (!isOpen) return
 
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        goToPrevious()
-      } else if (e.key === 'ArrowRight') {
-        goToNext()
-      } else if (e.key === 'Escape') {
-        onClose()
-      }
-    }
-
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [isOpen, currentIndex])
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % archivos.length)
-  }
-
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + archivos.length) % archivos.length)
-  }
+  }, [isOpen, handleKeyPress])
 
   const downloadFile = async () => {
     if (!currentFile) return
@@ -77,28 +128,47 @@ const FileGallery = ({
     }
   }
 
-  // Detectar deslizamiento táctil
+  // Detectar si es un gesto de zoom (dos dedos)
+  const detectZoomGesture = (e: React.TouchEvent) => {
+    return e.touches.length > 1
+  }
+
+  // Mejorado manejo táctil
   const onTouchStart = (e: React.TouchEvent) => {
+    if (detectZoomGesture(e)) {
+      setIsZooming(true)
+      return
+    }
+    
+    setIsZooming(false)
     setTouchEnd(null)
     setTouchStart(e.targetTouches[0].clientX)
   }
 
   const onTouchMove = (e: React.TouchEvent) => {
+    if (isZooming || detectZoomGesture(e)) {
+      return
+    }
+    
     setTouchEnd(e.targetTouches[0].clientX)
   }
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return
+    if (isZooming || !touchStart || !touchEnd) return
 
     const distance = touchStart - touchEnd
     const isLeftSwipe = distance > 50
     const isRightSwipe = distance < -50
 
-    if (isLeftSwipe) {
+    if (isLeftSwipe && archivos.length > 1) {
       goToNext()
-    } else if (isRightSwipe) {
+    } else if (isRightSwipe && archivos.length > 1) {
       goToPrevious()
     }
+
+    // Reset
+    setTouchStart(null)
+    setTouchEnd(null)
   }
 
   if (!isOpen || !currentFile) return null
@@ -121,6 +191,7 @@ const FileGallery = ({
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
+          style={{ touchAction: 'pan-x pan-y' }} // Permitir zoom nativo
         >
           {/* Header con contador y controles */}
           <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-center">
@@ -155,8 +226,8 @@ const FileGallery = ({
             </div>
           </div>
 
-          {/* Flechas de navegación */}
-          {archivos.length > 1 && (
+          {/* Flechas de navegación - Solo si hay más de 1 archivo y no está haciendo zoom */}
+          {archivos.length > 1 && !isZooming && (
             <>
               <button
                 onClick={goToPrevious}
@@ -177,33 +248,43 @@ const FileGallery = ({
 
           {/* Contenido del archivo */}
           <div className="bg-white rounded-lg overflow-hidden">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentIndex}
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -50 }}
-                transition={{ duration: 0.3 }}
-              >
-                {currentFile.type === 'image' ? (
-                  <img
-                    src={currentFile.url}
-                    alt={currentFile.fileName}
-                    className="w-full h-auto max-h-[80vh] object-contain"
-                    loading="lazy"
-                  />
-                ) : (
-                  <video
-                    src={currentFile.url}
-                    controls
-                    className="w-full h-auto max-h-[80vh]"
-                    preload="metadata"
-                  >
-                    Tu navegador no soporta el elemento video.
-                  </video>
-                )}
-              </motion.div>
-            </AnimatePresence>
+            {/* Indicador de carga para imágenes */}
+            {currentFile.type === 'image' && !imageLoaded && (
+              <div className="w-full h-96 flex items-center justify-center bg-gray-100">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full"
+                />
+              </div>
+            )}
+
+            {/* Contenido principal - Sin AnimatePresence para evitar parpadeos */}
+            <div className={imageLoaded || currentFile.type === 'video' ? 'block' : 'hidden'}>
+              {currentFile.type === 'image' ? (
+                <img
+                  src={currentFile.url}
+                  alt={currentFile.fileName}
+                  className="w-full h-auto max-h-[80vh] object-contain"
+                  style={{ 
+                    touchAction: 'pinch-zoom', // Permitir zoom en imágenes
+                    userSelect: 'none'
+                  }}
+                  onLoad={() => setImageLoaded(true)}
+                  loading="eager" // Carga inmediata para mejor UX
+                />
+              ) : (
+                <video
+                  src={currentFile.url}
+                  controls
+                  className="w-full h-auto max-h-[80vh]"
+                  preload="metadata"
+                  style={{ touchAction: 'manipulation' }}
+                >
+                  Tu navegador no soporta el elemento video.
+                </video>
+              )}
+            </div>
           </div>
 
           {/* Footer con información */}
@@ -211,13 +292,17 @@ const FileGallery = ({
             <div className="text-center">
               <h3 className="font-medium text-lg mb-1">{currentFile.fileName}</h3>
               <p className="text-sm text-gray-300">
-                Usa las flechas o desliza para navegar • Haz clic en &quot;Descargar&quot; para guardar
+                {archivos.length > 1 && !isZooming 
+                  ? 'Usa las flechas o desliza para navegar • '
+                  : ''
+                }
+                Pellizca para hacer zoom • Haz clic en "Descargar" para guardar
               </p>
             </div>
           </div>
 
-          {/* Indicadores de puntos (solo si hay más de 1 archivo) */}
-          {archivos.length > 1 && (
+          {/* Indicadores de puntos - Solo si hay más de 1 archivo y no está haciendo zoom */}
+          {archivos.length > 1 && !isZooming && (
             <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 flex gap-2">
               {archivos.map((_, index) => (
                 <button
@@ -255,15 +340,6 @@ export default function FileViewer({ archivos }: FileViewerProps) {
     setGalleryOpen(false)
   }
 
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 B'
-    const k = 1024
-    const sizes = ['B', 'KB', 'MB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-  }
-
-  const totalSize = archivos.reduce((sum, archivo) => sum + archivo.size, 0)
   const imageCount = archivos.filter(a => a.type === 'image').length
   const videoCount = archivos.filter(a => a.type === 'video').length
 

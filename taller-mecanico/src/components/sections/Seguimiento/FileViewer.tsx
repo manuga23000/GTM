@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaDownload, FaTimes, FaChevronLeft, FaChevronRight, FaImage, FaVideo } from 'react-icons/fa'
+import NextImage from 'next/image'
 import { StepFile } from '@/actions/seguimiento'
 
 interface FileViewerProps {
@@ -12,6 +13,9 @@ interface FileViewerProps {
 // Hook para precargar imágenes
 const useImagePreloader = (urls: string[]) => {
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set())
+  
+  // Memoizar la lista de URLs para evitar re-renders
+  const urlsString = useMemo(() => urls.join(','), [urls])
   
   useEffect(() => {
     if (!urls.length) return
@@ -37,7 +41,7 @@ const useImagePreloader = (urls: string[]) => {
       })
       setLoadedImages(loaded)
     })
-  }, [urls.join(',')]) // Usar join para evitar referencias cambiantes del array
+  }, [urlsString, urls])
 
   return loadedImages
 }
@@ -262,17 +266,22 @@ const FileGallery = ({
             {/* Contenido principal - Sin AnimatePresence para evitar parpadeos */}
             <div className={imageLoaded || currentFile.type === 'video' ? 'block' : 'hidden'}>
               {currentFile.type === 'image' ? (
-                <img
-                  src={currentFile.url}
-                  alt={currentFile.fileName}
-                  className="w-full h-auto max-h-[80vh] object-contain"
-                  style={{ 
-                    touchAction: 'pinch-zoom', // Permitir zoom en imágenes
-                    userSelect: 'none'
-                  }}
-                  onLoad={() => setImageLoaded(true)}
-                  loading="eager" // Carga inmediata para mejor UX
-                />
+                <div className="relative w-full max-h-[80vh] flex justify-center">
+                  <NextImage
+                    src={currentFile.url}
+                    alt={currentFile.fileName}
+                    width={800}
+                    height={600}
+                    className="max-w-full max-h-[80vh] object-contain"
+                    style={{ 
+                      touchAction: 'pinch-zoom', // Permitir zoom en imágenes
+                      userSelect: 'none'
+                    }}
+                    onLoad={() => setImageLoaded(true)}
+                    priority
+                    unoptimized // Para URLs externas que no están optimizadas por Next.js
+                  />
+                </div>
               ) : (
                 <video
                   src={currentFile.url}
@@ -296,7 +305,7 @@ const FileGallery = ({
                   ? 'Usa las flechas o desliza para navegar • '
                   : ''
                 }
-                Pellizca para hacer zoom • Haz clic en "Descargar" para guardar
+                Pellizca para hacer zoom • Haz clic en &quot;Descargar&quot; para guardar
               </p>
             </div>
           </div>

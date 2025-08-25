@@ -1,10 +1,6 @@
 [
   {
-    "origin": [
-      "http://localhost:3000",
-      "https://www.mecanicagrandoli.com.ar",
-      "https://mecanicagrandoli.com.ar"
-    ],
+    "origin": ["https://www.mecanicagrandoli.com.ar"],
     "method": ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
     "responseHeader": ["Content-Type", "Authorization", "Content-Length", "x-goog-meta-*"],
     "maxAgeSeconds": 3600

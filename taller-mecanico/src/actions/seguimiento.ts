@@ -27,6 +27,36 @@ export interface TrabajoRealizado {
   archivos: StepFile[]
 }
 
+// NUEVOS: Interfaces para datos de Firebase
+interface FirestoreFile {
+  id?: string
+  fileName?: string
+  type?: 'image' | 'video' | string
+  url?: string
+  thumbnailUrl?: string
+  storageRef?: string
+  uploadedAt?: Date | FirestoreTimestamp | string
+  size?: number
+  dimensions?: {
+    width?: number
+    height?: number
+  }
+}
+
+interface FirestoreStep {
+  id?: string
+  title?: string
+  description?: string
+  notes?: string
+  date?: Date | FirestoreTimestamp | string
+  status?: string
+  files?: FirestoreFile[]
+}
+
+interface FirestoreTimestamp {
+  toDate(): Date
+}
+
 // Tipo para datos de seguimiento que coincide con la estructura de Firebase
 export interface TimelineItem {
   id: number
@@ -85,10 +115,6 @@ export async function getSeguimientoByPatente(
 
     const data = docSnap.data()
 
-    interface FirestoreTimestamp {
-      toDate(): Date
-    }
-
     const isFirestoreTimestamp = (
       value: unknown
     ): value is FirestoreTimestamp => {
@@ -122,8 +148,8 @@ export async function getSeguimientoByPatente(
       return new Date().toISOString()
     }
 
-    // NUEVO: Mapear steps a trabajos realizados con archivos
-    const mapearTrabajosRealizados = (steps: any[]): TrabajoRealizado[] => {
+    // ACTUALIZADO: Función con tipos específicos
+    const mapearTrabajosRealizados = (steps: FirestoreStep[]): TrabajoRealizado[] => {
       if (!Array.isArray(steps) || steps.length === 0) {
         return []
       }
@@ -132,11 +158,11 @@ export async function getSeguimientoByPatente(
         .filter(step => step && step.title) // Solo steps válidos
         .map((step, index) => ({
           id: step.id || `step-${index}`,
-          titulo: step.title,
+          titulo: step.title || 'Trabajo sin título',
           descripcion: step.description || step.notes,
           fecha: formatearFecha(step.date),
           archivos: Array.isArray(step.files)
-            ? step.files.map((file: any) => ({
+            ? step.files.map((file: FirestoreFile) => ({
                 id: file.id || `file-${Math.random()}`,
                 fileName: file.fileName || 'archivo',
                 type: file.type === 'video' ? 'video' : 'image',
@@ -145,10 +171,10 @@ export async function getSeguimientoByPatente(
                 storageRef: file.storageRef || '',
                 uploadedAt: file.uploadedAt instanceof Date 
                   ? file.uploadedAt 
-                  : file.uploadedAt?.toDate
-                  ? file.uploadedAt.toDate()
+                  : file.uploadedAt && typeof file.uploadedAt === 'object' && 'toDate' in file.uploadedAt
+                  ? (file.uploadedAt as FirestoreTimestamp).toDate()
                   : file.uploadedAt 
-                  ? new Date(file.uploadedAt)
+                  ? new Date(file.uploadedAt as string)
                   : new Date(),
                 size: typeof file.size === 'number' ? file.size : 0,
                 dimensions: file.dimensions && typeof file.dimensions === 'object'
@@ -173,9 +199,9 @@ export async function getSeguimientoByPatente(
       estadoActual: data.status || 'received',
       telefono: data.clientPhone || '',
       tipoServicio: data.serviceType || 'Reparación general',
-      // ACTUALIZADO: Mapear steps con archivos
+      // ACTUALIZADO: Mapear steps con archivos usando tipos específicos
       trabajosRealizados: Array.isArray(data.steps)
-        ? mapearTrabajosRealizados(data.steps)
+        ? mapearTrabajosRealizados(data.steps as FirestoreStep[])
         : data.trabajosRealizados || [],
       proximoPaso: data.nextStep || data.proximoPaso || '',
       fechaEstimadaEntrega: data.estimatedCompletionDate
@@ -188,13 +214,13 @@ export async function getSeguimientoByPatente(
         ? formatearFecha(data.updatedAt)
         : formatearFecha(data.createdAt),
       timeline: Array.isArray(data.steps)
-        ? data.steps.map((step: any, idx: number) => ({
+        ? (data.steps as FirestoreStep[]).map((step: FirestoreStep, idx: number) => ({
             id: idx + 1,
             fecha: step.date
               ? step.date instanceof Date
                 ? step.date.toISOString().split('T')[0]
-                : step.date?.toDate
-                ? step.date.toDate().toISOString().split('T')[0]
+                : step.date && typeof step.date === 'object' && 'toDate' in step.date
+                ? (step.date as FirestoreTimestamp).toDate().toISOString().split('T')[0]
                 : typeof step.date === 'string'
                 ? new Date(step.date).toISOString().split('T')[0]
                 : ''
@@ -202,8 +228,8 @@ export async function getSeguimientoByPatente(
             hora: step.date
               ? step.date instanceof Date
                 ? step.date.toTimeString().slice(0, 5)
-                : step.date?.toDate
-                ? step.date.toDate().toTimeString().slice(0, 5)
+                : step.date && typeof step.date === 'object' && 'toDate' in step.date
+                ? (step.date as FirestoreTimestamp).toDate().toTimeString().slice(0, 5)
                 : typeof step.date === 'string'
                 ? new Date(step.date).toTimeString().slice(0, 5)
                 : ''

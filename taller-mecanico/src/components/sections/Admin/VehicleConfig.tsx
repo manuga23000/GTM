@@ -12,6 +12,12 @@ import VehicleDetails from './VehicleDetails'
 import VehicleModal from './VehicleModal'
 import { deleteFileFromStorage } from '@/lib/storageUtils'
 
+// Interface for Firestore timestamp
+interface FirestoreTimestamp {
+  seconds: number;
+  nanoseconds: number;
+}
+
 export default function VehicleConfig() {
   const [vehiclesInTracking, setVehiclesInTracking] = useState<
     VehicleInTracking[]
@@ -81,22 +87,36 @@ export default function VehicleConfig() {
           : null,
         status: 'received' as const,
         totalCost: v.totalCost || 0,
-        steps: (v.steps || []).map(step => ({
-          ...step,
-          date:
-            step.date instanceof Date
-              ? step.date
-              : step.date
-              ? new Date(step.date)
-              : new Date(), // SEGURO: Siempre una fecha válida
-          files: (step.files || []).map(file => ({
-            ...file,
-            uploadedAt:
-              file.uploadedAt instanceof Date
-                ? file.uploadedAt
-                : new Date(file.uploadedAt),
-          })),
-        })),
+        steps: (v.steps || []).map(step => {
+          // Handle Firestore timestamp or Date object
+          let stepDate: Date;
+          const dateValue = step.date;
+          
+          if (dateValue instanceof Date) {
+            stepDate = dateValue;
+          } else if (dateValue && typeof dateValue === 'object' && 'seconds' in dateValue) {
+            // Handle Firestore timestamp
+            const timestamp = dateValue as FirestoreTimestamp;
+            stepDate = new Date(timestamp.seconds * 1000);
+          } else {
+            // Fallback to current date
+            stepDate = new Date();
+          }
+
+          return {
+            ...step,
+            description: step.description || 'Sin descripción',
+            status: 'completed' as const, // Ensure status matches the expected type
+            date: stepDate,
+            files: (step.files || []).map(file => ({
+              ...file,
+              uploadedAt:
+                file.uploadedAt instanceof Date
+                  ? file.uploadedAt
+                  : new Date(file.uploadedAt),
+            })),
+          };
+        }),
         notes: v.notes || '',
         nextStep: v.nextStep || '',
       }))

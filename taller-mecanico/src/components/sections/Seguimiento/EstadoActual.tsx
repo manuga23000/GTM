@@ -65,6 +65,9 @@ export default function EstadoActual({ data }: EstadoActualProps) {
     }
   }
 
+  // Check if there are any files in the trabajos realizados
+  const hasFiles = data.trabajosRealizados && data.trabajosRealizados.some(trabajo => trabajo.archivos && trabajo.archivos.length > 0)
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 20 }}
@@ -265,20 +268,12 @@ export default function EstadoActual({ data }: EstadoActualProps) {
           transition={{ delay: 0.8 }}
           className='mt-6 bg-gray-50 p-4 rounded-lg border border-gray-200'
         >
-          <div className='space-y-2'>
-            <p className='text-gray-600 text-xs sm:text-sm text-center'>
-              <strong>Nota:</strong> Las fechas son estimativas y pueden variar
-              según la disponibilidad de repuestos y la complejidad de los
-              trabajos. Te notificaremos ante cualquier cambio.
-            </p>
-            
-            {/* Nota sobre archivos - Solo si hay archivos */}
-            {data.trabajosRealizados && data.trabajosRealizados.some(trabajo => trabajo.archivos && trabajo.archivos.length > 0) && (
-              <p className="text-gray-600 text-xs sm:text-sm text-center">
-                <strong></strong> Los archivos adjuntos se conservan durante 30 días después de la entrega del vehículo.
-              </p>
-            )}
-          </div>
+          <p className='text-gray-600 text-xs sm:text-sm text-center'>
+            <strong>Nota:</strong> Las fechas son estimativas y pueden variar
+            según la disponibilidad de repuestos y la complejidad de los
+            trabajos. Te notificaremos ante cualquier cambio.
+            {hasFiles && ' Los archivos adjuntos se conservan durante 30 días después de la entrega del vehículo.'}
+          </p>
         </motion.div>
       </div>
     </motion.section>

@@ -48,10 +48,10 @@ interface CleanStepFile {
 interface CleanStep {
   id: string
   title: string
-  description: string
-  status: string
+  description?: string
+  status: 'completed' | 'pending' | 'in-progress'
   date: Date
-  notes: string
+  notes?: string
   files?: CleanStepFile[]
 }
 
@@ -158,8 +158,8 @@ export function cleanStepForFirestore(step: RawFirestoreStep): CleanStep {
   const cleanStep: CleanStep = {
     id: step.id || '',
     title: step.title || '',
-    description: step.description || '',
-    status: step.status || 'completed',
+    description: step.description || step.notes,
+    status: isValidStepStatus(step.status) ? step.status : 'pending',
     date: step.date instanceof Date ? step.date : new Date(),
     notes: step.notes || '',
   }

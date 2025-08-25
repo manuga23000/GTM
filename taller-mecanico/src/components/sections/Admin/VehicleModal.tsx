@@ -1008,16 +1008,22 @@ export default function VehicleModal({
                 justifyContent: 'center',
                 padding: '1rem',
               }}
-              onClick={() => setShowAddForm(false)}
+              onClick={(e) => {
+                // Only close if clicking on the overlay, not the modal content
+                if (e.target === e.currentTarget) {
+                  setShowAddForm(false);
+                }
+              }}
             >
               <div
                 className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
                 style={{
-                  position: 'absolute',
+                  position: 'fixed',
                   top: 0,
                   left: 0,
                   right: 0,
                   bottom: 0,
+                  zIndex: 1
                 }}
               />
               <motion.div
@@ -1032,7 +1038,10 @@ export default function VehicleModal({
                   position: 'relative',
                   zIndex: 1,
                 }}
-                onClick={e => e.stopPropagation()}
+                onClick={e => {
+                  // Prevent click from bubbling up to the overlay
+                  e.stopPropagation();
+                }}
               >
                 <div className='flex justify-between items-center mb-4'>
                   <div>
@@ -1044,7 +1053,12 @@ export default function VehicleModal({
                     </p>
                   </div>
                   <button
-                    onClick={() => setShowAddForm(false)}
+                    onClick={(e) => {
+                // Only close if clicking on the overlay, not the modal content
+                if (e.target === e.currentTarget) {
+                  setShowAddForm(false);
+                }
+              }}
                     className='text-gray-400 hover:text-white text-2xl'
                   >
                     ✕
@@ -1071,7 +1085,12 @@ export default function VehicleModal({
 
                 <div className='flex gap-3 pt-4 mt-6 border-t border-gray-700'>
                   <button
-                    onClick={() => setShowAddForm(false)}
+                    onClick={(e) => {
+                // Only close if clicking on the overlay, not the modal content
+                if (e.target === e.currentTarget) {
+                  setShowAddForm(false);
+                }
+              }}
                     className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
                   >
                     Cancelar
@@ -1123,11 +1142,12 @@ export default function VehicleModal({
               <div
                 className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
                 style={{
-                  position: 'absolute',
+                  position: 'fixed',
                   top: 0,
                   left: 0,
                   right: 0,
                   bottom: 0,
+                  zIndex: 1
                 }}
               />
               <motion.div
@@ -1142,7 +1162,10 @@ export default function VehicleModal({
                   position: 'relative',
                   zIndex: 1,
                 }}
-                onClick={e => e.stopPropagation()}
+                onClick={e => {
+                  // Prevent click from bubbling up to the overlay
+                  e.stopPropagation();
+                }}
               >
                 <div className='flex justify-between items-center mb-4'>
                   <div>
@@ -1219,11 +1242,12 @@ export default function VehicleModal({
               <div
                 className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
                 style={{
-                  position: 'absolute',
+                  position: 'fixed',
                   top: 0,
                   left: 0,
                   right: 0,
                   bottom: 0,
+                  zIndex: 1
                 }}
               />
               <motion.div
@@ -1238,7 +1262,10 @@ export default function VehicleModal({
                   position: 'relative',
                   zIndex: 1,
                 }}
-                onClick={e => e.stopPropagation()}
+                onClick={e => {
+                  // Prevent click from bubbling up to the overlay
+                  e.stopPropagation();
+                }}
               >
                 <div className='flex justify-between items-center mb-6'>
                   <div>

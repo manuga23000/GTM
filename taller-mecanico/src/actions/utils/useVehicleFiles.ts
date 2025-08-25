@@ -148,7 +148,7 @@ export function useVehicleFiles({
             stepId
           )
 
-          const downloadURL = await uploadFileToStorage(
+          const uploadResult = await uploadFileToStorage(
             pendingFile.file,
             fileName,
             progress => {
@@ -167,15 +167,18 @@ export function useVehicleFiles({
             }
           )
 
-          // Archivo subido exitosamente
+          // Archivo subido exitosamente - FIXED: destructure the upload result
           const uploadedFile: StepFile = {
             id: pendingFile.id,
             fileName: pendingFile.file.name,
             type: pendingFile.type,
-            url: downloadURL,
+            url: uploadResult.url, // Extract the URL string from the result
+            thumbnailUrl: uploadResult.thumbnailUrl, // Include thumbnail if available
             storageRef: fileName,
             uploadedAt: new Date(),
             size: pendingFile.file.size,
+            // Include dimensions from metadata if available
+            dimensions: uploadResult.metadata.dimensions,
           }
 
           uploadedFiles.push(uploadedFile)

@@ -22,13 +22,12 @@ interface StepFile {
 interface VehicleStep {
   id: string
   title: string
-  description: string
+  // ✅ QUITADO: description ya no está en la interface
   status: 'completed' // Siempre completado
   date: Date
   notes?: string
   files?: StepFile[] // NUEVO: archivos del step
 }
-
 interface VehicleInTracking {
   id: string
   plateNumber: string
@@ -451,9 +450,11 @@ export default function VehicleDetails({
                             </span>
                           </div>
                         </div>
-                        <p className='text-gray-300 text-sm mt-2'>
-                          {step.description}
-                        </p>
+
+                        {/* ✅ QUITADO: Ya no se muestra step.description */}
+                        {/* <p className='text-gray-300 text-sm mt-2'>
+              {step.description}
+            </p> */}
 
                         {/* ACTUALIZADO: Mostrar archivos del step desde Storage */}
                         <StepFileDisplay files={stepFiles} />

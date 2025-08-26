@@ -83,7 +83,7 @@ interface PendingStepFile {
 interface VehicleStep {
   id: string
   title: string
-  description: string
+  // ✅ QUITADO: description ya no está en la interface
   status: 'completed' // Siempre completado
   date: Date // SEGURO: Nunca null
   notes?: string
@@ -115,7 +115,6 @@ interface VehicleInTracking {
 }
 
 type VehicleSetter<T> = (value: T | ((prev: T) => T)) => void
-
 
 interface VehicleModalProps {
   // Props para agregar nuevo vehículo
@@ -417,7 +416,7 @@ const TrackingForm = ({
     const step: VehicleStep = {
       id: Date.now().toString(),
       title: newStep.title.trim(),
-      description: '', // No hay descripción
+      // ✅ QUITADO: description ya no se asigna
       status: 'completed',
       date: new Date(), // Fecha actual
       notes: '',
@@ -1008,10 +1007,10 @@ export default function VehicleModal({
                 justifyContent: 'center',
                 padding: '1rem',
               }}
-              onClick={(e) => {
+              onClick={e => {
                 // Only close if clicking on the overlay, not the modal content
                 if (e.target === e.currentTarget) {
-                  setShowAddForm(false);
+                  setShowAddForm(false)
                 }
               }}
             >
@@ -1023,7 +1022,7 @@ export default function VehicleModal({
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  zIndex: 1
+                  zIndex: 1,
                 }}
               />
               <motion.div
@@ -1040,7 +1039,7 @@ export default function VehicleModal({
                 }}
                 onClick={e => {
                   // Prevent click from bubbling up to the overlay
-                  e.stopPropagation();
+                  e.stopPropagation()
                 }}
               >
                 <div className='flex justify-between items-center mb-4'>
@@ -1053,12 +1052,12 @@ export default function VehicleModal({
                     </p>
                   </div>
                   <button
-                    onClick={(e) => {
-                // Only close if clicking on the overlay, not the modal content
-                if (e.target === e.currentTarget) {
-                  setShowAddForm(false);
-                }
-              }}
+                    onClick={e => {
+                      // Only close if clicking on the overlay, not the modal content
+                      if (e.target === e.currentTarget) {
+                        setShowAddForm(false)
+                      }
+                    }}
                     className='text-gray-400 hover:text-white text-2xl'
                   >
                     ✕
@@ -1085,12 +1084,12 @@ export default function VehicleModal({
 
                 <div className='flex gap-3 pt-4 mt-6 border-t border-gray-700'>
                   <button
-                    onClick={(e) => {
-                // Only close if clicking on the overlay, not the modal content
-                if (e.target === e.currentTarget) {
-                  setShowAddForm(false);
-                }
-              }}
+                    onClick={e => {
+                      // Only close if clicking on the overlay, not the modal content
+                      if (e.target === e.currentTarget) {
+                        setShowAddForm(false)
+                      }
+                    }}
                     className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
                   >
                     Cancelar
@@ -1147,7 +1146,7 @@ export default function VehicleModal({
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  zIndex: 1
+                  zIndex: 1,
                 }}
               />
               <motion.div
@@ -1164,7 +1163,7 @@ export default function VehicleModal({
                 }}
                 onClick={e => {
                   // Prevent click from bubbling up to the overlay
-                  e.stopPropagation();
+                  e.stopPropagation()
                 }}
               >
                 <div className='flex justify-between items-center mb-4'>
@@ -1186,7 +1185,7 @@ export default function VehicleModal({
 
                 <VehicleForm
                   vehicle={editVehicle}
-                setVehicle={setNewVehicle as VehicleSetter<NewVehicleData>}
+                  setVehicle={setNewVehicle as VehicleSetter<NewVehicleData>}
                   isEdit={true}
                 />
 
@@ -1247,7 +1246,7 @@ export default function VehicleModal({
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  zIndex: 1
+                  zIndex: 1,
                 }}
               />
               <motion.div
@@ -1264,7 +1263,7 @@ export default function VehicleModal({
                 }}
                 onClick={e => {
                   // Prevent click from bubbling up to the overlay
-                  e.stopPropagation();
+                  e.stopPropagation()
                 }}
               >
                 <div className='flex justify-between items-center mb-6'>
@@ -1287,7 +1286,9 @@ export default function VehicleModal({
 
                 <TrackingForm
                   tracking={editTracking}
-                  setTracking={setEditTracking as VehicleSetter<VehicleInTracking>}
+                  setTracking={
+                    setEditTracking as VehicleSetter<VehicleInTracking>
+                  }
                 />
 
                 <div className='flex gap-3 pt-6 mt-6 border-t border-gray-700'>

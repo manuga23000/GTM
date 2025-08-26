@@ -106,7 +106,6 @@ export interface PendingStepFile {
 export interface VehicleStep {
   id: string
   title: string
-  description?: string
   status: 'completed' | 'pending' | 'in-progress'
   date: Date
   notes?: string

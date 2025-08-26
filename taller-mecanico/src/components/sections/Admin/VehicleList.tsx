@@ -21,7 +21,7 @@ export interface StepFile {
 export interface VehicleStep {
   id: string
   title: string
-  description: string
+  // ✅ QUITADO: description ya no está en la interface
   status: 'completed' // Siempre completado
   date: Date
   notes?: string

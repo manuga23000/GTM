@@ -9,9 +9,20 @@ import {
 import { storage } from './firebase'
 
 /**
+ * MEJORADO: Generar nombre de archivo seguro para URL
+ * Remueve caracteres problemáticos que pueden causar CORS issues
+ */
+function sanitizeFileName(fileName: string): string {
+  return fileName
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Quitar acentos
+    .replace(/[^a-zA-Z0-9.-]/g, '_') // Reemplazar caracteres especiales
+    .replace(/_{2,}/g, '_') // Evitar múltiples underscores
+    .toLowerCase()
+}
+
+/**
  * Generar thumbnail de imagen
- * @param file Archivo de imagen
- * @returns Thumbnail como Blob y dimensiones originales
  */
 async function generateThumbnail(file: File): Promise<{
   thumbnail: Blob | null
@@ -70,11 +81,7 @@ async function generateThumbnail(file: File): Promise<{
 }
 
 /**
- * Subir archivo a Firebase Storage con metadata
- * @param file Archivo a subir
- * @param path Ruta donde guardar el archivo
- * @param onProgress Callback opcional para mostrar progreso
- * @returns Objeto con URL, metadata y thumbnail
+ * MEJORADO: Subir archivo con mejor manejo de CORS
  */
 export async function uploadFileToStorage(
   file: File,
@@ -92,7 +99,22 @@ export async function uploadFileToStorage(
   }
 }> {
   try {
-    const storageRef = ref(storage, path)
+    // NUEVO: Sanitizar el path para evitar problemas de encoding
+    const sanitizedPath = path
+      .split('/')
+      .map(segment => {
+        // Mantener la estructura de carpetas pero sanitizar nombres de archivo
+        if (segment.includes('.')) {
+          const parts = segment.split('.')
+          const name = sanitizeFileName(parts.slice(0, -1).join('.'))
+          const extension = parts[parts.length - 1]
+          return `${name}.${extension}`
+        }
+        return segment
+      })
+      .join('/')
+
+    const storageRef = ref(storage, sanitizedPath)
 
     // Generar thumbnail si es imagen
     let thumbnailUrl: string | undefined
@@ -103,18 +125,43 @@ export async function uploadFileToStorage(
       dimensions = originalDimensions
 
       if (thumbnail) {
-        // Subir thumbnail
-        const thumbnailPath = path.replace(/\.[^/.]+$/, '_thumb.jpg')
+        // MEJORADO: Path más simple para thumbnail
+        const thumbnailPath = sanitizedPath.replace(/\.[^/.]+$/, '_thumb.jpg')
         const thumbnailRef = ref(storage, thumbnailPath)
-        const thumbnailSnapshot = await uploadBytes(thumbnailRef, thumbnail)
-        thumbnailUrl = await getDownloadURL(thumbnailSnapshot.ref)
+
+        // NUEVO: Metadata específica para thumbnail
+        const thumbnailMetadata = {
+          contentType: 'image/jpeg',
+          customMetadata: {
+            originalFile: sanitizedPath,
+            type: 'thumbnail',
+            uploadedAt: new Date().toISOString(),
+          },
+        }
+
+        try {
+          const thumbnailSnapshot = await uploadBytes(
+            thumbnailRef,
+            thumbnail,
+            thumbnailMetadata
+          )
+          thumbnailUrl = await getDownloadURL(thumbnailSnapshot.ref)
+        } catch (thumbError) {
+          console.warn(
+            'Error uploading thumbnail, continuing without it:',
+            thumbError
+          )
+          // Continuar sin thumbnail si falla
+        }
       }
     }
 
-    // Metadata del archivo
+    // MEJORADO: Metadata más robusta
     const metadata = {
+      contentType: file.type,
       customMetadata: {
         originalName: file.name,
+        sanitizedName: sanitizeFileName(file.name),
         uploadedAt: new Date().toISOString(),
         fileSize: file.size.toString(),
         ...(dimensions && {
@@ -122,11 +169,10 @@ export async function uploadFileToStorage(
           height: dimensions.height.toString(),
         }),
       },
-      contentType: file.type,
     }
 
     if (onProgress) {
-      // Usar uploadBytesResumable para obtener progreso
+      // Upload con progreso
       const uploadTask = uploadBytesResumable(storageRef, file, metadata)
 
       return new Promise((resolve, reject) => {
@@ -162,7 +208,7 @@ export async function uploadFileToStorage(
         )
       })
     } else {
-      // Upload simple sin progreso
+      // Upload simple
       const snapshot = await uploadBytes(storageRef, file, metadata)
       const downloadURL = await getDownloadURL(snapshot.ref)
       return {
@@ -184,12 +230,11 @@ export async function uploadFileToStorage(
 }
 
 /**
- * Eliminar archivo de Storage (incluyendo thumbnail si existe)
- * @param url URL del archivo a eliminar
+ * MEJORADO: Eliminar archivos con mejor manejo de errores
  */
 export async function deleteFileFromStorage(url: string): Promise<void> {
   try {
-    // Extraer la ruta del archivo de la URL
+    // Extraer path de la URL
     const urlParts = url.split('/o/')
     if (urlParts.length < 2) return
 
@@ -200,28 +245,28 @@ export async function deleteFileFromStorage(url: string): Promise<void> {
     const storageRef = ref(storage, filePath)
     await deleteObject(storageRef)
 
-    // Eliminar thumbnail si existe
+    // Intentar eliminar thumbnail si no es un thumbnail
     if (!filePath.includes('_thumb.')) {
       try {
         const thumbnailPath = filePath.replace(/\.[^/.]+$/, '_thumb.jpg')
         const thumbnailRef = ref(storage, thumbnailPath)
         await deleteObject(thumbnailRef)
       } catch (error) {
-        // Thumbnail no existe, continuar
+        // Thumbnail no existe o error, continuar silenciosamente
+        console.debug(
+          'Thumbnail deletion failed (expected if no thumbnail exists):',
+          error
+        )
       }
     }
   } catch (error) {
     console.error('Error deleting file from storage:', error)
-    // No lanzamos error para evitar que falle el proceso si el archivo ya no existe
+    // No re-lanzar para evitar fallos en cascada
   }
 }
 
 /**
- * Generar nombre único para archivo
- * @param originalName Nombre original del archivo
- * @param vehiclePlate Patente del vehículo
- * @param stepId ID del paso
- * @returns Nombre único para el archivo
+ * MEJORADO: Generar nombre único más compatible con URLs
  */
 export function generateUniqueFileName(
   originalName: string,
@@ -229,26 +274,23 @@ export function generateUniqueFileName(
   stepId: string
 ): string {
   const timestamp = Date.now()
-  const fileExtension = originalName.split('.').pop()
-  const cleanPlate = vehiclePlate.replace(/\s+/g, '').toUpperCase()
+  const fileExtension = originalName.split('.').pop()?.toLowerCase()
+  const cleanPlate = sanitizeFileName(vehiclePlate.replace(/\s+/g, ''))
+  const sanitizedName = sanitizeFileName(originalName.split('.')[0])
 
-  return `vehicles/${cleanPlate}/steps/${stepId}/${timestamp}.${fileExtension}`
+  return `vehicles/${cleanPlate}/steps/${stepId}/${timestamp}_${sanitizedName}.${fileExtension}`
 }
 
 /**
  * Validar tipo de archivo
- * @param file Archivo a validar
- * @returns true si es válido
  */
 export function validateFileType(file: File): boolean {
   const allowedTypes = [
-    // Imágenes
     'image/jpeg',
     'image/jpg',
     'image/png',
     'image/webp',
     'image/gif',
-    // Videos
     'video/mp4',
     'video/webm',
     'video/ogg',
@@ -262,9 +304,6 @@ export function validateFileType(file: File): boolean {
 
 /**
  * Validar tamaño de archivo
- * @param file Archivo a validar
- * @param maxSizeMB Tamaño máximo en MB
- * @returns true si es válido
  */
 export function validateFileSize(file: File, maxSizeMB: number = 10): boolean {
   const maxSizeBytes = maxSizeMB * 1024 * 1024
@@ -272,9 +311,7 @@ export function validateFileSize(file: File, maxSizeMB: number = 10): boolean {
 }
 
 /**
- * Obtener tipo de archivo (image/video)
- * @param file Archivo
- * @returns 'image' | 'video'
+ * Obtener tipo de archivo
  */
 export function getFileType(file: File): 'image' | 'video' {
   return file.type.startsWith('video/') ? 'video' : 'image'

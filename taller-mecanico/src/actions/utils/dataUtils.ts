@@ -48,7 +48,6 @@ interface CleanStepFile {
 interface CleanStep {
   id: string
   title: string
-  description?: string
   status: 'completed' | 'pending' | 'in-progress'
   date: Date
   notes?: string
@@ -75,16 +74,23 @@ interface RawFirestoreVehicle {
 type ValidationObject = Record<string, unknown> | unknown[] | unknown
 
 // Type guard for valid step status
-function isValidStepStatus(status: unknown): status is 'completed' | 'pending' | 'in-progress' {
-  return typeof status === 'string' && 
-         ['completed', 'pending', 'in-progress'].includes(status as string)
+function isValidStepStatus(
+  status: unknown
+): status is 'completed' | 'pending' | 'in-progress' {
+  return (
+    typeof status === 'string' &&
+    ['completed', 'pending', 'in-progress'].includes(status as string)
+  )
 }
 
 /**
  * NUEVO: Validar datos antes de enviar a Firestore
  * Detecta valores undefined anidados
  */
-export function validateFirestoreData(obj: ValidationObject, path = ''): string[] {
+export function validateFirestoreData(
+  obj: ValidationObject,
+  path = ''
+): string[] {
   const errors: string[] = []
 
   if (obj === undefined) {
@@ -118,7 +124,9 @@ export function validateFirestoreData(obj: ValidationObject, path = ''): string[
  * NUEVO: Limpiar datos de archivo para Firestore
  * Elimina campos undefined y valida tipos
  */
-export function cleanStepFileForFirestore(file: RawFirestoreFile): CleanStepFile {
+export function cleanStepFileForFirestore(
+  file: RawFirestoreFile
+): CleanStepFile {
   const cleanFile: CleanStepFile = {
     id: file.id || '',
     fileName: file.fileName || 'archivo',
@@ -158,7 +166,6 @@ export function cleanStepForFirestore(step: RawFirestoreStep): CleanStep {
   const cleanStep: CleanStep = {
     id: step.id || '',
     title: step.title || '',
-    description: step.description || step.notes,
     status: isValidStepStatus(step.status) ? step.status : 'pending',
     date: step.date instanceof Date ? step.date : new Date(),
     notes: step.notes || '',
@@ -232,7 +239,9 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
         ? new Date(
             data.createdAt instanceof Date
               ? data.createdAt
-              : data.createdAt && typeof data.createdAt === 'object' && 'toDate' in data.createdAt
+              : data.createdAt &&
+                typeof data.createdAt === 'object' &&
+                'toDate' in data.createdAt
               ? (data.createdAt as FirestoreTimestamp).toDate()
               : new Date()
           ).getFullYear()
@@ -245,13 +254,17 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
     createdAt:
       data.createdAt instanceof Date
         ? data.createdAt
-        : data.createdAt && typeof data.createdAt === 'object' && 'toDate' in data.createdAt
+        : data.createdAt &&
+          typeof data.createdAt === 'object' &&
+          'toDate' in data.createdAt
         ? (data.createdAt as FirestoreTimestamp).toDate()
         : new Date(),
     estimatedCompletionDate: data.estimatedCompletionDate
       ? data.estimatedCompletionDate instanceof Date
         ? data.estimatedCompletionDate
-        : data.estimatedCompletionDate && typeof data.estimatedCompletionDate === 'object' && 'toDate' in data.estimatedCompletionDate
+        : data.estimatedCompletionDate &&
+          typeof data.estimatedCompletionDate === 'object' &&
+          'toDate' in data.estimatedCompletionDate
         ? (data.estimatedCompletionDate as FirestoreTimestamp).toDate()
         : null
       : null,
@@ -263,13 +276,13 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
           title: typeof step.title === 'string' ? step.title : '',
           description:
             typeof step.description === 'string' ? step.description : '',
-          status: isValidStepStatus(step.status)
-            ? step.status
-            : 'pending',
+          status: isValidStepStatus(step.status) ? step.status : 'pending',
           date:
             step.date instanceof Date
               ? step.date
-              : step.date && typeof step.date === 'object' && 'toDate' in step.date
+              : step.date &&
+                typeof step.date === 'object' &&
+                'toDate' in step.date
               ? (step.date as FirestoreTimestamp).toDate()
               : step.date
               ? new Date(step.date as string)
@@ -282,7 +295,7 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
                 fileName:
                   typeof file.fileName === 'string' ? file.fileName : 'archivo',
                 type: ['image', 'video'].includes(file.type || '')
-                  ? file.type as 'image' | 'video'
+                  ? (file.type as 'image' | 'video')
                   : 'image',
                 url: typeof file.url === 'string' ? file.url : '',
                 thumbnailUrl:
@@ -294,7 +307,9 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
                 uploadedAt:
                   file.uploadedAt instanceof Date
                     ? file.uploadedAt
-                    : file.uploadedAt && typeof file.uploadedAt === 'object' && 'toDate' in file.uploadedAt
+                    : file.uploadedAt &&
+                      typeof file.uploadedAt === 'object' &&
+                      'toDate' in file.uploadedAt
                     ? (file.uploadedAt as FirestoreTimestamp).toDate()
                     : file.uploadedAt
                     ? new Date(file.uploadedAt as string)
@@ -322,13 +337,13 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
           title: typeof step.title === 'string' ? step.title : '',
           description:
             typeof step.description === 'string' ? step.description : '',
-          status: isValidStepStatus(step.status)
-            ? step.status
-            : 'pending',
+          status: isValidStepStatus(step.status) ? step.status : 'pending',
           date:
             step.date instanceof Date
               ? step.date
-              : step.date && typeof step.date === 'object' && 'toDate' in step.date
+              : step.date &&
+                typeof step.date === 'object' &&
+                'toDate' in step.date
               ? (step.date as FirestoreTimestamp).toDate()
               : step.date
               ? new Date(step.date as string)
@@ -341,7 +356,7 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
                 fileName:
                   typeof file.fileName === 'string' ? file.fileName : 'archivo',
                 type: ['image', 'video'].includes(file.type || '')
-                  ? file.type as 'image' | 'video'
+                  ? (file.type as 'image' | 'video')
                   : 'image',
                 url: typeof file.url === 'string' ? file.url : '',
                 thumbnailUrl:
@@ -353,7 +368,9 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
                 uploadedAt:
                   file.uploadedAt instanceof Date
                     ? file.uploadedAt
-                    : file.uploadedAt && typeof file.uploadedAt === 'object' && 'toDate' in file.uploadedAt
+                    : file.uploadedAt &&
+                      typeof file.uploadedAt === 'object' &&
+                      'toDate' in file.uploadedAt
                     ? (file.uploadedAt as FirestoreTimestamp).toDate()
                     : file.uploadedAt
                     ? new Date(file.uploadedAt as string)
@@ -437,7 +454,8 @@ export function isValidStepFile(file: unknown): file is CleanStepFile {
     ['image', 'video'].includes((file as CleanStepFile).type) &&
     typeof (file as CleanStepFile).url === 'string' &&
     typeof (file as CleanStepFile).storageRef === 'string' &&
-    ((file as CleanStepFile).uploadedAt instanceof Date || typeof (file as CleanStepFile).uploadedAt === 'string') &&
+    ((file as CleanStepFile).uploadedAt instanceof Date ||
+      typeof (file as CleanStepFile).uploadedAt === 'string') &&
     typeof (file as CleanStepFile).size === 'number'
   )
 }

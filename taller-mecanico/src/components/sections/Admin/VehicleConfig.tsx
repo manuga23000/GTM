@@ -14,8 +14,8 @@ import { deleteFileFromStorage } from '@/lib/storageUtils'
 
 // Interface for Firestore timestamp
 interface FirestoreTimestamp {
-  seconds: number;
-  nanoseconds: number;
+  seconds: number
+  nanoseconds: number
 }
 
 export default function VehicleConfig() {
@@ -89,23 +89,27 @@ export default function VehicleConfig() {
         totalCost: v.totalCost || 0,
         steps: (v.steps || []).map(step => {
           // Handle Firestore timestamp or Date object
-          let stepDate: Date;
-          const dateValue = step.date;
-          
+          let stepDate: Date
+          const dateValue = step.date
+
           if (dateValue instanceof Date) {
-            stepDate = dateValue;
-          } else if (dateValue && typeof dateValue === 'object' && 'seconds' in dateValue) {
+            stepDate = dateValue
+          } else if (
+            dateValue &&
+            typeof dateValue === 'object' &&
+            'seconds' in dateValue
+          ) {
             // Handle Firestore timestamp
-            const timestamp = dateValue as FirestoreTimestamp;
-            stepDate = new Date(timestamp.seconds * 1000);
+            const timestamp = dateValue as FirestoreTimestamp
+            stepDate = new Date(timestamp.seconds * 1000)
           } else {
             // Fallback to current date
-            stepDate = new Date();
+            stepDate = new Date()
           }
 
           return {
             ...step,
-            description: step.description || 'Sin descripción',
+            // ✅ QUITADO: description - ya no se asigna "Sin descripción"
             status: 'completed' as const, // Ensure status matches the expected type
             date: stepDate,
             files: (step.files || []).map(file => ({
@@ -115,7 +119,7 @@ export default function VehicleConfig() {
                   ? file.uploadedAt
                   : new Date(file.uploadedAt),
             })),
-          };
+          }
         }),
         notes: v.notes || '',
         nextStep: v.nextStep || '',
@@ -240,7 +244,6 @@ export default function VehicleConfig() {
 
   // ACTUALIZADA: Lógica de edición de seguimiento con manejo de archivos
   const handleOpenTrackingEdit = (vehicle: VehicleInTracking) => {
-  
     setEditTracking({
       ...vehicle,
       steps: vehicle.steps.map(step => ({

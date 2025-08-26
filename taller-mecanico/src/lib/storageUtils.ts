@@ -103,12 +103,18 @@ export function getFileType(file: File): 'image' | 'video' {
 /**
  * NUEVO: Función para verificar si el error es de CORS
  */
-function isCorsError(error: any): boolean {
+function isCorsError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false
+
+  const errorObj = error as Record<string, unknown>
+  const message = typeof errorObj.message === 'string' ? errorObj.message : ''
+  const code = typeof errorObj.code === 'string' ? errorObj.code : ''
+
   const isCors =
-    error?.message?.includes('CORS') ||
-    error?.message?.includes('Access to XMLHttpRequest') ||
-    error?.code === 'storage/cors-origin-not-allowed' ||
-    error?.message?.includes('cross-origin')
+    message.includes('CORS') ||
+    message.includes('Access to XMLHttpRequest') ||
+    code === 'storage/cors-origin-not-allowed' ||
+    message.includes('cross-origin')
 
   console.log(`🚫 ¿Es error CORS?: ${isCors}`)
   if (isCors) {
@@ -180,8 +186,8 @@ async function generateThumbnail(file: File): Promise<{
       )
     }
 
-    img.onerror = error => {
-      console.error('❌ Error generando thumbnail:', error)
+    img.onerror = () => {
+      console.error('❌ Error generando thumbnail')
       resolve({
         thumbnail: null,
         originalDimensions: { width: 0, height: 0 },
@@ -369,13 +375,25 @@ export async function uploadFileToStorage(
               console.log(`✅ Upload completado, obteniendo URL...`)
             }
           },
-          async error => {
+          async (error: unknown) => {
+            const errorObj = error as Record<string, unknown>
+            const message =
+              typeof errorObj.message === 'string'
+                ? errorObj.message
+                : 'unknown error'
+            const code =
+              typeof errorObj.code === 'string' ? errorObj.code : 'unknown'
+            const name =
+              typeof errorObj.name === 'string' ? errorObj.name : 'unknown'
+            const stack =
+              typeof errorObj.stack === 'string' ? errorObj.stack : 'no stack'
+
             console.error('❌ Error durante upload:', error)
             console.error('🔍 Detalles del error:', {
-              code: error.code,
-              message: error.message,
-              name: error.name,
-              stack: error.stack,
+              code,
+              message,
+              name,
+              stack,
             })
 
             if (isCorsError(error)) {
@@ -466,14 +484,23 @@ export async function uploadFileToStorage(
         },
       }
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('\n❌ === ERROR FINAL ===')
     console.error('🔥 Error uploading file to storage:', error)
+
+    const errorObj = error as Record<string, unknown>
+    const message =
+      typeof errorObj.message === 'string' ? errorObj.message : 'unknown error'
+    const code = typeof errorObj.code === 'string' ? errorObj.code : 'unknown'
+    const name = typeof errorObj.name === 'string' ? errorObj.name : 'unknown'
+    const stack =
+      typeof errorObj.stack === 'string' ? errorObj.stack : 'no stack'
+
     console.error('🔍 Detalles completos del error:', {
-      code: error?.code,
-      message: error?.message,
-      name: error?.name,
-      stack: error?.stack,
+      code,
+      message,
+      name,
+      stack,
     })
 
     if (isCorsError(error)) {
@@ -484,8 +511,14 @@ export async function uploadFileToStorage(
       )
       console.error('   - ¿Aplicaste CORS al bucket correcto?')
 
+      const errorObj = error as Record<string, unknown>
+      const message =
+        typeof errorObj.message === 'string'
+          ? errorObj.message
+          : 'unknown error'
+
       throw new Error(
-        `Error CORS: Verifica la configuración CORS del bucket. Bucket actual: ${storage.app.options.storageBucket}. Error: ${error.message}`
+        `Error CORS: Verifica la configuración CORS del bucket. Bucket actual: ${storage.app.options.storageBucket}. Error: ${message}`
       )
     }
 
@@ -533,8 +566,11 @@ export async function deleteFileFromStorage(url: string): Promise<void> {
     }
 
     console.log(`✅ Eliminación completa`)
-  } catch (error: any) {
-    if (error?.code === 'storage/object-not-found') {
+  } catch (error: unknown) {
+    const errorObj = error as Record<string, unknown>
+    const code = typeof errorObj.code === 'string' ? errorObj.code : ''
+
+    if (code === 'storage/object-not-found') {
       console.log('ℹ️ Archivo no encontrado (posiblemente ya eliminado)')
       return
     }

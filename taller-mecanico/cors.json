@@ -6,7 +6,15 @@
       "http://localhost:3000"
     ],
     "method": ["GET", "PUT", "POST", "DELETE", "OPTIONS", "HEAD"],
-    "responseHeader": ["*"],
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "Content-Length",
+      "x-goog-meta-*",
+      "x-goog-resumable",
+      "x-goog-encryption-*",
+      "*"
+    ],
     "maxAgeSeconds": 3600
   }
 ]

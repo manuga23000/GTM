@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
+import { storage } from '@/lib/firebase'
 import VehicleForm from './VehicleForm'
 import {
   uploadFileToStorage,
@@ -476,7 +477,21 @@ const TrackingForm = ({
 
   // ACTUALIZADO: Manejar archivos de un step con Storage y thumbnails
   const handleStepFilesSelected = async (stepId: string, files: File[]) => {
-    // Verificar límites primero
+    console.log(`\n🎯 === MODAL: SUBIDA DE ARCHIVOS INICIADA ===`)
+    console.log(`📋 Step ID: ${stepId}`)
+    console.log(`📁 Archivos seleccionados: ${files.length}`)
+    console.log(
+      `🏪 Bucket desde Firebase: ${storage.app.options.storageBucket}`
+    )
+    console.log(`🌐 Origin actual: ${window.location.origin}`)
+    console.log(`📍 Patente del vehículo: ${tracking.plateNumber}`)
+
+    files.forEach((file, index) => {
+      console.log(`  📁 Archivo ${index + 1}:`)
+      console.log(`     - Nombre: ${file.name}`)
+      console.log(`     - Tipo: ${file.type}`)
+      console.log(`     - Tamaño: ${(file.size / 1024).toFixed(2)}KB`)
+    })
     const currentStep = tracking.steps.find(s => s.id === stepId)
     const currentFiles = currentStep?.files || []
     const currentVideoCount = currentFiles.filter(

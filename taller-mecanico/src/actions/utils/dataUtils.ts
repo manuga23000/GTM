@@ -188,6 +188,11 @@ export function filterUndefinedValues(
   const filtered: Record<string, unknown> = {}
 
   for (const [key, value] of Object.entries(obj)) {
+    // EXCEPCIÓN para fechas: conservar si son string (ISO) o Date
+    if ((key === 'createdAt' || key === 'estimatedCompletionDate') && (typeof value === 'string' || value instanceof Date)) {
+      filtered[key] = value;
+      continue;
+    }
     if (value === undefined || value === null) {
       continue // Saltar valores undefined y null
     }

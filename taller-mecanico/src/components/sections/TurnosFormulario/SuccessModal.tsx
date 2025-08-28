@@ -6,10 +6,7 @@ interface SuccessModalProps {
   onGoHome: () => void
 }
 
-export default function SuccessModal({
-  isOpen,
-  onGoHome
-}: SuccessModalProps) {
+export default function SuccessModal({ isOpen, onGoHome }: SuccessModalProps) {
   if (!isOpen) return null
 
   return (
@@ -50,6 +47,7 @@ export default function SuccessModal({
           </p>
 
           {/* Datos de pago */}
+          {/*
           <div className='bg-green-900/60 border border-green-400 rounded-lg p-3 mb-4 flex flex-col items-center'>
             <a
               href='https://wa.me/5493364694921?text=Hola%2C%20adjunto%20el%20comprobante%20de%20la%20se%C3%B1a%20para%20mi%20turno.'
@@ -79,7 +77,7 @@ export default function SuccessModal({
               </div>
             </div>
           </div>
-
+*/}
           {/* Recordatorio de horario */}
           <div className='space-y-2'>
             <button

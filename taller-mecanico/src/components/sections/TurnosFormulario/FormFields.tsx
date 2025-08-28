@@ -101,6 +101,7 @@ export default function FormFields({
           ningún trabajo. Su vehículo queda siempre en manos de nuestro equipo.
         </span>
       </div>
+      {/*
       <div className='mb-6 p-4 rounded-lg bg-green-900/50 border border-green-400 flex items-center gap-3 text-green-100 text-sm shadow-sm'>
         <svg
           xmlns='http://www.w3.org/2000/svg'
@@ -116,13 +117,16 @@ export default function FormFields({
             d='M17 9V7a5 5 0 00-10 0v2a2 2 0 00-2 2v6a2 2 0 002 2h12a2 2 0 002-2v-6a2 2 0 00-2-2zm-7-2a3 3 0 016 0v2H7V7zm0 4h10v6H7v-6z'
           />
         </svg>
+   
         <span>
           Para confirmar tu turno, te pedimos amablemente que envíes un
           comprobante de pago de <b>$50.000</b>. Este importe quedará a cuenta
           del trabajo o servicio a realizar. Esto nos ayuda a reservar tu lugar
           y brindarte un mejor servicio. ¡Gracias por tu comprensión!
         </span>
+     
       </div>
+            */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
         {/* Nombre */}
         <div>

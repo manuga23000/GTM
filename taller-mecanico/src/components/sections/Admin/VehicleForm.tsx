@@ -1,6 +1,7 @@
 // src/components/sections/Admin/VehicleForm.tsx
 'use client'
 import React, { useEffect } from 'react'
+import { VehicleStep } from './VehicleList'
 
 // Tipos para vehículo nuevo (antes de guardar)
 interface NewVehicleData {
@@ -33,39 +34,63 @@ interface VehicleInTracking {
   estimatedCompletionDate?: Date | null
   status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'
   totalCost?: number
-  steps: unknown[]
+  steps: VehicleStep[]
   notes: string
   nextStep?: string
 }
 
-// Tipo para las funciones setter
-type VehicleSetter<T> = (value: T | ((prev: T) => T)) => void
+// Tipo para las funciones setter - FIXED: Separate types
+type NewVehicleSetter = (
+  value: NewVehicleData | ((prev: NewVehicleData) => NewVehicleData)
+) => void
+type VehicleInTrackingSetter = (
+  value: VehicleInTracking | ((prev: VehicleInTracking) => VehicleInTracking)
+) => void
 
+// FIXED: Updated interface with proper overloads
 interface VehicleFormProps {
   vehicle: NewVehicleData | VehicleInTracking
-  setVehicle: VehicleSetter<NewVehicleData> | VehicleSetter<VehicleInTracking>
   isEdit?: boolean
   onValidationChange?: (hasErrors: boolean) => void
 }
 
-export default function VehicleForm({
-  vehicle,
-  setVehicle,
-  isEdit = false,
-  onValidationChange,
-}: VehicleFormProps) {
+// Overloads for different cases
+interface VehicleFormPropsNew extends VehicleFormProps {
+  vehicle: NewVehicleData
+  setVehicle: NewVehicleSetter
+  isEdit?: false
+}
+
+interface VehicleFormPropsEdit extends VehicleFormProps {
+  vehicle: VehicleInTracking
+  setVehicle: VehicleInTrackingSetter
+  isEdit: true
+}
+
+export default function VehicleForm(
+  props: VehicleFormPropsNew | VehicleFormPropsEdit
+) {
+  const { vehicle, setVehicle, isEdit = false, onValidationChange } = props
+
   // Validar fechas
-  const entryDate = isEdit && 'entryDate' in vehicle ? vehicle.entryDate : 'createdAt' in vehicle ? vehicle.createdAt : new Date()
+  const entryDate =
+    isEdit && 'entryDate' in vehicle
+      ? vehicle.entryDate
+      : 'createdAt' in vehicle
+      ? vehicle.createdAt
+      : new Date()
   const estimatedDate = vehicle.estimatedCompletionDate
-  
-  const hasDateError = estimatedDate && entryDate && new Date(entryDate) > new Date(estimatedDate)
-  
+
+  const hasDateError =
+    estimatedDate && entryDate && new Date(entryDate) > new Date(estimatedDate)
+
   // Notificar al componente padre sobre cambios en la validación
   useEffect(() => {
     if (onValidationChange) {
       onValidationChange(!!hasDateError)
     }
   }, [hasDateError, onValidationChange])
+
   const formatPlateNumber = (value: string): string => {
     let formatted = value.toUpperCase().replace(/[^A-Z0-9]/g, '')
     if (formatted.length <= 7) {
@@ -100,7 +125,9 @@ export default function VehicleForm({
     updates: Partial<NewVehicleData | VehicleInTracking>
   ) => {
     if (isEdit) {
-      ;(setVehicle as VehicleSetter<VehicleInTracking>)(
+      // Type assertion is safe here because we know isEdit means VehicleInTracking
+      const editSetter = setVehicle as VehicleInTrackingSetter
+      editSetter(
         (prev: VehicleInTracking) =>
           ({
             ...prev,
@@ -108,7 +135,9 @@ export default function VehicleForm({
           } as VehicleInTracking)
       )
     } else {
-      ;(setVehicle as VehicleSetter<NewVehicleData>)(
+      // Type assertion is safe here because !isEdit means NewVehicleData
+      const newSetter = setVehicle as NewVehicleSetter
+      newSetter(
         (prev: NewVehicleData) =>
           ({
             ...prev,
@@ -126,12 +155,13 @@ export default function VehicleForm({
           <div className='flex items-center gap-2'>
             <span className='text-red-400 text-lg'>⚠️</span>
             <p className='text-red-300 text-sm font-medium'>
-              La fecha de ingreso no puede ser posterior a la fecha estimada de finalización
+              La fecha de ingreso no puede ser posterior a la fecha estimada de
+              finalización
             </p>
           </div>
         </div>
       )}
-      
+
       {/* Fechas */}
       <div className='grid grid-cols-2 gap-3'>
         <div>
@@ -150,7 +180,9 @@ export default function VehicleForm({
             onChange={e => {
               const fieldName = isEdit ? 'entryDate' : 'createdAt'
               // Crear fecha local para evitar problemas de zona horaria
-              const localDate = e.target.value ? new Date(e.target.value + 'T12:00:00') : new Date()
+              const localDate = e.target.value
+                ? new Date(e.target.value + 'T12:00:00')
+                : new Date()
               handleVehicleUpdate({ [fieldName]: localDate })
             }}
             className={`w-full h-9 p-2.5 bg-gray-700 border rounded-lg text-white ${

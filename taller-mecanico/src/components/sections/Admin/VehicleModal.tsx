@@ -109,7 +109,7 @@ interface VehicleInTracking {
   estimatedCompletionDate?: Date | null
   status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'
   totalCost?: number
-  steps: VehicleStep[] // ACTUALIZADO: usa VehicleStep con thumbnails
+  steps: VehicleStep[] // CAMBIAR: de unknown[] a VehicleStep[]
   notes: string
   nextStep?: string
 }
@@ -121,24 +121,36 @@ interface VehicleModalProps {
   showAddForm: boolean
   setShowAddForm: (show: boolean) => void
   newVehicle: NewVehicleData
-  setNewVehicle: VehicleSetter<NewVehicleData>
+  setNewVehicle: (
+    value: NewVehicleData | ((prev: NewVehicleData) => NewVehicleData)
+  ) => void
   handleAddVehicle: () => void
   addVehicleError: string
   isAddingVehicle: boolean
 
-  // Props para editar vehículo
+  // Props para editar vehículo - FIXED: Remove null from setEditVehicle
   showEditVehicleModal: boolean
   setShowEditVehicleModal: (show: boolean) => void
   editVehicle: VehicleInTracking | null
-  setEditVehicle: VehicleSetter<VehicleInTracking | null>
+  setEditVehicle: (
+    value:
+      | VehicleInTracking
+      | null
+      | ((prev: VehicleInTracking | null) => VehicleInTracking | null)
+  ) => void
   handleSaveVehicleEdit: () => void
   isEditingVehicle: boolean
 
-  // Props para editar seguimiento
+  // Props para editar seguimiento - FIXED: Remove null from setEditTracking
   showTrackingModal: boolean
   setShowTrackingModal: (show: boolean) => void
   editTracking: VehicleInTracking | null
-  setEditTracking: VehicleSetter<VehicleInTracking | null>
+  setEditTracking: (
+    value:
+      | VehicleInTracking
+      | null
+      | ((prev: VehicleInTracking | null) => VehicleInTracking | null)
+  ) => void
   handleSaveTrackingEdit: () => void
   isEditingTracking: boolean
 }
@@ -1184,8 +1196,14 @@ export default function VehicleModal({
                 </div>
 
                 <VehicleForm
-                  vehicle={editVehicle}
-                  setVehicle={setNewVehicle as VehicleSetter<NewVehicleData>}
+                  vehicle={editVehicle} // Already null-checked by the condition
+                  setVehicle={value => {
+                    if (typeof value === 'function') {
+                      setEditVehicle(prev => (prev ? value(prev) : prev))
+                    } else {
+                      setEditVehicle(value)
+                    }
+                  }}
                   isEdit={true}
                 />
 

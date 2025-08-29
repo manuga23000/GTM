@@ -103,7 +103,7 @@ export async function createVehicle(
       ...vehicleData,
       plateNumber: normalizedPlate,
       createdAt: vehicleData.createdAt || new Date(),
-      totalCost: vehicleData.totalCost || 0,
+      km: vehicleData.km || 0,
       steps: vehicleData.steps || [], // Asegurar que steps sea un array
     }
 
@@ -126,7 +126,6 @@ export async function createVehicle(
       const doubleFiltered = filterUndefinedValues(filteredData)
       await setDoc(docRef, doubleFiltered)
     } else {
-   
       await setDoc(docRef, filteredData)
     }
 
@@ -175,8 +174,8 @@ export async function updateVehicle(
       updatedAt: new Date(),
     }
 
-    if (updateData.totalCost !== undefined) {
-      dataToUpdate.totalCost = Number(updateData.totalCost) || 0
+    if (updateData.km !== undefined) {
+      dataToUpdate.km = Number(updateData.km) || 0
     }
 
     // CRÍTICO: Aplicar filtro recursivo para eliminar todos los undefined
@@ -195,7 +194,7 @@ export async function updateVehicle(
       const doubleFiltered = filterUndefinedValues(filteredData)
       await setDoc(docRef, doubleFiltered, { merge: true })
     } else {
-      ('✅ Datos validados correctamente para Firestore')
+      ;('✅ Datos validados correctamente para Firestore')
       await setDoc(docRef, filteredData, { merge: true })
     }
 
@@ -242,7 +241,6 @@ export async function deleteVehicle(
 
       // Eliminar archivos de Storage de forma paralela
       if (allFiles.length > 0) {
-      
         await Promise.allSettled(
           allFiles.map(file => deleteFileFromStorage(file.url))
         )

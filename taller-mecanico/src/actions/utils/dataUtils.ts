@@ -63,7 +63,7 @@ interface RawFirestoreVehicle {
   clientPhone?: string
   serviceType?: string
   chassisNumber?: string
-  totalCost?: number
+  km?: number
   createdAt?: Date | FirestoreTimestamp | string
   estimatedCompletionDate?: Date | FirestoreTimestamp | string | null
   notes?: string
@@ -189,9 +189,12 @@ export function filterUndefinedValues(
 
   for (const [key, value] of Object.entries(obj)) {
     // EXCEPCIÓN para fechas: conservar si son string (ISO) o Date
-    if ((key === 'createdAt' || key === 'estimatedCompletionDate') && (typeof value === 'string' || value instanceof Date)) {
-      filtered[key] = value;
-      continue;
+    if (
+      (key === 'createdAt' || key === 'estimatedCompletionDate') &&
+      (typeof value === 'string' || value instanceof Date)
+    ) {
+      filtered[key] = value
+      continue
     }
     if (value === undefined || value === null) {
       continue // Saltar valores undefined y null
@@ -255,7 +258,7 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
     clientPhone: data.clientPhone,
     serviceType: data.serviceType,
     chassisNumber: data.chassisNumber,
-    totalCost: data.totalCost || 0,
+    km: data.km || 0,
     createdAt:
       data.createdAt instanceof Date
         ? data.createdAt

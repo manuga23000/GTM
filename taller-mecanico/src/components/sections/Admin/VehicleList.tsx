@@ -41,7 +41,7 @@ export interface VehicleInTracking {
   entryDate: Date
   estimatedCompletionDate?: Date | null // Cambiar undefined por null
   status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'
-  totalCost?: number // Campo de costo agregado
+  km?: number // Campo de KM agregado
   steps: VehicleStep[]
   notes: string
   nextStep?: string
@@ -116,9 +116,9 @@ export default function VehicleList({
                       Ingreso: {vehicle.entryDate.toLocaleDateString('es-AR')}
                     </p>
                   </div>
-                  {vehicle.totalCost && vehicle.totalCost > 0 && (
+                  {vehicle.km && vehicle.km > 0 && (
                     <p className='text-green-400 font-medium'>
-                      ${vehicle.totalCost.toLocaleString()}
+                      ${vehicle.km.toLocaleString()}
                     </p>
                   )}
                 </div>

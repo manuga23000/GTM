@@ -41,7 +41,7 @@ interface VehicleInTracking {
   entryDate: Date
   estimatedCompletionDate?: Date | null
   status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'
-  totalCost?: number
+  km?: number
   steps: VehicleStep[]
   notes: string
   nextStep?: string
@@ -278,9 +278,9 @@ export default function VehicleDetails({
               </span>
             </div>
             <div className='bg-gray-700 p-3 rounded-lg'>
-              <span className='text-gray-400 block'>Costo Total:</span>
+              <span className='text-gray-400 block'>KM:</span>
               <span className='text-white font-medium'>
-                ${vehicle.totalCost?.toLocaleString() || '0'}
+                ${vehicle.km?.toLocaleString() || '0'}
               </span>
             </div>
           </div>

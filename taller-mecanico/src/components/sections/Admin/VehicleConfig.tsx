@@ -86,7 +86,7 @@ export default function VehicleConfig() {
           ? new Date(v.estimatedCompletionDate)
           : null,
         status: 'received' as const,
-        totalCost: v.totalCost || 0,
+        km: v.km || 0,
         steps: (v.steps || []).map(step => {
           // Handle Firestore timestamp or Date object
           let stepDate: Date
@@ -140,7 +140,7 @@ export default function VehicleConfig() {
     clientPhone: '',
     serviceType: '',
     chassisNumber: '',
-    totalCost: 0,
+    km: 0,
     notes: '',
     createdAt: new Date(),
     estimatedCompletionDate: null as Date | null,
@@ -224,7 +224,7 @@ export default function VehicleConfig() {
         clientPhone: editVehicle.clientPhone,
         serviceType: editVehicle.serviceType,
         chassisNumber: editVehicle.chassisNumber,
-        totalCost: editVehicle.totalCost,
+        km: editVehicle.km,
         createdAt: editVehicle.entryDate,
         estimatedCompletionDate: editVehicle.estimatedCompletionDate,
       })
@@ -312,7 +312,7 @@ export default function VehicleConfig() {
       const response = await createVehicle({
         ...newVehicle,
         createdAt: newVehicle.createdAt,
-        totalCost: newVehicle.totalCost,
+        km: newVehicle.km,
         steps: [], // Inicializar con array vacío
       })
 
@@ -327,7 +327,7 @@ export default function VehicleConfig() {
           clientPhone: '',
           serviceType: '',
           chassisNumber: '',
-          totalCost: 0,
+          km: 0,
           notes: '',
           createdAt: new Date(),
           estimatedCompletionDate: null,

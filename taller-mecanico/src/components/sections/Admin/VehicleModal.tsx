@@ -45,7 +45,7 @@ interface NewVehicleData {
   clientPhone: string
   serviceType: string
   chassisNumber: string
-  totalCost: number
+  km: number
   notes: string
   createdAt: Date
   estimatedCompletionDate: Date | null
@@ -108,7 +108,7 @@ interface VehicleInTracking {
   entryDate: Date
   estimatedCompletionDate?: Date | null
   status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'
-  totalCost?: number
+  km?: number
   steps: VehicleStep[] // CAMBIAR: de unknown[] a VehicleStep[]
   notes: string
   nextStep?: string

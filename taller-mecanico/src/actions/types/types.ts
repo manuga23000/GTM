@@ -121,7 +121,7 @@ export interface VehicleInput {
   clientPhone?: string
   serviceType?: string
   chassisNumber?: string
-  totalCost?: number
+  km?: number
   createdAt?: Date
   estimatedCompletionDate?: Date | null
   notes?: string

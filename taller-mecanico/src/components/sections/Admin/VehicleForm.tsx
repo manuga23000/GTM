@@ -13,7 +13,7 @@ interface NewVehicleData {
   clientPhone: string
   serviceType: string
   chassisNumber: string
-  totalCost: number
+  km: number
   notes: string
   createdAt: Date
   estimatedCompletionDate: Date | null
@@ -33,7 +33,7 @@ interface VehicleInTracking {
   entryDate: Date
   estimatedCompletionDate?: Date | null
   status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'
-  totalCost?: number
+  km?: number
   steps: VehicleStep[]
   notes: string
   nextStep?: string
@@ -274,7 +274,7 @@ export default function VehicleForm(
         />
       </div>
 
-      {/* Chasis y costo */}
+      {/* Chasis y KM */}
       <div className='grid grid-cols-2 gap-3'>
         <input
           type='text'
@@ -285,11 +285,11 @@ export default function VehicleForm(
         />
         <input
           type='number'
-          placeholder='Costo total'
-          value={vehicle.totalCost || ''}
+          placeholder='KM'
+          value={vehicle.km || ''}
           onChange={e =>
             handleVehicleUpdate({
-              totalCost: parseFloat(e.target.value) || 0,
+              km: parseFloat(e.target.value) || 0,
             })
           }
           className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'

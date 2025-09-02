@@ -9,6 +9,8 @@ import EstadoActual from '@/components/sections/Seguimiento/EstadoActual'
 import Navbar from '@/components/layout/Navbar'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import { SeguimientoData, TrabajoRealizado } from '@/actions/seguimiento'
+import { getFirestore, doc, getDoc } from 'firebase/firestore'
+import { app } from '@/lib/firebase'
 
 // ACTUALIZADO: Usar los tipos importados
 interface TimelineItem {
@@ -33,7 +35,9 @@ export default function SeguimientoPage() {
   const patente = params.patente as string
   const [seguimientoData, setSeguimientoData] =
     useState<SeguimientoData | null>(null)
+  const [timelineData, setTimelineData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [loadingTimeline, setLoadingTimeline] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -96,6 +100,27 @@ export default function SeguimientoPage() {
     }
 
     cargarDatos()
+
+    // Cargar datos del timeline1
+    const cargarTimeline = async () => {
+      try {
+        const db = getFirestore(app)
+        const timelineDoc = await getDoc(doc(db, 'timeline1', patente))
+
+        if (timelineDoc.exists()) {
+          setTimelineData({
+            id: timelineDoc.id,
+            ...timelineDoc.data(),
+          })
+        }
+      } catch (error) {
+        console.error('Error cargando timeline:', error)
+      } finally {
+        setLoadingTimeline(false)
+      }
+    }
+
+    cargarTimeline()
   }, [patente])
 
   // Loading state con LoadingScreen de la home
@@ -232,9 +257,75 @@ export default function SeguimientoPage() {
               fechaEstimadaEntrega: seguimientoData.fechaEstimadaEntrega || '',
               trabajosRealizados: seguimientoData.trabajosRealizados || [],
               updatedAt: seguimientoData.updatedAt,
-              tipoServicio: seguimientoData.tipoServicio, // ← ESTA LÍNEA FALTABA
+              tipoServicio: seguimientoData.tipoServicio,
             }}
           />
+
+          {/* Timeline Histórico */}
+          <div className='bg-white rounded-xl shadow-sm p-6'>
+            <div className='flex items-center gap-3 mb-6'>
+              <div className='p-2 bg-blue-50 rounded-lg'>
+                <svg
+                  className='w-5 h-5 text-blue-600'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth='2'
+                    d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+                  />
+                </svg>
+              </div>
+              <h3 className='text-xl font-semibold text-gray-800'>
+                Historial de Servicios
+              </h3>
+            </div>
+
+            {loadingTimeline ? (
+              <div className='flex justify-center py-4'>
+                <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500'></div>
+              </div>
+            ) : timelineData ? (
+              <div className='space-y-4'>
+                <div className='flex gap-4 pb-4 border-b border-gray-100'>
+                  <div className='flex-shrink-0 w-2 h-2 mt-2.5 rounded-full bg-blue-500'></div>
+                  <div className='flex-1'>
+                    <div className='flex justify-between items-start'>
+                      <h4 className='font-medium text-gray-900'>
+                        {timelineData.serviceType || 'Servicio anterior'}
+                      </h4>
+                      {timelineData.km && (
+                        <span className='text-sm font-medium bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-full'>
+                          {timelineData.km.toLocaleString()} km
+                        </span>
+                      )}
+                    </div>
+                    {timelineData.finalizedAt && (
+                      <p className='mt-1 text-sm text-gray-500'>
+                        Finalizado el:{' '}
+                        {new Date(
+                          timelineData.finalizedAt.seconds * 1000
+                        ).toLocaleDateString('es-AR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className='text-center py-4 text-gray-500'>
+                No hay registros de servicios anteriores
+              </div>
+            )}
+          </div>
 
           {/*
           <TimelineProgreso timeline={seguimientoData.timeline || []} />

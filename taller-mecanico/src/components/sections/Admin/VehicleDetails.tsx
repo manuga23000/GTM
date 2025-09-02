@@ -1,5 +1,8 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
+import { doc, updateDoc, getFirestore, setDoc } from 'firebase/firestore'
+import { app } from '@/lib/firebase'
+import { useState } from 'react'
 
 // ACTUALIZADO: Interface para archivos del step (con Storage y thumbnails)
 interface StepFile {
@@ -40,11 +43,16 @@ interface VehicleInTracking {
   chassisNumber?: string
   entryDate: Date
   estimatedCompletionDate?: Date | null
-  status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'
+  status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered' | 'finalized'
   km?: number
   steps: VehicleStep[]
   notes: string
   nextStep?: string
+  timelineActive?: boolean
+  serviceCount?: number
+  finalizedAt?: Date
+  serviceNumber?: number
+  originalEntryDate?: Date
 }
 
 interface VehicleDetailsProps {
@@ -212,12 +220,17 @@ const StepFileDisplay = ({ files }: { files: StepFile[] }) => {
 }
 
 export default function VehicleDetails({
-  vehicle,
+  vehicle: initialVehicle,
   onClose,
   onEditVehicle,
   onEditTracking,
   onDeleteVehicle,
 }: VehicleDetailsProps) {
+  const [vehicle, setVehicle] = useState(initialVehicle);
+  const [_, setUpdate] = useState({});
+
+  // Función para forzar la actualización del componente
+  const forceUpdate = () => setUpdate({});
   const totalSteps = vehicle.steps.length
 
   // Calcular estadísticas de archivos
@@ -356,10 +369,86 @@ export default function VehicleDetails({
             📋 Seguimiento
           </button>
           <button
+            className={`px-4 py-2 ${
+              vehicle.timelineActive 
+                ? 'bg-green-600 hover:bg-red-600' 
+                : 'bg-red-600 hover:bg-green-600'
+            } text-white rounded-lg text-sm font-medium transition-colors`}
+            onClick={async () => {
+              try {
+                const db = getFirestore(app);
+                const vehicleRef = doc(db, 'vehicles', vehicle.id);
+                const newTimelineState = !vehicle.timelineActive;
+                
+                await updateDoc(vehicleRef, {
+                  timelineActive: newTimelineState
+                });
+                
+                // Actualizar el estado local
+                vehicle.timelineActive = newTimelineState;
+                
+                // Forzar re-renderizado del componente
+                // Esto hará que el botón se actualice con las clases correctas
+                forceUpdate();
+              } catch (error) {
+                console.error('Error actualizando estado del timeline:', error);
+              }
+            }}
+          >
+            ⏱️ {vehicle.timelineActive ? 'Ocultar Timeline' : 'Mostrar Timeline'}
+          </button>
+          <button
             onClick={onDeleteVehicle}
             className='px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors'
           >
             🗑️ Eliminar
+          </button>
+          <button
+            onClick={async () => {
+              if (confirm(`¿Estás seguro de finalizar el servicio para ${vehicle.plateNumber}?`)) {
+                try {
+                  const db = getFirestore(app);
+                  
+                  // 1. Get the current service count or set to 1 if it's the first time
+                  const serviceCount = (vehicle.serviceCount || 0) + 1;
+                  const timelineCollection = `timeline${serviceCount}`;
+                  
+                  // 2. Create a copy of the current vehicle data for the timeline
+                  const vehicleData = {
+                    ...vehicle,
+                    finalizedAt: new Date(),
+                    serviceNumber: serviceCount,
+                    originalEntryDate: vehicle.entryDate,
+                    entryDate: new Date() // Update entry date to now
+                  };
+                  
+                  // 3. Save to the timeline collection
+                  await setDoc(doc(db, timelineCollection, vehicle.plateNumber), vehicleData);
+                  
+                  // 4. Update the main vehicle document
+                  await updateDoc(doc(db, 'vehicles', vehicle.id), {
+                    status: 'finalized',
+                    serviceCount: serviceCount,
+                    // Reset relevant fields for a new service
+                    entryDate: new Date(),
+                    estimatedCompletionDate: null,
+                    steps: [],
+                    notes: '',
+                    nextStep: '',
+                    timelineActive: false
+                  });
+                  
+                  alert(`Servicio finalizado correctamente. Número de servicio: ${serviceCount}`);
+                  forceUpdate();
+                } catch (error) {
+                  console.error('Error finalizando servicio:', error);
+                  alert('Error al finalizar el servicio');
+                }
+              }
+            }}
+            className='px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors mt-2'
+          >
+            ✅ Finalizar Servicio
           </button>
         </div>
       </div>

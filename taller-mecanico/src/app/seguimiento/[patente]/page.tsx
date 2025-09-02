@@ -8,26 +8,19 @@ import EstadoActual from '@/components/sections/Seguimiento/EstadoActual'
 //import TimelineProgreso from '@/components/sections/Seguimiento/TimelineProgreso'
 import Navbar from '@/components/layout/Navbar'
 import LoadingScreen from '@/components/ui/LoadingScreen'
-import { SeguimientoData, TrabajoRealizado } from '@/actions/seguimiento'
+import { SeguimientoData } from '@/actions/seguimiento'
 import { getFirestore, doc, getDoc } from 'firebase/firestore'
 import { app } from '@/lib/firebase'
 
-// ACTUALIZADO: Usar los tipos importados
-interface TimelineItem {
-  id: number
-  fecha: string
-  hora: string
-  estado: string
-  descripcion: string
-  completado: boolean
-}
-
-interface ImagenItem {
-  id: number
-  url: string
-  fecha: string
-  descripcion: string
-  tipo: 'antes' | 'proceso' | 'despues'
+// Type for timeline data from Firestore
+interface TimelineHistoryData {
+  id: string
+  serviceType?: string
+  km?: number
+  finalizedAt?: {
+    seconds: number
+    nanoseconds: number
+  }
 }
 
 export default function SeguimientoPage() {
@@ -35,7 +28,9 @@ export default function SeguimientoPage() {
   const patente = params.patente as string
   const [seguimientoData, setSeguimientoData] =
     useState<SeguimientoData | null>(null)
-  const [timelineData, setTimelineData] = useState<{id: string; [key: string]: any} | null>(null)
+  const [timelineData, setTimelineData] = useState<TimelineHistoryData | null>(
+    null
+  )
   const [loading, setLoading] = useState(true)
   const [loadingTimeline, setLoadingTimeline] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -108,9 +103,12 @@ export default function SeguimientoPage() {
         const timelineDoc = await getDoc(doc(db, 'timeline1', patente))
 
         if (timelineDoc.exists()) {
+          const docData = timelineDoc.data()
           setTimelineData({
             id: timelineDoc.id,
-            ...timelineDoc.data(),
+            serviceType: docData?.serviceType,
+            km: docData?.km,
+            finalizedAt: docData?.finalizedAt,
           })
         }
       } catch (error) {

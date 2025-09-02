@@ -118,7 +118,7 @@ export default function VehicleList({
                   </div>
                   {vehicle.km && vehicle.km > 0 && (
                     <p className='text-green-400 font-medium'>
-                      ${vehicle.km.toLocaleString()}
+                      {vehicle.km.toLocaleString()}KM
                     </p>
                   )}
                 </div>

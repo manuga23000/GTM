@@ -280,7 +280,7 @@ export default function VehicleDetails({
             <div className='bg-gray-700 p-3 rounded-lg'>
               <span className='text-gray-400 block'>KM:</span>
               <span className='text-white font-medium'>
-                ${vehicle.km?.toLocaleString() || '0'}
+                {vehicle.km?.toLocaleString() || '0'}KM
               </span>
             </div>
           </div>

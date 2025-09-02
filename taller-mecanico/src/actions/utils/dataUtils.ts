@@ -180,7 +180,7 @@ export function cleanStepForFirestore(step: RawFirestoreStep): CleanStep {
 }
 
 /**
- * Filtrar valores undefined para Firebase (MEJORADO - recursivo)
+ * Filtrar valores undefined para Firebase (CORREGIDO - conserva updatedAt)
  */
 export function filterUndefinedValues(
   obj: Record<string, unknown>
@@ -190,7 +190,9 @@ export function filterUndefinedValues(
   for (const [key, value] of Object.entries(obj)) {
     // EXCEPCIÓN para fechas: conservar si son string (ISO) o Date
     if (
-      (key === 'createdAt' || key === 'estimatedCompletionDate') &&
+      (key === 'createdAt' ||
+        key === 'estimatedCompletionDate' ||
+        key === 'updatedAt') && // ← AGREGADO updatedAt
       (typeof value === 'string' || value instanceof Date)
     ) {
       filtered[key] = value

@@ -149,7 +149,9 @@ export async function getSeguimientoByPatente(
     }
 
     // ACTUALIZADO: Función con tipos específicos
-    const mapearTrabajosRealizados = (steps: FirestoreStep[]): TrabajoRealizado[] => {
+    const mapearTrabajosRealizados = (
+      steps: FirestoreStep[]
+    ): TrabajoRealizado[] => {
       if (!Array.isArray(steps) || steps.length === 0) {
         return []
       }
@@ -169,20 +171,30 @@ export async function getSeguimientoByPatente(
                 url: file.url || '',
                 thumbnailUrl: file.thumbnailUrl,
                 storageRef: file.storageRef || '',
-                uploadedAt: file.uploadedAt instanceof Date 
-                  ? file.uploadedAt 
-                  : file.uploadedAt && typeof file.uploadedAt === 'object' && 'toDate' in file.uploadedAt
-                  ? (file.uploadedAt as FirestoreTimestamp).toDate()
-                  : file.uploadedAt 
-                  ? new Date(file.uploadedAt as string)
-                  : new Date(),
+                uploadedAt:
+                  file.uploadedAt instanceof Date
+                    ? file.uploadedAt
+                    : file.uploadedAt &&
+                      typeof file.uploadedAt === 'object' &&
+                      'toDate' in file.uploadedAt
+                    ? (file.uploadedAt as FirestoreTimestamp).toDate()
+                    : file.uploadedAt
+                    ? new Date(file.uploadedAt as string)
+                    : new Date(),
                 size: typeof file.size === 'number' ? file.size : 0,
-                dimensions: file.dimensions && typeof file.dimensions === 'object'
-                  ? {
-                      width: typeof file.dimensions.width === 'number' ? file.dimensions.width : 0,
-                      height: typeof file.dimensions.height === 'number' ? file.dimensions.height : 0,
-                    }
-                  : undefined,
+                dimensions:
+                  file.dimensions && typeof file.dimensions === 'object'
+                    ? {
+                        width:
+                          typeof file.dimensions.width === 'number'
+                            ? file.dimensions.width
+                            : 0,
+                        height:
+                          typeof file.dimensions.height === 'number'
+                            ? file.dimensions.height
+                            : 0,
+                      }
+                    : undefined,
               }))
             : [],
         }))
@@ -199,7 +211,6 @@ export async function getSeguimientoByPatente(
       estadoActual: data.status || 'received',
       telefono: data.clientPhone || '',
       tipoServicio: data.serviceType || 'Reparación general',
-      // ACTUALIZADO: Mapear steps con archivos usando tipos específicos
       trabajosRealizados: Array.isArray(data.steps)
         ? mapearTrabajosRealizados(data.steps as FirestoreStep[])
         : data.trabajosRealizados || [],
@@ -209,35 +220,72 @@ export async function getSeguimientoByPatente(
         : data.fechaEstimadaEntrega
         ? formatearFecha(data.fechaEstimadaEntrega)
         : '',
-      // Extraer updatedAt de Firebase
-      updatedAt: data.updatedAt
-        ? formatearFecha(data.updatedAt)
-        : formatearFecha(data.createdAt),
+
+      // CORRECCIÓN: Manejar updatedAt correctamente
+      updatedAt: (() => {
+        // Prioridad: 1) updatedAt, 2) createdAt
+        const updateField = data.updatedAt || data.createdAt
+
+        if (!updateField) {
+          return new Date().toISOString()
+        }
+
+        // Si es un Timestamp de Firestore
+        if (isFirestoreTimestamp(updateField)) {
+          return updateField.toDate().toISOString()
+        }
+
+        // Si es un string de fecha
+        if (typeof updateField === 'string') {
+          return new Date(updateField).toISOString()
+        }
+
+        // Si es un objeto Date
+        if (updateField instanceof Date) {
+          return updateField.toISOString()
+        }
+
+        // Fallback
+        return new Date().toISOString()
+      })(),
+
       timeline: Array.isArray(data.steps)
-        ? (data.steps as FirestoreStep[]).map((step: FirestoreStep, idx: number) => ({
-            id: idx + 1,
-            fecha: step.date
-              ? step.date instanceof Date
-                ? step.date.toISOString().split('T')[0]
-                : step.date && typeof step.date === 'object' && 'toDate' in step.date
-                ? (step.date as FirestoreTimestamp).toDate().toISOString().split('T')[0]
-                : typeof step.date === 'string'
-                ? new Date(step.date).toISOString().split('T')[0]
-                : ''
-              : '',
-            hora: step.date
-              ? step.date instanceof Date
-                ? step.date.toTimeString().slice(0, 5)
-                : step.date && typeof step.date === 'object' && 'toDate' in step.date
-                ? (step.date as FirestoreTimestamp).toDate().toTimeString().slice(0, 5)
-                : typeof step.date === 'string'
-                ? new Date(step.date).toTimeString().slice(0, 5)
-                : ''
-              : '',
-            estado: step.status || 'pendiente',
-            descripcion: step.title || step.description || '',
-            completado: step.status === 'completed',
-          }))
+        ? (data.steps as FirestoreStep[]).map(
+            (step: FirestoreStep, idx: number) => ({
+              id: idx + 1,
+              fecha: step.date
+                ? step.date instanceof Date
+                  ? step.date.toISOString().split('T')[0]
+                  : step.date &&
+                    typeof step.date === 'object' &&
+                    'toDate' in step.date
+                  ? (step.date as FirestoreTimestamp)
+                      .toDate()
+                      .toISOString()
+                      .split('T')[0]
+                  : typeof step.date === 'string'
+                  ? new Date(step.date).toISOString().split('T')[0]
+                  : ''
+                : '',
+              hora: step.date
+                ? step.date instanceof Date
+                  ? step.date.toTimeString().slice(0, 5)
+                  : step.date &&
+                    typeof step.date === 'object' &&
+                    'toDate' in step.date
+                  ? (step.date as FirestoreTimestamp)
+                      .toDate()
+                      .toTimeString()
+                      .slice(0, 5)
+                  : typeof step.date === 'string'
+                  ? new Date(step.date).toTimeString().slice(0, 5)
+                  : ''
+                : '',
+              estado: step.status || 'pendiente',
+              descripcion: step.title || step.description || '',
+              completado: step.status === 'completed',
+            })
+          )
         : data.timeline || [],
       imagenes: data.imagenes || [],
     }

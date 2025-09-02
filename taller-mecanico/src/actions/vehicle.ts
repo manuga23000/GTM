@@ -5,9 +5,11 @@ import {
   getDocs,
   collection,
   deleteDoc,
+  updateDoc,
   query,
   where,
 } from 'firebase/firestore'
+
 import { db } from '@/lib/firebase'
 import {
   VehicleInput,
@@ -24,6 +26,65 @@ import {
 import { deleteFileFromStorage } from '@/lib/storageUtils'
 
 const COLLECTION_NAME = 'vehicles'
+
+/**
+ * Función de migración: agregar updatedAt a vehículos existentes
+ * Ejecutar UNA SOLA VEZ para corregir vehículos que no tienen updatedAt
+ */
+export async function migrateUpdatedAtField(): Promise<{
+  success: boolean
+  migrated: number
+  skipped: number
+  message: string
+}> {
+  try {
+    console.log('🔄 Iniciando migración de campo updatedAt...')
+
+    const querySnapshot = await getDocs(collection(db, COLLECTION_NAME))
+    let migrated = 0
+    let skipped = 0
+
+    for (const docSnapshot of querySnapshot.docs) {
+      const data = docSnapshot.data()
+
+      // Si ya tiene updatedAt, saltar
+      if (data.updatedAt) {
+        skipped++
+        continue
+      }
+
+      // Usar createdAt como updatedAt inicial
+      const updatedAt = data.createdAt || new Date()
+
+      await updateDoc(doc(db, COLLECTION_NAME, docSnapshot.id), {
+        updatedAt: updatedAt,
+      })
+
+      migrated++
+      console.log(`✅ Migrado: ${docSnapshot.id}`)
+    }
+
+    const message = `Migración completada: ${migrated} vehículos actualizados, ${skipped} ya tenían updatedAt`
+    console.log(`🎉 ${message}`)
+
+    return {
+      success: true,
+      migrated,
+      skipped,
+      message,
+    }
+  } catch (error) {
+    console.error('❌ Error en migración:', error)
+    return {
+      success: false,
+      migrated: 0,
+      skipped: 0,
+      message:
+        'Error en la migración: ' +
+        (error instanceof Error ? error.message : 'Error desconocido'),
+    }
+  }
+}
 
 /**
  * Obtener todos los vehículos
@@ -103,8 +164,9 @@ export async function createVehicle(
       ...vehicleData,
       plateNumber: normalizedPlate,
       createdAt: vehicleData.createdAt || new Date(),
+      updatedAt: vehicleData.createdAt || new Date(), // ← NUEVO: inicializar updatedAt
       km: vehicleData.km || 0,
-      steps: vehicleData.steps || [], // Asegurar que steps sea un array
+      steps: vehicleData.steps || [],
     }
 
     // MEJORADO: Aplicar filtro recursivo
@@ -151,6 +213,9 @@ export async function updateVehicle(
   updateData: Partial<VehicleInput>
 ): Promise<AdminResponse> {
   try {
+    console.log('🔄 updateVehicle llamada para:', plateNumber)
+    console.log('📝 updateData recibido:', updateData)
+
     if (!plateNumber) {
       return {
         success: false,
@@ -168,11 +233,15 @@ export async function updateVehicle(
       )
     }
 
+    const currentTime = new Date()
     const dataToUpdate = {
       ...updateData,
       plateNumber,
-      updatedAt: new Date(),
+      updatedAt: currentTime, // CRÍTICO: SIEMPRE actualizar la fecha
     }
+
+    console.log('⏰ updatedAt establecido a:', currentTime)
+    console.log('📦 dataToUpdate completo:', dataToUpdate)
 
     if (updateData.km !== undefined) {
       dataToUpdate.km = Number(updateData.km) || 0
@@ -180,6 +249,9 @@ export async function updateVehicle(
 
     // CRÍTICO: Aplicar filtro recursivo para eliminar todos los undefined
     const filteredData = filterUndefinedValues(dataToUpdate)
+
+    console.log('🧹 Datos después del filtro:', filteredData)
+    console.log('📅 updatedAt en datos filtrados:', filteredData.updatedAt)
 
     // VALIDACIÓN ADICIONAL: Verificar que no queden undefined
     const validationErrors = validateFirestoreData(filteredData)
@@ -192,18 +264,22 @@ export async function updateVehicle(
 
       // Aplicar filtro una vez más para asegurar limpieza
       const doubleFiltered = filterUndefinedValues(filteredData)
+      console.log('🧹🧹 Datos después del doble filtro:', doubleFiltered)
+
       await setDoc(docRef, doubleFiltered, { merge: true })
     } else {
-      ;('✅ Datos validados correctamente para Firestore')
+      console.log('✅ Datos validados correctamente para Firestore')
       await setDoc(docRef, filteredData, { merge: true })
     }
+
+    console.log('💾 Documento guardado en Firestore')
 
     return {
       success: true,
       message: 'Vehículo actualizado correctamente',
     }
   } catch (error) {
-    console.error('Error actualizando vehículo:', error)
+    console.error('❌ Error actualizando vehículo:', error)
     return {
       success: false,
       message: 'Error al actualizar el vehículo',

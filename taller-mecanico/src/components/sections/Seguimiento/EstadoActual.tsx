@@ -1,7 +1,13 @@
 // components/sections/Seguimiento/EstadoActual.tsx
 'use client'
 import { motion } from 'framer-motion'
-import { FaTools, FaClock, FaCheckCircle, FaArrowRight } from 'react-icons/fa'
+import {
+  FaTools,
+  FaClock,
+  FaCheckCircle,
+  FaArrowRight,
+  FaWrench,
+} from 'react-icons/fa'
 import { TrabajoRealizado } from '@/actions/seguimiento'
 import FileViewer from './FileViewer'
 
@@ -10,8 +16,9 @@ interface EstadoActualProps {
     estadoActual: string
     proximoPaso: string
     fechaEstimadaEntrega: string
-    trabajosRealizados: TrabajoRealizado[] // ACTUALIZADO: nuevo tipo
+    trabajosRealizados: TrabajoRealizado[]
     updatedAt?: string
+    tipoServicio?: string
   }
 }
 
@@ -66,7 +73,11 @@ export default function EstadoActual({ data }: EstadoActualProps) {
   }
 
   // Check if there are any files in the trabajos realizados
-  const hasFiles = data.trabajosRealizados && data.trabajosRealizados.some(trabajo => trabajo.archivos && trabajo.archivos.length > 0)
+  const hasFiles =
+    data.trabajosRealizados &&
+    data.trabajosRealizados.some(
+      trabajo => trabajo.archivos && trabajo.archivos.length > 0
+    )
 
   return (
     <motion.section
@@ -75,7 +86,7 @@ export default function EstadoActual({ data }: EstadoActualProps) {
       transition={{ duration: 0.6 }}
       className='bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden'
     >
-      {/* Header del estado - Simplificado */}
+      {/* Header del estado - MODIFICADO con Tipo de Servicio */}
       <div className='bg-gradient-to-r from-red-600 to-red-700 text-white p-4 sm:p-6'>
         {/* Layout para móvil - Vertical */}
         <div className='block md:hidden'>
@@ -85,14 +96,12 @@ export default function EstadoActual({ data }: EstadoActualProps) {
             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
             className='text-center space-y-2'
           >
-            {/* Título centrado */}
+            {/* Tipo de Servicio centrado */}
             <div className='flex items-center justify-center'>
-              <div
-                className={`w-3 h-3 rounded-full ${getEstadoColor(
-                  data.estadoActual
-                )} mr-2 animate-pulse`}
-              />
-              <h2 className='text-lg font-bold'>Estado Actual</h2>
+              <FaWrench className='mr-2 text-lg' />
+              <h2 className='text-lg font-bold'>
+                {data.tipoServicio || 'Servicio General'}
+              </h2>
             </div>
 
             {/* Última actualización */}
@@ -102,8 +111,8 @@ export default function EstadoActual({ data }: EstadoActualProps) {
               transition={{ delay: 0.3 }}
               className='space-y-1'
             >
-              <div className='text-sm text-red-100'>Última actualización</div>
-              <div className='text-sm md:text-xs text-red-100'>
+              <div className='text-sm text-red-100'>Última actualización:</div>
+              <div className='text-sm text-red-100'>
                 <FaClock className='inline mr-1' />
                 {formatearHoraActualizacion(data.updatedAt || '')}
               </div>
@@ -111,7 +120,7 @@ export default function EstadoActual({ data }: EstadoActualProps) {
           </motion.div>
         </div>
 
-        {/* Layout para desktop - Horizontal simplificado */}
+        {/* Layout para desktop - Horizontal con Tipo de Servicio */}
         <div className='hidden md:flex items-center justify-between'>
           <motion.div
             initial={{ scale: 0 }}
@@ -119,15 +128,10 @@ export default function EstadoActual({ data }: EstadoActualProps) {
             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
             className='flex items-center'
           >
-            <div
-              className={`w-4 h-4 rounded-full ${getEstadoColor(
-                data.estadoActual
-              )} mr-3 animate-pulse`}
-            />
-            <div>
-              <h2 className='text-2xl font-bold'>Estado Actual</h2>
-              <p className='text-red-100'>Última actualización</p>
-            </div>
+            <FaWrench className='mr-3 text-2xl' />
+            <h2 className='text-2xl font-bold'>
+              {data.tipoServicio || 'Servicio General'}
+            </h2>
           </motion.div>
           <motion.div
             initial={{ opacity: 0 }}
@@ -135,7 +139,10 @@ export default function EstadoActual({ data }: EstadoActualProps) {
             transition={{ delay: 0.3 }}
             className='text-right'
           >
-            <div className='text-red-100 text-sm md:text-lg flex items-center'>
+            <div className='text-red-100 text-sm mb-1'>
+              Última actualización:
+            </div>
+            <div className='text-red-100 text-lg flex items-center justify-end'>
               <FaClock className='mr-1' />
               {formatearHoraActualizacion(data.updatedAt || '')}
             </div>
@@ -166,9 +173,9 @@ export default function EstadoActual({ data }: EstadoActualProps) {
                     className='bg-green-50 p-4 rounded-lg border-l-4 border-green-500'
                   >
                     {/* Header del trabajo */}
-                    <div className="flex items-start">
+                    <div className='flex items-start'>
                       <FaCheckCircle className='text-green-500 mt-1 mr-3 flex-shrink-0' />
-                      <div className="flex-1">
+                      <div className='flex-1'>
                         {/* Cuando hay archivos: layout sin fecha */}
                         {trabajo.archivos && trabajo.archivos.length > 0 ? (
                           <div>
@@ -183,7 +190,7 @@ export default function EstadoActual({ data }: EstadoActualProps) {
                           </div>
                         ) : (
                           /* Cuando NO hay archivos: layout centrado */
-                          <div className="text-center">
+                          <div className='text-center'>
                             <h4 className='text-gray-800 font-medium text-sm sm:text-base mb-1'>
                               {trabajo.titulo}
                             </h4>
@@ -207,7 +214,9 @@ export default function EstadoActual({ data }: EstadoActualProps) {
                 <div className='bg-gray-50 p-4 rounded-lg border-l-4 border-gray-300 text-center'>
                   <div className='flex items-center justify-center text-gray-500'>
                     <FaTools className='mr-2' />
-                    <span className='text-sm'>No hay trabajos registrados aún</span>
+                    <span className='text-sm'>
+                      No hay trabajos registrados aún
+                    </span>
                   </div>
                 </div>
               )}
@@ -272,7 +281,8 @@ export default function EstadoActual({ data }: EstadoActualProps) {
             <strong>Nota:</strong> Las fechas son estimativas y pueden variar
             según la disponibilidad de repuestos y la complejidad de los
             trabajos. Te notificaremos ante cualquier cambio.
-            {hasFiles && ' Los archivos adjuntos se conservan durante 30 días después de la entrega del vehículo.'}
+            {hasFiles &&
+              ' Los archivos adjuntos se conservan durante 30 días después de la entrega del vehículo.'}
           </p>
         </motion.div>
       </div>

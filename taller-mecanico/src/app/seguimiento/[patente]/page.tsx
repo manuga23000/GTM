@@ -77,12 +77,15 @@ export default function SeguimientoPage() {
           ...data,
           estadoActual: estadoMapeado,
           // Asegurar que trabajosRealizados tenga la estructura correcta
-          trabajosRealizados: data.trabajosRealizados && data.trabajosRealizados.length > 0 
-            ? data.trabajosRealizados 
-            : [],
+          trabajosRealizados:
+            data.trabajosRealizados && data.trabajosRealizados.length > 0
+              ? data.trabajosRealizados
+              : [],
           proximoPaso: data.proximoPaso || 'Sin información',
-          timeline: data.timeline && data.timeline.length > 0 ? data.timeline : [],
-          imagenes: data.imagenes && data.imagenes.length > 0 ? data.imagenes : [],
+          timeline:
+            data.timeline && data.timeline.length > 0 ? data.timeline : [],
+          imagenes:
+            data.imagenes && data.imagenes.length > 0 ? data.imagenes : [],
         })
       } catch (error) {
         console.error('Error cargando datos:', error)
@@ -227,11 +230,13 @@ export default function SeguimientoPage() {
               estadoActual: seguimientoData.estadoActual || 'Sin estado',
               proximoPaso: seguimientoData.proximoPaso || 'Sin información',
               fechaEstimadaEntrega: seguimientoData.fechaEstimadaEntrega || '',
-              trabajosRealizados: seguimientoData.trabajosRealizados || [], // ACTUALIZADO: usar el nuevo formato
-              updatedAt: seguimientoData.updatedAt, // Pasar updatedAt al componente
+              trabajosRealizados: seguimientoData.trabajosRealizados || [],
+              updatedAt: seguimientoData.updatedAt,
+              tipoServicio: seguimientoData.tipoServicio, // ← ESTA LÍNEA FALTABA
             }}
           />
-           {/*
+
+          {/*
           <TimelineProgreso timeline={seguimientoData.timeline || []} />
           */}
           {/* Separador blanco visual entre timeline y footer */}

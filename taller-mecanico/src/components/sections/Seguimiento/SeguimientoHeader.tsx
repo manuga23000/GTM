@@ -1,7 +1,7 @@
 // components/sections/Seguimiento/SeguimientoHeader.tsx
 'use client'
 import { motion } from 'framer-motion'
-import { FaCar, FaCalendarAlt, FaUser } from 'react-icons/fa'
+import { FaCar, FaCalendarAlt, FaUser, FaWrench } from 'react-icons/fa'
 
 interface SeguimientoHeaderProps {
   data: {
@@ -11,6 +11,7 @@ interface SeguimientoHeaderProps {
     año: string
     cliente: string
     fechaIngreso: string
+    tipoServicio?: string // Agregado para mostrar el tipo de servicio
   }
 }
 
@@ -165,6 +166,26 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
               </div>
             </motion.div>
           </div>
+
+          {/* NUEVO: Tipo de Servicio - Visible en desktop y mobile */}
+          {data.tipoServicio && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className='mt-3 text-center'
+            >
+              <div className='inline-flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg'>
+                <FaWrench className='mr-2 text-sm' />
+                <div>
+                  <div className='text-xs text-blue-100 mb-1'>
+                    Tipo de Servicio
+                  </div>
+                  <div className='font-bold text-sm'>{data.tipoServicio}</div>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
           {/* Barra separadora roja */}
           <motion.div

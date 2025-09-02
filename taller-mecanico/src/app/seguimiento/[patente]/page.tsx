@@ -35,7 +35,7 @@ export default function SeguimientoPage() {
   const patente = params.patente as string
   const [seguimientoData, setSeguimientoData] =
     useState<SeguimientoData | null>(null)
-  const [timelineData, setTimelineData] = useState<any>(null)
+  const [timelineData, setTimelineData] = useState<{id: string; [key: string]: any} | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadingTimeline, setLoadingTimeline] = useState(true)
   const [error, setError] = useState<string | null>(null)

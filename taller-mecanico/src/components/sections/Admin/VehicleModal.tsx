@@ -344,7 +344,7 @@ const FileUploader = ({
     e.target.value = ''
   }
 
-  const remainingSlots = 3 - currentFileCount
+  const remainingSlots = 10 - currentFileCount
   const canAddVideo = !hasVideo && remainingSlots > 0
 
   return (
@@ -500,7 +500,7 @@ const TrackingForm = ({
 
     for (const file of files) {
       // Verificar límites
-      if (currentFiles.length + pendingFiles.length >= 3) break
+      if (currentFiles.length + pendingFiles.length >= 10) break
 
       const isVideo = getFileType(file) === 'video'
 

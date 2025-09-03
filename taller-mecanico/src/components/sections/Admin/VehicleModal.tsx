@@ -690,7 +690,7 @@ const TrackingForm = ({
             onKeyDown={e => {
               if (e.key === 'Enter') handleAddStep()
             }}
-            maxLength={60}
+            maxLength={120}
             autoFocus
           />
           <button
@@ -731,7 +731,7 @@ const TrackingForm = ({
                         value={editingStepTitle}
                         onChange={e => setEditingStepTitle(e.target.value)}
                         className='flex-1 px-2 py-1 bg-gray-800 border border-green-400 rounded text-white text-xs shadow mr-2'
-                        maxLength={60}
+                        maxLength={120}
                         autoFocus
                         onKeyDown={e => {
                           if (e.key === 'Enter') handleSaveEditStep()
@@ -816,7 +816,7 @@ const TrackingForm = ({
                 value={editingNextStepValue}
                 onChange={e => setEditingNextStepValue(e.target.value)}
                 className='flex-1 px-4 py-2 bg-gray-700 border border-blue-400 rounded text-white text-base shadow'
-                maxLength={60}
+                maxLength={120}
                 autoFocus
                 onKeyDown={e => {
                   if (e.key === 'Enter') {
@@ -890,7 +890,7 @@ const TrackingForm = ({
                 value={nextStepInput}
                 onChange={e => setNextStepInput(e.target.value)}
                 className='flex-1 px-4 py-2 bg-gray-700 border border-blue-400 rounded text-white text-base shadow'
-                maxLength={60}
+                maxLength={120}
                 onKeyDown={e => {
                   if (e.key === 'Enter' && nextStepInput.trim()) {
                     setTracking(prev => ({
@@ -1254,7 +1254,7 @@ export default function VehicleModal({
                 justifyContent: 'center',
                 padding: '1rem',
               }}
-              onClick={() => setShowTrackingModal(false)}
+              // Eliminado el cierre al hacer clic fuera
             >
               <div
                 className='absolute bg-black bg-opacity-80 backdrop-blur-sm'

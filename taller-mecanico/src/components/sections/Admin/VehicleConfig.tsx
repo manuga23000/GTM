@@ -12,8 +12,8 @@ import VehicleDetails from './VehicleDetails'
 import VehicleModal from './VehicleModal'
 import { deleteFileFromStorage } from '@/lib/storageUtils'
 import { migrateUpdatedAtField } from '@/actions/vehicle'
+import { buscarHistorialCompleto } from '@/actions/seguimiento'
 
-// Interface for Firestore timestamp
 interface FirestoreTimestamp {
   seconds: number
   nanoseconds: number
@@ -28,7 +28,6 @@ export default function VehicleConfig() {
   const [currentPage, setCurrentPage] = useState(1)
   const VEHICLES_PER_PAGE = 6
 
-  // Estados para edición
   const [showEditVehicleModal, setShowEditVehicleModal] = useState(false)
   const [editVehicle, setEditVehicle] = useState<VehicleInTracking | null>(null)
   const [showTrackingModal, setShowTrackingModal] = useState(false)
@@ -39,13 +38,14 @@ export default function VehicleConfig() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [addVehicleError, setAddVehicleError] = useState<string>('')
 
-  // Estados de loading
   const [isAddingVehicle, setIsAddingVehicle] = useState(false)
   const [isEditingVehicle, setIsEditingVehicle] = useState(false)
   const [isEditingTracking, setIsEditingTracking] = useState(false)
   const [isDeletingVehicle, setIsDeletingVehicle] = useState(false)
 
-  // Filtros y paginación
+  const [isLoadingHistorial, setIsLoadingHistorial] = useState(false)
+  const [datosHistorialCargados, setDatosHistorialCargados] = useState(false)
+
   const filteredVehicles = useMemo(() => {
     return vehiclesInTracking.filter(vehicle =>
       vehicle.plateNumber.toLowerCase().includes(searchTerm.toLowerCase())
@@ -61,12 +61,10 @@ export default function VehicleConfig() {
 
   const totalPages = Math.ceil(filteredVehicles.length / VEHICLES_PER_PAGE)
 
-  // Cargar vehículos desde Firebase al montar
   useEffect(() => {
     fetchVehicles()
   }, [])
 
-  // Reset page when search changes
   useEffect(() => {
     setCurrentPage(1)
   }, [searchTerm])
@@ -91,7 +89,6 @@ export default function VehicleConfig() {
         status: 'received' as const,
         km: v.km || 0,
         steps: (v.steps || []).map(step => {
-          // Handle Firestore timestamp or Date object
           let stepDate: Date
           const dateValue = step.date
 
@@ -102,18 +99,15 @@ export default function VehicleConfig() {
             typeof dateValue === 'object' &&
             'seconds' in dateValue
           ) {
-            // Handle Firestore timestamp
             const timestamp = dateValue as FirestoreTimestamp
             stepDate = new Date(timestamp.seconds * 1000)
           } else {
-            // Fallback to current date
             stepDate = new Date()
           }
 
           return {
             ...step,
-            // ✅ QUITADO: description - ya no se asigna "Sin descripción"
-            status: 'completed' as const, // Ensure status matches the expected type
+            status: 'completed' as const,
             date: stepDate,
             files: (step.files || []).map(file => ({
               ...file,
@@ -158,7 +152,53 @@ export default function VehicleConfig() {
     setTimeout(() => setMessage(''), duration)
   }
 
-  // ACTUALIZADA: Lógica de eliminación con limpieza de archivos
+  const handlePatenteChange = async (patente: string) => {
+    setDatosHistorialCargados(false)
+    setAddVehicleError('')
+
+    setNewVehicle(prev => ({ ...prev, plateNumber: patente.toUpperCase() }))
+
+    if (!patente.trim()) {
+      return
+    }
+
+    setIsLoadingHistorial(true)
+
+    try {
+      const historial = await buscarHistorialCompleto(patente)
+
+      if (historial.length > 0) {
+        const ultimoServicio = historial[0]
+
+        setNewVehicle(prev => ({
+          ...prev,
+          plateNumber: patente.toUpperCase(),
+          clientName: ultimoServicio.cliente || prev.clientName,
+          clientPhone: ultimoServicio.telefono || prev.clientPhone,
+          brand: ultimoServicio.marca || prev.brand,
+          model: ultimoServicio.modelo || prev.model,
+          year: ultimoServicio.año ? parseInt(ultimoServicio.año) : prev.year,
+          chassisNumber: prev.chassisNumber,
+          km: ultimoServicio.km ? ultimoServicio.km + 1000 : prev.km,
+          serviceType: '',
+          notes: '',
+          estimatedCompletionDate: null,
+        }))
+
+        setDatosHistorialCargados(true)
+        showMessage(
+          `Datos cargados del historial (${historial.length} servicio${
+            historial.length > 1 ? 's' : ''
+          } anterior${historial.length > 1 ? 'es' : ''})`
+        )
+      }
+    } catch (error) {
+      console.error('Error buscando historial:', error)
+    } finally {
+      setIsLoadingHistorial(false)
+    }
+  }
+
   const handleDeleteVehicle = async () => {
     if (!selectedVehicleData || isDeletingVehicle) return
 
@@ -181,7 +221,6 @@ export default function VehicleConfig() {
     showMessage('Eliminando vehículo y archivos...')
 
     try {
-      // La función deleteVehicle ya maneja la limpieza de archivos de Storage
       const response = await deleteVehicle(selectedVehicleData.plateNumber)
 
       if (response.success) {
@@ -205,7 +244,6 @@ export default function VehicleConfig() {
     }
   }
 
-  // Lógica de edición de vehículo (datos básicos)
   const handleOpenEditVehicle = () => {
     if (selectedVehicleData) {
       setEditVehicle({ ...selectedVehicleData })
@@ -245,7 +283,6 @@ export default function VehicleConfig() {
     }
   }
 
-  // ACTUALIZADA: Lógica de edición de seguimiento con manejo de archivos
   const handleOpenTrackingEdit = (vehicle: VehicleInTracking) => {
     setEditTracking({
       ...vehicle,
@@ -269,7 +306,6 @@ export default function VehicleConfig() {
     showMessage('Guardando seguimiento...')
 
     try {
-      // Normalizar fechas de archivos antes de guardar
       const normalizedSteps = editTracking.steps.map(step => ({
         ...step,
         files: (step.files || []).map(file => ({
@@ -298,7 +334,7 @@ export default function VehicleConfig() {
         )
       }
     } catch (error) {
-      console.error('❌ Error saving tracking:', error)
+      console.error('Error saving tracking:', error)
       showMessage('Error al guardar seguimiento')
     } finally {
       setIsEditingTracking(false)
@@ -316,7 +352,7 @@ export default function VehicleConfig() {
         ...newVehicle,
         createdAt: newVehicle.createdAt,
         km: newVehicle.km,
-        steps: [], // Inicializar con array vacío
+        steps: [],
       })
 
       if (response.success) {
@@ -335,6 +371,7 @@ export default function VehicleConfig() {
           createdAt: new Date(),
           estimatedCompletionDate: null,
         })
+        setDatosHistorialCargados(false)
         setShowAddForm(false)
         showMessage('Vehículo agregado exitosamente')
       } else {
@@ -397,7 +434,6 @@ export default function VehicleConfig() {
     }
   }
 
-  // Función para ejecutar la migración
   const handleMigration = async () => {
     if (isMigrating) return
 
@@ -415,9 +451,9 @@ export default function VehicleConfig() {
       const result = await migrateUpdatedAtField()
 
       if (result.success) {
-        showMessage(`✅ ${result.message}`, 5000)
+        showMessage(`${result.message}`, 5000)
       } else {
-        showMessage(`❌ ${result.message}`, 5000)
+        showMessage(`${result.message}`, 5000)
       }
     } catch (error) {
       showMessage('Error en migración', 5000)
@@ -429,7 +465,6 @@ export default function VehicleConfig() {
 
   return (
     <div className='min-h-screen bg-gray-900 text-white'>
-      {/* Header */}
       <div className='bg-gray-800 shadow-lg py-6'>
         <div className='max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 gap-4'>
           <div>
@@ -441,7 +476,6 @@ export default function VehicleConfig() {
             </p>
           </div>
           <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto'>
-            {/* Buscador */}
             <div className='relative'>
               <input
                 type='text'
@@ -466,7 +500,7 @@ export default function VehicleConfig() {
               disabled={isMigrating}
               className='px-4 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 text-white rounded-lg font-semibold transition-colors whitespace-nowrap text-sm'
             >
-              {isMigrating ? '🔄 Migrando...' : '🔧 Migrar updatedAt'}
+              {isMigrating ? 'Migrando...' : 'Migrar updatedAt'}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -477,14 +511,13 @@ export default function VehicleConfig() {
               }}
               className='px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors whitespace-nowrap'
             >
-              ➕ Nuevo Vehículo
+              Nuevo Vehículo
             </motion.button>
           </div>
         </div>
       </div>
 
       <main className='max-w-6xl mx-auto px-4 py-8 space-y-8'>
-        {/* Mensaje */}
         <AnimatePresence>
           {message && (
             <motion.div
@@ -506,7 +539,6 @@ export default function VehicleConfig() {
           getStatusText={getStatusText}
         />
 
-        {/* Paginación */}
         {totalPages > 1 && (
           <div className='flex justify-center items-center gap-2 mt-6'>
             <button
@@ -545,7 +577,6 @@ export default function VehicleConfig() {
           </div>
         )}
 
-        {/* Detalles del vehículo seleccionado */}
         <AnimatePresence>
           {selectedVehicleData && (
             <VehicleDetails
@@ -554,12 +585,18 @@ export default function VehicleConfig() {
               onEditVehicle={handleOpenEditVehicle}
               onEditTracking={() => handleOpenTrackingEdit(selectedVehicleData)}
               onDeleteVehicle={handleDeleteVehicle}
+              onVehicleFinalized={async () => {
+                await fetchVehicles()
+                setSelectedVehicle('')
+                showMessage(
+                  'Servicio finalizado. Vehículo movido al historial.'
+                )
+              }}
             />
           )}
         </AnimatePresence>
 
         <VehicleModal
-          // Agregar nuevo vehículo
           showAddForm={showAddForm}
           setShowAddForm={setShowAddForm}
           newVehicle={newVehicle}
@@ -567,14 +604,15 @@ export default function VehicleConfig() {
           handleAddVehicle={handleAddVehicle}
           addVehicleError={addVehicleError}
           isAddingVehicle={isAddingVehicle}
-          // Editar vehículo (datos básicos)
+          onPatenteChange={handlePatenteChange}
+          isLoadingHistorial={isLoadingHistorial}
+          datosHistorialCargados={datosHistorialCargados}
           showEditVehicleModal={showEditVehicleModal}
           setShowEditVehicleModal={setShowEditVehicleModal}
           editVehicle={editVehicle}
           setEditVehicle={setEditVehicle}
           handleSaveVehicleEdit={handleSaveVehicleEdit}
           isEditingVehicle={isEditingVehicle}
-          // Editar seguimiento
           showTrackingModal={showTrackingModal}
           setShowTrackingModal={setShowTrackingModal}
           editTracking={editTracking}

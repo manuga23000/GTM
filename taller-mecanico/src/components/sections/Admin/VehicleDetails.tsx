@@ -1,35 +1,41 @@
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import { doc, updateDoc, getFirestore, setDoc } from 'firebase/firestore'
+import {
+  doc,
+  updateDoc,
+  getFirestore,
+  setDoc,
+  deleteDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  getDoc,
+} from 'firebase/firestore'
 import { app } from '@/lib/firebase'
 import { useState } from 'react'
 
-// ACTUALIZADO: Interface para archivos del step (con Storage y thumbnails)
 interface StepFile {
   id: string
-  fileName: string // Nombre original del archivo
+  fileName: string
   type: 'image' | 'video'
-  url: string // URL de Firebase Storage (permanente)
-  thumbnailUrl?: string // URL del thumbnail (solo para imágenes)
-  storageRef: string // Referencia en Storage para eliminar
-  uploadedAt: Date // Fecha de subida
-  size: number // Tamaño del archivo en bytes
+  url: string
+  thumbnailUrl?: string
+  storageRef: string
+  uploadedAt: Date
+  size: number
   dimensions?: {
-    // Dimensiones originales (solo para imágenes)
     width: number
     height: number
   }
 }
-
-// MODIFICADO: Agregamos archivos al step
 interface VehicleStep {
   id: string
   title: string
-  // ✅ QUITADO: description ya no está en la interface
-  status: 'completed' // Siempre completado
+  status: 'completed'
   date: Date
   notes?: string
-  files?: StepFile[] // NUEVO: archivos del step
+  files?: StepFile[]
 }
 interface VehicleInTracking {
   id: string
@@ -43,7 +49,13 @@ interface VehicleInTracking {
   chassisNumber?: string
   entryDate: Date
   estimatedCompletionDate?: Date | null
-  status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered' | 'finalized'
+  status:
+    | 'received'
+    | 'in-diagnosis'
+    | 'in-repair'
+    | 'completed'
+    | 'delivered'
+    | 'finalized'
   km?: number
   steps: VehicleStep[]
   notes: string
@@ -61,9 +73,9 @@ interface VehicleDetailsProps {
   onEditVehicle: () => void
   onEditTracking: () => void
   onDeleteVehicle: () => void
+  onVehicleFinalized: () => Promise<void>
 }
 
-// ACTUALIZADO: Componente para mostrar archivos de un step (solo lectura con thumbnails)
 const StepFileDisplay = ({ files }: { files: StepFile[] }) => {
   if (!files || files.length === 0) return null
 
@@ -73,14 +85,12 @@ const StepFileDisplay = ({ files }: { files: StepFile[] }) => {
         <div key={file.id} className='relative group'>
           {file.type === 'image' ? (
             <Image
-              // OPTIMIZADO: Usar thumbnail para vista previa
               src={file.thumbnailUrl || file.url}
               alt={file.fileName}
               width={64}
               height={64}
               className='object-cover rounded border border-gray-500 cursor-pointer hover:border-blue-400 transition-colors'
               onClick={() => {
-                // MEJORADO: Abrir imagen original en modal fullscreen
                 const modal = document.createElement('div')
                 modal.className =
                   'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[99999] cursor-pointer'
@@ -89,14 +99,13 @@ const StepFileDisplay = ({ files }: { files: StepFile[] }) => {
                 const container = document.createElement('div')
                 container.className = 'relative max-w-full max-h-full p-4'
 
-                // Loading indicator
                 const loader = document.createElement('div')
                 loader.className = 'text-white text-center'
                 loader.innerHTML = '🔄 Cargando imagen original...'
                 container.appendChild(loader)
 
                 const img = document.createElement('img')
-                img.src = file.url // IMPORTANTE: usar URL original
+                img.src = file.url
                 img.className = 'max-w-full max-h-full object-contain'
                 img.alt = file.fileName
 
@@ -143,7 +152,6 @@ const StepFileDisplay = ({ files }: { files: StepFile[] }) => {
               src={file.url}
               className='w-16 h-16 object-cover rounded border border-gray-500 cursor-pointer hover:border-blue-400 transition-colors'
               onClick={() => {
-                // Abrir video en modal fullscreen
                 const modal = document.createElement('div')
                 modal.className =
                   'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[99999]'
@@ -225,15 +233,14 @@ export default function VehicleDetails({
   onEditVehicle,
   onEditTracking,
   onDeleteVehicle,
+  onVehicleFinalized,
 }: VehicleDetailsProps) {
-  const [vehicle, setVehicle] = useState(initialVehicle);
-  const [_, setUpdate] = useState({});
+  const [vehicle, setVehicle] = useState(initialVehicle)
+  const [_, setUpdate] = useState({})
 
-  // Función para forzar la actualización del componente
-  const forceUpdate = () => setUpdate({});
+  const forceUpdate = () => setUpdate({})
   const totalSteps = vehicle.steps.length
 
-  // Calcular estadísticas de archivos
   const totalFiles = vehicle.steps.reduce((acc, step) => {
     return acc + (step.files?.length || 0)
   }, 0)
@@ -316,7 +323,6 @@ export default function VehicleDetails({
             </div>
           </div>
 
-          {/* NUEVO: Estadísticas de archivos */}
           {totalFiles > 0 && (
             <div className='bg-gray-700/50 p-3 rounded-lg mb-4'>
               <div className='flex items-center gap-4 text-sm'>
@@ -347,7 +353,6 @@ export default function VehicleDetails({
           )}
         </div>
 
-        {/* Botones de acción */}
         <div className='flex flex-col gap-2 ml-4'>
           <button
             onClick={onClose}
@@ -368,35 +373,7 @@ export default function VehicleDetails({
           >
             📋 Seguimiento
           </button>
-          <button
-            className={`px-4 py-2 ${
-              vehicle.timelineActive 
-                ? 'bg-green-600 hover:bg-red-600' 
-                : 'bg-red-600 hover:bg-green-600'
-            } text-white rounded-lg text-sm font-medium transition-colors`}
-            onClick={async () => {
-              try {
-                const db = getFirestore(app);
-                const vehicleRef = doc(db, 'vehicles', vehicle.id);
-                const newTimelineState = !vehicle.timelineActive;
-                
-                await updateDoc(vehicleRef, {
-                  timelineActive: newTimelineState
-                });
-                
-                // Actualizar el estado local
-                vehicle.timelineActive = newTimelineState;
-                
-                // Forzar re-renderizado del componente
-                // Esto hará que el botón se actualice con las clases correctas
-                forceUpdate();
-              } catch (error) {
-                console.error('Error actualizando estado del timeline:', error);
-              }
-            }}
-          >
-            ⏱️ {vehicle.timelineActive ? 'Ocultar Timeline' : 'Mostrar Timeline'}
-          </button>
+
           <button
             onClick={onDeleteVehicle}
             className='px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors'
@@ -405,44 +382,85 @@ export default function VehicleDetails({
           </button>
           <button
             onClick={async () => {
-              if (confirm(`¿Estás seguro de finalizar el servicio para ${vehicle.plateNumber}?`)) {
+              if (
+                confirm(
+                  `¿Estás seguro de finalizar el servicio para ${vehicle.plateNumber}?`
+                )
+              ) {
                 try {
-                  const db = getFirestore(app);
-                  
-                  // 1. Get the current service count or set to 1 if it's the first time
-                  const serviceCount = (vehicle.serviceCount || 0) + 1;
-                  const timelineCollection = `timeline${serviceCount}`;
-                  
-                  // 2. Create a copy of the current vehicle data for the timeline
-                  const vehicleData = {
+                  const db = getFirestore(app)
+
+                  const vehicleDoc = await getDoc(
+                    doc(db, 'vehicles', vehicle.id)
+                  )
+
+                  if (!vehicleDoc.exists()) {
+                    throw new Error('Vehículo no encontrado en Firestore')
+                  }
+
+                  const freshVehicleData = vehicleDoc.data()
+
+                  const vehicleWithFreshSteps = {
                     ...vehicle,
+                    steps: freshVehicleData.steps || [],
+                  }
+
+                  const patenteNormalizada = vehicle.plateNumber
+                    .toUpperCase()
+                    .trim()
+                  const patenteSinEspacios = patenteNormalizada.replace(
+                    /\s+/g,
+                    ''
+                  )
+
+                  const queries = [
+                    query(
+                      collection(db, 'timeline'),
+                      where('plateNumber', '==', patenteNormalizada)
+                    ),
+                    query(
+                      collection(db, 'timeline'),
+                      where('plateNumber', '==', patenteSinEspacios)
+                    ),
+                  ]
+
+                  const queryResults = await Promise.all(
+                    queries.map(q => getDocs(q))
+                  )
+
+                  const allDocs: any[] = []
+                  for (const querySnapshot of queryResults) {
+                    querySnapshot.forEach(doc => {
+                      if (
+                        !allDocs.some(existingDoc => existingDoc.id === doc.id)
+                      ) {
+                        allDocs.push(doc)
+                      }
+                    })
+                  }
+
+                  const serviceCount = allDocs.length + 1
+
+                  const timelineDocId = `${vehicle.plateNumber}_servicio_${serviceCount}`
+
+                  const vehicleData = {
+                    ...vehicleWithFreshSteps,
                     finalizedAt: new Date(),
                     serviceNumber: serviceCount,
-                    originalEntryDate: vehicle.entryDate,
-                    entryDate: new Date() // Update entry date to now
-                  };
-                  
-                  // 3. Save to the timeline collection
-                  await setDoc(doc(db, timelineCollection, vehicle.plateNumber), vehicleData);
-                  
-                  // 4. Update the main vehicle document
-                  await updateDoc(doc(db, 'vehicles', vehicle.id), {
-                    status: 'finalized',
-                    serviceCount: serviceCount,
-                    // Reset relevant fields for a new service
-                    entryDate: new Date(),
-                    estimatedCompletionDate: null,
-                    steps: [],
-                    notes: '',
-                    nextStep: '',
-                    timelineActive: false
-                  });
-                  
-                  alert(`Servicio finalizado correctamente. Número de servicio: ${serviceCount}`);
-                  forceUpdate();
+                  }
+
+                  await setDoc(doc(db, 'timeline', timelineDocId), vehicleData)
+
+                  await deleteDoc(doc(db, 'vehicles', vehicle.id))
+
+                  alert(
+                    `Servicio finalizado correctamente. Número de servicio: ${serviceCount}`
+                  )
+
+                  await onVehicleFinalized()
                 } catch (error) {
-                  console.error('Error finalizando servicio:', error);
-                  alert('Error al finalizar el servicio');
+                  console.error('Error finalizando servicio:', error)
+                  alert('Error al finalizar el servicio')
                 }
               }
             }}
@@ -488,14 +506,12 @@ export default function VehicleDetails({
               <div className='space-y-3 max-h-80 overflow-y-auto'>
                 {vehicle.steps
                   .sort((a, b) => {
-                    // SEGURO: Validar fechas antes de comparar
                     const dateA = a.date instanceof Date ? a.date : new Date()
                     const dateB = b.date instanceof Date ? b.date : new Date()
                     return dateA.getTime() - dateB.getTime()
                   })
                   .map((step, index) => {
                     const stepFiles = step.files || []
-                    // SEGURO: Validar fecha antes de usar
                     const stepDate =
                       step.date instanceof Date ? step.date : new Date()
 

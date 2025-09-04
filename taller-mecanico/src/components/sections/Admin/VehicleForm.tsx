@@ -1,9 +1,7 @@
-// src/components/sections/Admin/VehicleForm.tsx
 'use client'
 import React, { useEffect } from 'react'
 import { VehicleStep } from './VehicleList'
 
-// Tipos para vehículo nuevo (antes de guardar)
 interface NewVehicleData {
   plateNumber: string
   brand: string
@@ -19,7 +17,6 @@ interface NewVehicleData {
   estimatedCompletionDate: Date | null
 }
 
-// Tipo para vehículo en seguimiento (ya guardado)
 interface VehicleInTracking {
   id: string
   plateNumber: string
@@ -39,7 +36,6 @@ interface VehicleInTracking {
   nextStep?: string
 }
 
-// Tipo para las funciones setter - FIXED: Separate types
 type NewVehicleSetter = (
   value: NewVehicleData | ((prev: NewVehicleData) => NewVehicleData)
 ) => void
@@ -47,32 +43,38 @@ type VehicleInTrackingSetter = (
   value: VehicleInTracking | ((prev: VehicleInTracking) => VehicleInTracking)
 ) => void
 
-// FIXED: Updated interface with proper overloads
 interface VehicleFormProps {
   vehicle: NewVehicleData | VehicleInTracking
   isEdit?: boolean
   onValidationChange?: (hasErrors: boolean) => void
+  onPatenteChange?: (patente: string) => void
 }
 
-// Overloads for different cases
 interface VehicleFormPropsNew extends VehicleFormProps {
   vehicle: NewVehicleData
   setVehicle: NewVehicleSetter
   isEdit?: false
+  onPatenteChange?: (patente: string) => void
 }
 
 interface VehicleFormPropsEdit extends VehicleFormProps {
   vehicle: VehicleInTracking
   setVehicle: VehicleInTrackingSetter
   isEdit: true
+  onPatenteChange?: (patente: string) => void
 }
 
 export default function VehicleForm(
   props: VehicleFormPropsNew | VehicleFormPropsEdit
 ) {
-  const { vehicle, setVehicle, isEdit = false, onValidationChange } = props
+  const {
+    vehicle,
+    setVehicle,
+    isEdit = false,
+    onValidationChange,
+    onPatenteChange,
+  } = props
 
-  // Validar fechas
   const entryDate =
     isEdit && 'entryDate' in vehicle
       ? vehicle.entryDate
@@ -84,7 +86,6 @@ export default function VehicleForm(
   const hasDateError =
     estimatedDate && entryDate && new Date(entryDate) > new Date(estimatedDate)
 
-  // Notificar al componente padre sobre cambios en la validación
   useEffect(() => {
     if (onValidationChange) {
       onValidationChange(!!hasDateError)
@@ -112,7 +113,6 @@ export default function VehicleForm(
     if (!date) return ''
     if (typeof date === 'string') return date.slice(0, 10)
     if (date instanceof Date) {
-      // Usar fecha local en lugar de UTC para evitar desfase de zona horaria
       const year = date.getFullYear()
       const month = String(date.getMonth() + 1).padStart(2, '0')
       const day = String(date.getDate()).padStart(2, '0')
@@ -125,7 +125,6 @@ export default function VehicleForm(
     updates: Partial<NewVehicleData | VehicleInTracking>
   ) => {
     if (isEdit) {
-      // Type assertion is safe here because we know isEdit means VehicleInTracking
       const editSetter = setVehicle as VehicleInTrackingSetter
       editSetter(
         (prev: VehicleInTracking) =>
@@ -135,7 +134,6 @@ export default function VehicleForm(
           } as VehicleInTracking)
       )
     } else {
-      // Type assertion is safe here because !isEdit means NewVehicleData
       const newSetter = setVehicle as NewVehicleSetter
       newSetter(
         (prev: NewVehicleData) =>
@@ -179,7 +177,6 @@ export default function VehicleForm(
             )}
             onChange={e => {
               const fieldName = isEdit ? 'entryDate' : 'createdAt'
-              // Crear fecha local para evitar problemas de zona horaria
               const localDate = e.target.value
                 ? new Date(e.target.value + 'T12:00:00')
                 : new Date()
@@ -200,7 +197,7 @@ export default function VehicleForm(
             onChange={e =>
               handleVehicleUpdate({
                 estimatedCompletionDate: e.target.value
-                  ? new Date(e.target.value + 'T12:00:00') // Usar mediodía para evitar problemas de zona horaria
+                  ? new Date(e.target.value + 'T12:00:00')
                   : null,
               })
             }
@@ -264,11 +261,17 @@ export default function VehicleForm(
           type='text'
           placeholder='Patente *'
           value={vehicle.plateNumber}
-          onChange={e =>
+          onChange={e => {
+            const formattedPlate = formatPlateNumber(e.target.value)
+
             handleVehicleUpdate({
-              plateNumber: formatPlateNumber(e.target.value),
+              plateNumber: formattedPlate,
             })
-          }
+
+            if (!isEdit && onPatenteChange && formattedPlate.length >= 6) {
+              onPatenteChange(formattedPlate)
+            }
+          }}
           maxLength={9}
           className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
         />

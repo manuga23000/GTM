@@ -1,5 +1,3 @@
-// src/components/sections/Admin/VehicleModal.tsx
-// REEMPLAZA TODO EL CONTENIDO DEL ARCHIVO ACTUAL
 'use client'
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -14,7 +12,6 @@ import {
   getFileType,
 } from '@/lib/storageUtils'
 
-// Portal Hook Inline
 function usePortal() {
   const [mounted, setMounted] = useState(false)
 
@@ -26,7 +23,6 @@ function usePortal() {
   return mounted
 }
 
-// Portal Component Inline
 function Portal({ children }: { children: React.ReactNode }) {
   const mounted = usePortal()
 
@@ -35,7 +31,6 @@ function Portal({ children }: { children: React.ReactNode }) {
   return createPortal(children, document.body)
 }
 
-// Tipos existentes (copiados del original)
 interface NewVehicleData {
   plateNumber: string
   brand: string
@@ -51,48 +46,42 @@ interface NewVehicleData {
   estimatedCompletionDate: Date | null
 }
 
-// ACTUALIZADO: Interface para archivos del step (con Storage y thumbnails)
 interface StepFile {
   id: string
-  fileName: string // Nombre original del archivo
+  fileName: string
   type: 'image' | 'video'
-  url: string // URL de Firebase Storage (permanente)
-  thumbnailUrl?: string // URL del thumbnail (solo para imágenes)
-  storageRef: string // Referencia en Storage para eliminar
-  uploadedAt: Date // Fecha de subida
-  size: number // Tamaño del archivo en bytes
+  url: string
+  thumbnailUrl?: string
+  storageRef: string
+  uploadedAt: Date
+  size: number
   dimensions?: {
-    // Dimensiones originales (solo para imágenes)
     width: number
     height: number
   }
 }
 
-// NUEVO: Interface para archivos en proceso de subida (temporal)
 interface PendingStepFile {
   id: string
   file: File
   type: 'image' | 'video'
-  tempUrl: string // URL temporal para preview
-  uploadProgress?: number // Progreso de subida (0-100)
-  uploading?: boolean // Si está subiendo
-  error?: string // Error de subida
+  tempUrl: string
+  uploadProgress?: number
+  uploading?: boolean
+  error?: string
 }
 
-// MODIFICADO: Agregamos archivos al step (date siempre válida)
 interface VehicleStep {
   id: string
   title: string
-  // ✅ QUITADO: description ya no está en la interface
-  status: 'completed' // Siempre completado
-  date: Date // SEGURO: Nunca null
+  status: 'completed'
+  date: Date
   notes?: string
-  files?: StepFile[] // ACTUALIZADO: archivos del step con thumbnails
+  files?: StepFile[]
 }
 
-// Interface para el estado local del componente (incluye archivos pendientes)
 interface LocalVehicleStep extends VehicleStep {
-  pendingFiles?: PendingStepFile[] // Archivos en proceso de subida
+  pendingFiles?: PendingStepFile[]
 }
 
 interface VehicleInTracking {
@@ -109,7 +98,7 @@ interface VehicleInTracking {
   estimatedCompletionDate?: Date | null
   status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'
   km?: number
-  steps: VehicleStep[] // CAMBIAR: de unknown[] a VehicleStep[]
+  steps: VehicleStep[]
   notes: string
   nextStep?: string
 }
@@ -117,7 +106,6 @@ interface VehicleInTracking {
 type VehicleSetter<T> = (value: T | ((prev: T) => T)) => void
 
 interface VehicleModalProps {
-  // Props para agregar nuevo vehículo
   showAddForm: boolean
   setShowAddForm: (show: boolean) => void
   newVehicle: NewVehicleData
@@ -128,7 +116,10 @@ interface VehicleModalProps {
   addVehicleError: string
   isAddingVehicle: boolean
 
-  // Props para editar vehículo - FIXED: Remove null from setEditVehicle
+  onPatenteChange?: (patente: string) => void
+  isLoadingHistorial?: boolean
+  datosHistorialCargados?: boolean
+
   showEditVehicleModal: boolean
   setShowEditVehicleModal: (show: boolean) => void
   editVehicle: VehicleInTracking | null
@@ -141,7 +132,6 @@ interface VehicleModalProps {
   handleSaveVehicleEdit: () => void
   isEditingVehicle: boolean
 
-  // Props para editar seguimiento - FIXED: Remove null from setEditTracking
   showTrackingModal: boolean
   setShowTrackingModal: (show: boolean) => void
   editTracking: VehicleInTracking | null
@@ -155,7 +145,6 @@ interface VehicleModalProps {
   isEditingTracking: boolean
 }
 
-// ACTUALIZADO: Componente para mostrar archivos de un step (con thumbnails optimizados)
 const StepFileViewer = ({
   files,
   pendingFiles = [],
@@ -176,32 +165,28 @@ const StepFileViewer = ({
 
   return (
     <div className='mt-2 flex gap-2 flex-wrap'>
-      {/* Archivos subidos */}
       {files?.map(file => (
         <div key={file.id} className='relative group'>
           {file.type === 'image' ? (
             <img
-              // OPTIMIZADO: Usar thumbnail para vista previa
               src={file.thumbnailUrl || file.url}
               alt={file.fileName}
               className='w-16 h-16 object-cover rounded border border-gray-500 cursor-pointer hover:border-blue-400'
-              loading='lazy' // Lazy loading para mejor rendimiento
+              loading='lazy'
               onClick={() => {
-                // MEJORANDO: Abrir imagen original en modal fullscreen
                 const modal = document.createElement('div')
                 modal.className =
                   'fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[99999] cursor-pointer'
                 modal.onclick = () => document.body.removeChild(modal)
 
                 const img = document.createElement('img')
-                img.src = file.url // IMPORTANTE: usar URL original, no thumbnail
+                img.src = file.url
                 img.className = 'max-w-full max-h-full object-contain'
                 img.alt = file.fileName
 
-                // Loading indicator mientras carga la imagen original
                 const loader = document.createElement('div')
                 loader.className = 'text-white text-lg'
-                loader.innerHTML = '🔄 Cargando imagen original...'
+                loader.innerHTML = 'Cargando imagen original...'
                 modal.appendChild(loader)
 
                 img.onload = () => {
@@ -217,7 +202,6 @@ const StepFileViewer = ({
               src={file.url}
               className='w-16 h-16 object-cover rounded border border-gray-500 cursor-pointer hover:border-blue-400'
               onClick={() => {
-                // Abrir video en modal
                 const modal = document.createElement('div')
                 modal.className =
                   'fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[99999] cursor-pointer'
@@ -236,7 +220,6 @@ const StepFileViewer = ({
             />
           )}
 
-          {/* Botón eliminar */}
           <button
             onClick={() => onRemoveFile(file.id)}
             className='absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity'
@@ -244,10 +227,8 @@ const StepFileViewer = ({
             ✕
           </button>
 
-          {/* Indicador de tipo con info adicional */}
           <div className='absolute bottom-0 right-0 bg-gray-800 text-white text-xs px-1 rounded-tl'>
             {file.type === 'image' ? '📷' : '🎥'}
-            {/* NUEVO: Mostrar dimensiones para imágenes */}
             {file.dimensions && (
               <div className='text-xs opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-70 p-1 rounded absolute bottom-full right-0 mb-1 whitespace-nowrap'>
                 {file.dimensions.width}x{file.dimensions.height}
@@ -257,7 +238,6 @@ const StepFileViewer = ({
         </div>
       ))}
 
-      {/* Archivos pendientes (subiendo) - SIN CAMBIOS */}
       {pendingFiles?.map(pendingFile => (
         <div key={pendingFile.id} className='relative group'>
           <div className='w-16 h-16 relative'>
@@ -274,7 +254,6 @@ const StepFileViewer = ({
               />
             )}
 
-            {/* Overlay de progreso */}
             <div className='absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded'>
               {pendingFile.error ? (
                 <span className='text-red-400 text-xs'>❌</span>
@@ -290,7 +269,6 @@ const StepFileViewer = ({
             </div>
           </div>
 
-          {/* Botón eliminar (para archivos pendientes) */}
           <button
             onClick={() => onRemovePendingFile(pendingFile.id)}
             className='absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity'
@@ -298,7 +276,6 @@ const StepFileViewer = ({
             ✕
           </button>
 
-          {/* Indicador de tipo */}
           <div className='absolute bottom-0 right-0 bg-yellow-600 text-white text-xs px-1 rounded-tl'>
             {pendingFile.type === 'image' ? '📷' : '🎥'}
           </div>
@@ -308,7 +285,6 @@ const StepFileViewer = ({
   )
 }
 
-// NUEVO: Componente para subir archivos (actualizado para Storage)
 const FileUploader = ({
   onFilesSelected,
   disabled,
@@ -323,7 +299,6 @@ const FileUploader = ({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (files.length > 0) {
-      // Validar archivos antes de procesarlos
       const validFiles = files.filter(file => {
         if (!validateFileType(file)) {
           alert(`Archivo ${file.name}: Tipo no permitido`)
@@ -340,7 +315,6 @@ const FileUploader = ({
         onFilesSelected(validFiles)
       }
     }
-    // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
     e.target.value = ''
   }
 
@@ -351,7 +325,6 @@ const FileUploader = ({
     <div className='flex gap-1'>
       {remainingSlots > 0 && (
         <>
-          {/* Subir imagen */}
           <label className='cursor-pointer'>
             <input
               type='file'
@@ -366,7 +339,6 @@ const FileUploader = ({
             </div>
           </label>
 
-          {/* Subir video (solo si no hay video ya) */}
           {canAddVideo && (
             <label className='cursor-pointer'>
               <input
@@ -387,7 +359,6 @@ const FileUploader = ({
   )
 }
 
-// Componente para formulario de seguimiento ACTUALIZADO (con Storage)
 const TrackingForm = ({
   tracking,
   setTracking,
@@ -404,10 +375,8 @@ const TrackingForm = ({
   const [editingNextStep, setEditingNextStep] = useState<boolean>(false)
   const [editingNextStepValue, setEditingNextStepValue] = useState<string>('')
 
-  // Estado local para manejar archivos pendientes
   const [localSteps, setLocalSteps] = useState<LocalVehicleStep[]>([])
 
-  // Sincronizar steps del tracking con el estado local
   useEffect(() => {
     setLocalSteps(tracking.steps.map(step => ({ ...step, pendingFiles: [] })))
   }, [tracking.steps])
@@ -428,11 +397,10 @@ const TrackingForm = ({
     const step: VehicleStep = {
       id: Date.now().toString(),
       title: newStep.title.trim(),
-      // ✅ QUITADO: description ya no se asigna
       status: 'completed',
-      date: new Date(), // Fecha actual
+      date: new Date(),
       notes: '',
-      files: [], // Inicializar archivos vacío
+      files: [],
     }
     setTracking(prev => ({
       ...prev,
@@ -444,10 +412,8 @@ const TrackingForm = ({
   const handleDeleteStep = async (stepId: string) => {
     if (!confirm('¿Seguro que deseas eliminar este trabajo?')) return
 
-    // Encontrar el step para eliminar sus archivos de Storage
     const stepToDelete = tracking.steps.find(s => s.id === stepId)
     if (stepToDelete?.files) {
-      // Eliminar archivos de Storage
       await Promise.all(
         stepToDelete.files.map(file => deleteFileFromStorage(file.url))
       )
@@ -486,25 +452,20 @@ const TrackingForm = ({
     setEditingStepTitle('')
   }
 
-  // ACTUALIZADO: Manejar archivos de un step con Storage y thumbnails
   const handleStepFilesSelected = async (stepId: string, files: File[]) => {
-    // Verificar límites primero
     const currentStep = tracking.steps.find(s => s.id === stepId)
     const currentFiles = currentStep?.files || []
     const currentVideoCount = currentFiles.filter(
       f => f.type === 'video'
     ).length
 
-    // Crear archivos pendientes
     const pendingFiles: PendingStepFile[] = []
 
     for (const file of files) {
-      // Verificar límites
       if (currentFiles.length + pendingFiles.length >= 10) break
 
       const isVideo = getFileType(file) === 'video'
 
-      // Solo permitir un video
       if (
         isVideo &&
         (currentVideoCount > 0 || pendingFiles.some(f => f.type === 'video'))
@@ -524,7 +485,6 @@ const TrackingForm = ({
       pendingFiles.push(pendingFile)
     }
 
-    // Agregar archivos pendientes al estado local
     setLocalSteps(prev =>
       prev.map(step => {
         if (step.id !== stepId) return step
@@ -535,7 +495,6 @@ const TrackingForm = ({
       })
     )
 
-    // Subir archivos uno por uno
     for (const pendingFile of pendingFiles) {
       try {
         const fileName = generateUniqueFileName(
@@ -544,12 +503,10 @@ const TrackingForm = ({
           stepId
         )
 
-        // ACTUALIZADO: usar nueva función que retorna objeto completo
         const uploadResult = await uploadFileToStorage(
           pendingFile.file,
           fileName,
           progress => {
-            // Actualizar progreso
             setLocalSteps(prev =>
               prev.map(step => {
                 if (step.id !== stepId) return step
@@ -566,20 +523,18 @@ const TrackingForm = ({
           }
         )
 
-        // ACTUALIZADO: Crear archivo con toda la información incluyendo thumbnail
         const uploadedFile: StepFile = {
           id: pendingFile.id,
           fileName: uploadResult.metadata.name,
           type: pendingFile.type,
           url: uploadResult.url,
-          thumbnailUrl: uploadResult.thumbnailUrl, // NUEVO: thumbnail para imágenes
+          thumbnailUrl: uploadResult.thumbnailUrl,
           storageRef: fileName,
           uploadedAt: new Date(),
           size: uploadResult.metadata.size,
-          dimensions: uploadResult.metadata.dimensions, // NUEVO: dimensiones para imágenes
+          dimensions: uploadResult.metadata.dimensions,
         }
 
-        // Agregar al tracking y remover de pendientes
         setTracking(prev => ({
           ...prev,
           steps: prev.steps.map(step => {
@@ -591,7 +546,6 @@ const TrackingForm = ({
           }),
         }))
 
-        // Remover de archivos pendientes
         setLocalSteps(prev =>
           prev.map(step => {
             if (step.id !== stepId) return step
@@ -604,12 +558,10 @@ const TrackingForm = ({
           })
         )
 
-        // Limpiar URL temporal
         URL.revokeObjectURL(pendingFile.tempUrl)
       } catch (error) {
         console.error('Error uploading file:', error)
 
-        // Marcar como error
         setLocalSteps(prev =>
           prev.map(step => {
             if (step.id !== stepId) return step
@@ -627,18 +579,15 @@ const TrackingForm = ({
     }
   }
 
-  // NUEVO: Remover archivo subido de Storage
   const handleRemoveStepFile = async (stepId: string, fileId: string) => {
     const stepFile = tracking.steps
       .find(s => s.id === stepId)
       ?.files?.find(f => f.id === fileId)
 
     if (stepFile) {
-      // Eliminar de Storage
       await deleteFileFromStorage(stepFile.url)
     }
 
-    // Remover del estado
     setTracking(prev => ({
       ...prev,
       steps: prev.steps.map(step => {
@@ -651,9 +600,7 @@ const TrackingForm = ({
     }))
   }
 
-  // NUEVO: Remover archivo pendiente
   const handleRemovePendingFile = (stepId: string, fileId: string) => {
-    // Encontrar archivo pendiente para limpiar URL temporal
     const pendingFile = localSteps
       .find(s => s.id === stepId)
       ?.pendingFiles?.find(f => f.id === fileId)
@@ -675,7 +622,6 @@ const TrackingForm = ({
 
   return (
     <div className='space-y-6'>
-      {/* Agregar trabajo realizado */}
       <div className='flex flex-col items-center justify-center py-2 w-full max-w-md mx-auto'>
         <label className='text-green-300 font-medium mb-1 text-sm self-start'>
           Agregar trabajo realizado
@@ -704,7 +650,6 @@ const TrackingForm = ({
         </div>
       </div>
 
-      {/* Lista de trabajos realizados (MODIFICADA para usar Storage) */}
       <div className='space-y-2 max-h-48 overflow-y-auto mb-4'>
         {localSteps.map(step => {
           const stepFiles = step.files || []
@@ -767,7 +712,6 @@ const TrackingForm = ({
                     </>
                   )}
 
-                  {/* Uploader de archivos */}
                   <FileUploader
                     onFilesSelected={files =>
                       handleStepFilesSelected(step.id, files)
@@ -787,7 +731,6 @@ const TrackingForm = ({
                 </div>
               </div>
 
-              {/* Mostrar archivos del step */}
               <StepFileViewer
                 files={stepFiles}
                 pendingFiles={pendingFiles}
@@ -801,7 +744,6 @@ const TrackingForm = ({
         })}
       </div>
 
-      {/* Próximo paso (bloque separado) */}
       <div className='bg-blue-900/30 p-4 rounded border border-blue-500/30 mt-6 max-w-md mx-auto flex flex-col items-start'>
         <div className='flex flex-row items-center w-full mb-2'>
           <span className='text-blue-300 font-medium text-sm'>
@@ -922,7 +864,6 @@ const TrackingForm = ({
         </div>
       </div>
 
-      {/* Fecha estimada */}
       <div className='bg-purple-900/30 p-2 rounded border border-purple-500/30'>
         <h5 className='text-purple-300 font-medium mb-1 text-xs'>
           🕒 Fecha estimada de finalización
@@ -957,6 +898,9 @@ export default function VehicleModal({
   handleAddVehicle,
   addVehicleError,
   isAddingVehicle,
+  onPatenteChange,
+  isLoadingHistorial = false,
+  datosHistorialCargados = false,
   showEditVehicleModal,
   setShowEditVehicleModal,
   editVehicle,
@@ -970,7 +914,8 @@ export default function VehicleModal({
   handleSaveTrackingEdit,
   isEditingTracking,
 }: VehicleModalProps) {
-  // Bloquear scroll cuando cualquier modal esté abierto
+  const [patenteDebounce, setPatenteDebounce] = useState('')
+
   useEffect(() => {
     const anyModalOpen =
       showAddForm || showEditVehicleModal || showTrackingModal
@@ -992,6 +937,29 @@ export default function VehicleModal({
     }
   }, [showAddForm, showEditVehicleModal, showTrackingModal])
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (patenteDebounce && onPatenteChange) {
+        onPatenteChange(patenteDebounce)
+      }
+    }, 800)
+
+    return () => clearTimeout(timer)
+  }, [patenteDebounce, onPatenteChange])
+
+  const handlePatenteInputChange = (value: string) => {
+    const normalizedValue = value.toUpperCase()
+
+    setNewVehicle((prev: any) => ({ ...prev, plateNumber: normalizedValue }))
+
+    setPatenteDebounce(normalizedValue)
+  }
+
+  const handleCloseAddForm = () => {
+    setShowAddForm(false)
+    setPatenteDebounce('')
+  }
+
   const isValidVehicle = (vehicle: NewVehicleData): boolean => {
     return (
       !!vehicle.plateNumber &&
@@ -1002,7 +970,6 @@ export default function VehicleModal({
 
   return (
     <>
-      {/* Modal agregar nuevo vehículo */}
       <Portal>
         <AnimatePresence>
           {showAddForm && (
@@ -1020,9 +987,8 @@ export default function VehicleModal({
                 padding: '1rem',
               }}
               onClick={e => {
-                // Only close if clicking on the overlay, not the modal content
                 if (e.target === e.currentTarget) {
-                  setShowAddForm(false)
+                  handleCloseAddForm()
                 }
               }}
             >
@@ -1050,7 +1016,6 @@ export default function VehicleModal({
                   zIndex: 1,
                 }}
                 onClick={e => {
-                  // Prevent click from bubbling up to the overlay
                   e.stopPropagation()
                 }}
               >
@@ -1064,25 +1029,39 @@ export default function VehicleModal({
                     </p>
                   </div>
                   <button
-                    onClick={e => {
-                      // Only close if clicking on the overlay, not the modal content
-                      if (e.target === e.currentTarget) {
-                        setShowAddForm(false)
-                      }
-                    }}
+                    onClick={handleCloseAddForm}
                     className='text-gray-400 hover:text-white text-2xl'
                   >
                     ✕
                   </button>
                 </div>
 
+                {datosHistorialCargados && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className='mb-4 p-3 bg-green-900/30 border border-green-500/30 rounded-lg'
+                  >
+                    <div className='flex items-center gap-2 text-green-300'>
+                      <span>✅</span>
+                      <span className='font-medium'>
+                        Datos cargados del historial
+                      </span>
+                    </div>
+                    <p className='text-green-200 text-sm mt-1'>
+                      Se han precargado los datos del cliente de servicios
+                      anteriores. Verifica y ajusta según sea necesario.
+                    </p>
+                  </motion.div>
+                )}
+
                 <VehicleForm
                   vehicle={newVehicle}
                   setVehicle={setNewVehicle as VehicleSetter<NewVehicleData>}
                   isEdit={false}
+                  onPatenteChange={onPatenteChange}
                 />
 
-                {/* Mostrar mensaje de error */}
                 {addVehicleError && (
                   <div className='mt-4 p-3 bg-red-600 bg-opacity-20 border border-red-500 rounded-lg'>
                     <div className='flex items-center gap-2'>
@@ -1096,12 +1075,7 @@ export default function VehicleModal({
 
                 <div className='flex gap-3 pt-4 mt-6 border-t border-gray-700'>
                   <button
-                    onClick={e => {
-                      // Only close if clicking on the overlay, not the modal content
-                      if (e.target === e.currentTarget) {
-                        setShowAddForm(false)
-                      }
-                    }}
+                    onClick={handleCloseAddForm}
                     className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
                   >
                     Cancelar
@@ -1131,7 +1105,6 @@ export default function VehicleModal({
         </AnimatePresence>
       </Portal>
 
-      {/* Modal editar vehículo (datos básicos) */}
       <Portal>
         <AnimatePresence>
           {showEditVehicleModal && editVehicle && (
@@ -1174,7 +1147,6 @@ export default function VehicleModal({
                   zIndex: 1,
                 }}
                 onClick={e => {
-                  // Prevent click from bubbling up to the overlay
                   e.stopPropagation()
                 }}
               >
@@ -1196,7 +1168,7 @@ export default function VehicleModal({
                 </div>
 
                 <VehicleForm
-                  vehicle={editVehicle} // Already null-checked by the condition
+                  vehicle={editVehicle}
                   setVehicle={value => {
                     if (typeof value === 'function') {
                       setEditVehicle(prev => (prev ? value(prev) : prev))
@@ -1237,7 +1209,6 @@ export default function VehicleModal({
         </AnimatePresence>
       </Portal>
 
-      {/* Modal editar seguimiento */}
       <Portal>
         <AnimatePresence>
           {showTrackingModal && editTracking && (
@@ -1254,7 +1225,6 @@ export default function VehicleModal({
                 justifyContent: 'center',
                 padding: '1rem',
               }}
-              // Eliminado el cierre al hacer clic fuera
             >
               <div
                 className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
@@ -1280,7 +1250,6 @@ export default function VehicleModal({
                   zIndex: 1,
                 }}
                 onClick={e => {
-                  // Prevent click from bubbling up to the overlay
                   e.stopPropagation()
                 }}
               >

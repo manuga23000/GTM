@@ -1,5 +1,13 @@
 // src/actions/seguimiento.ts
-import { doc, getDoc } from 'firebase/firestore'
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
+} from 'firebase/firestore'
 import { db } from '../lib/firebase'
 
 // Tipos para archivos de trabajos
@@ -75,6 +83,7 @@ export interface ImagenItem {
   tipo: 'antes' | 'proceso' | 'despues'
 }
 
+// ACTUALIZADO: Agregamos campos adicionales para el historial
 export interface SeguimientoData {
   patente: string
   modelo: string
@@ -91,6 +100,10 @@ export interface SeguimientoData {
   timeline?: TimelineItem[]
   imagenes?: ImagenItem[]
   updatedAt?: string
+  // NUEVOS: Para servicios históricos
+  serviceNumber?: number
+  fechaFinalizado?: string
+  km?: number
 }
 
 /**
@@ -288,6 +301,7 @@ export async function getSeguimientoByPatente(
           )
         : data.timeline || [],
       imagenes: data.imagenes || [],
+      km: data.km,
     }
 
     return seguimientoData
@@ -297,6 +311,169 @@ export async function getSeguimientoByPatente(
     // Si hay un error de conexión o autenticación, devolver null
     // para que el sistema use datos mock en desarrollo
     return null
+  }
+}
+
+/**
+ * NUEVO: Buscar todos los servicios históricos de una patente
+ * @param patente Patente del vehículo
+ * @returns Array de servicios históricos ordenados por más reciente primero
+ */
+export async function buscarHistorialCompleto(
+  patente: string
+): Promise<SeguimientoData[]> {
+  try {
+    const patenteNormalizada = patente.toUpperCase().trim()
+    const patenteSinEspacios = patenteNormalizada.replace(/\s+/g, '')
+
+    // Buscar con ambos formatos: con espacios y sin espacios
+    const queries = [
+      query(
+        collection(db, 'timeline'),
+        where('plateNumber', '==', patenteNormalizada),
+        orderBy('serviceNumber', 'desc')
+      ),
+      query(
+        collection(db, 'timeline'),
+        where('plateNumber', '==', patenteSinEspacios),
+        orderBy('serviceNumber', 'desc')
+      ),
+    ]
+
+    // Ejecutar ambas consultas
+    const queryResults = await Promise.all(queries.map(q => getDocs(q)))
+    const historial: SeguimientoData[] = []
+    let totalDocs = 0
+
+    // Combinar resultados de ambas consultas
+    for (const querySnapshot of queryResults) {
+      totalDocs += querySnapshot.size
+    }
+
+    // Procesar documentos de ambas consultas
+    const allDocs: any[] = []
+    for (const querySnapshot of queryResults) {
+      querySnapshot.forEach(doc => {
+        // Evitar duplicados basándose en el ID del documento
+        if (!allDocs.some(existingDoc => existingDoc.id === doc.id)) {
+          allDocs.push(doc)
+        }
+      })
+    }
+
+    allDocs.forEach(doc => {
+      const data = doc.data()
+
+      const isFirestoreTimestamp = (
+        value: unknown
+      ): value is FirestoreTimestamp => {
+        return (
+          typeof value === 'object' &&
+          value !== null &&
+          'toDate' in value &&
+          typeof (value as Record<string, unknown>).toDate === 'function'
+        )
+      }
+
+      const formatearFecha = (timestamp: unknown): string => {
+        if (!timestamp) return new Date().toISOString()
+
+        if (isFirestoreTimestamp(timestamp)) {
+          return timestamp.toDate().toISOString()
+        }
+
+        if (typeof timestamp === 'string') {
+          return new Date(timestamp).toISOString()
+        }
+
+        if (timestamp instanceof Date) {
+          return timestamp.toISOString()
+        }
+
+        return new Date().toISOString()
+      }
+
+      const mapearTrabajosRealizados = (
+        steps: FirestoreStep[]
+      ): TrabajoRealizado[] => {
+        if (!Array.isArray(steps) || steps.length === 0) {
+          return []
+        }
+
+        return steps
+          .filter(step => step && step.title)
+          .map((step, index) => ({
+            id: step.id || `step-${index}`,
+            titulo: step.title || 'Trabajo sin título',
+            descripcion: step.description || step.notes,
+            fecha: formatearFecha(step.date),
+            archivos: Array.isArray(step.files)
+              ? step.files.map((file: FirestoreFile) => ({
+                  id: file.id || `file-${Math.random()}`,
+                  fileName: file.fileName || 'archivo',
+                  type: file.type === 'video' ? 'video' : 'image',
+                  url: file.url || '',
+                  thumbnailUrl: file.thumbnailUrl,
+                  storageRef: file.storageRef || '',
+                  uploadedAt:
+                    file.uploadedAt instanceof Date
+                      ? file.uploadedAt
+                      : file.uploadedAt &&
+                        typeof file.uploadedAt === 'object' &&
+                        'toDate' in file.uploadedAt
+                      ? (file.uploadedAt as FirestoreTimestamp).toDate()
+                      : file.uploadedAt
+                      ? new Date(file.uploadedAt as string)
+                      : new Date(),
+                  size: typeof file.size === 'number' ? file.size : 0,
+                  dimensions:
+                    file.dimensions && typeof file.dimensions === 'object'
+                      ? {
+                          width:
+                            typeof file.dimensions.width === 'number'
+                              ? file.dimensions.width
+                              : 0,
+                          height:
+                            typeof file.dimensions.height === 'number'
+                              ? file.dimensions.height
+                              : 0,
+                        }
+                      : undefined,
+                }))
+              : [],
+          }))
+      }
+
+      // Convertir cada documento del historial al formato SeguimientoData
+      const servicioHistorico: SeguimientoData = {
+        patente: data.plateNumber || patenteNormalizada,
+        modelo: data.model || 'No especificado',
+        marca: data.brand || 'No especificada',
+        año: data.year?.toString() || 'No especificado',
+        cliente: data.clientName || 'Cliente',
+        fechaIngreso: formatearFecha(data.entryDate || data.createdAt),
+        estadoActual: 'Finalizado',
+        telefono: data.clientPhone,
+        tipoServicio: data.serviceType || 'Servicio general',
+        trabajosRealizados: Array.isArray(data.steps)
+          ? mapearTrabajosRealizados(data.steps as FirestoreStep[])
+          : [],
+        proximoPaso: 'Servicio finalizado',
+        fechaEstimadaEntrega: formatearFecha(data.finalizedAt),
+        updatedAt: formatearFecha(data.finalizedAt),
+        // Datos adicionales del historial
+        serviceNumber: data.serviceNumber || 1,
+        fechaFinalizado: formatearFecha(data.finalizedAt),
+        km: data.km,
+      }
+
+      historial.push(servicioHistorico)
+    })
+
+    return historial
+  } catch (error) {
+    console.error('❌ Error buscando historial completo:', error)
+    return []
   }
 }
 

@@ -11,7 +11,6 @@ import VehicleList, { VehicleInTracking, VehicleStep } from './VehicleList'
 import VehicleDetails from './VehicleDetails'
 import VehicleModal from './VehicleModal'
 import { deleteFileFromStorage } from '@/lib/storageUtils'
-import { migrateUpdatedAtField } from '@/actions/vehicle'
 import { buscarHistorialCompleto } from '@/actions/seguimiento'
 
 interface FirestoreTimestamp {
@@ -51,8 +50,6 @@ export default function VehicleConfig() {
       vehicle.plateNumber.toLowerCase().includes(searchTerm.toLowerCase())
     )
   }, [vehiclesInTracking, searchTerm])
-
-  const [isMigrating, setIsMigrating] = useState(false)
 
   const paginatedVehicles = useMemo(() => {
     const startIndex = (currentPage - 1) * VEHICLES_PER_PAGE
@@ -434,34 +431,7 @@ export default function VehicleConfig() {
     }
   }
 
-  const handleMigration = async () => {
-    if (isMigrating) return
 
-    const confirmed = window.confirm(
-      '¿Ejecutar migración para agregar campo updatedAt a vehículos existentes?\n\n' +
-        'Esto solo necesita hacerse UNA VEZ y es seguro.'
-    )
-
-    if (!confirmed) return
-
-    setIsMigrating(true)
-    showMessage('Ejecutando migración...')
-
-    try {
-      const result = await migrateUpdatedAtField()
-
-      if (result.success) {
-        showMessage(`${result.message}`, 5000)
-      } else {
-        showMessage(`${result.message}`, 5000)
-      }
-    } catch (error) {
-      showMessage('Error en migración', 5000)
-      console.error(error)
-    } finally {
-      setIsMigrating(false)
-    }
-  }
 
   return (
     <div className='min-h-screen bg-gray-900 text-white'>
@@ -493,15 +463,7 @@ export default function VehicleConfig() {
                 </button>
               )}
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleMigration}
-              disabled={isMigrating}
-              className='px-4 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 text-white rounded-lg font-semibold transition-colors whitespace-nowrap text-sm'
-            >
-              {isMigrating ? 'Migrando...' : 'Migrar updatedAt'}
-            </motion.button>
+
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

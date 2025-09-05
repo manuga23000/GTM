@@ -903,8 +903,8 @@ export default function VehicleModal({
   addVehicleError,
   isAddingVehicle,
   onPatenteChange,
-  isLoadingHistorial: _isLoadingHistorial = false,
-  datosHistorialCargados: _datosHistorialCargados = false,
+  isLoadingHistorial = false,
+  datosHistorialCargados = false,
   showEditVehicleModal,
   setShowEditVehicleModal,
   editVehicle,
@@ -1040,7 +1040,7 @@ export default function VehicleModal({
                   </button>
                 </div>
 
-                {_datosHistorialCargados && (
+                {datosHistorialCargados && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}

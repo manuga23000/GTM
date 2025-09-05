@@ -26,6 +26,11 @@ export default function SeguimientoPage() {
   const [servicioExpandido, setServicioExpandido] = useState<number | null>(
     null
   )
+  const [archivoModal, setArchivoModal] = useState<{
+    url: string
+    fileName: string
+    type: string
+  } | null>(null)
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -342,9 +347,8 @@ export default function SeguimientoPage() {
               <h3 className='text-xl font-semibold text-gray-800'>
                 Historial de Servicios
                 {historialCompleto.length > 0 && (
-                  <span className='ml-2 text-sm font-normal text-gray-500'>
-                    ({historialCompleto.length} servicio
-                    {historialCompleto.length !== 1 ? 's' : ''})
+                  <span className='ml-2 text-sm font-normal text-gray-500 whitespace-nowrap'>
+                    ({historialCompleto.length} servicio{historialCompleto.length !== 1 ? 's' : ''})
                   </span>
                 )}
               </h3>
@@ -365,8 +369,9 @@ export default function SeguimientoPage() {
                     className='border border-gray-200 rounded-lg p-5 bg-gray-50'
                   >
                     {/* Header del servicio MEJORADO */}
-                    <div className='flex justify-between items-center mb-3'>
-                      <div className='flex items-center gap-3 flex-1'>
+                    <div className='space-y-3'>
+                      {/* Primera fila: Título y estado */}
+                      <div className='flex items-center gap-3'>
                         <div className='flex-shrink-0 w-3 h-3 rounded-full bg-green-500'></div>
                         <div className='flex-1'>
                           <h4 className='font-semibold text-gray-900 text-lg'>
@@ -386,30 +391,35 @@ export default function SeguimientoPage() {
                         </div>
                       </div>
 
-                      {/* NUEVO: Kilometraje grande a la derecha */}
-                      {servicio.km && (
-                        <div className='text-right mr-4'>
-                          <div className='text-2xl font-bold text-blue-600'>
-                            {servicio.km.toLocaleString()} KM
+                      {/* Segunda fila: KM y botón Ver más */}
+                      <div className='flex justify-between items-center'>
+                        {/* NUEVO: Kilometraje */}
+                        {servicio.km ? (
+                          <div className='text-left'>
+                            <div className='text-xl md:text-2xl font-bold text-blue-600'>
+                              {servicio.km.toLocaleString()} KM
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        ) : (
+                          <div></div>
+                        )}
 
-                      {/* NUEVO: Botón Ver más */}
-                      <button
-                        onClick={() => {
-                          setServicioExpandido(
-                            servicioExpandido === servicio.serviceNumber
-                              ? null
-                              : servicio.serviceNumber || 0
-                          )
-                        }}
-                        className='px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2'
-                      >
-                        {servicioExpandido === servicio.serviceNumber
-                          ? '👁️ Ver menos'
-                          : '👁️ Ver más'}
-                      </button>
+                        {/* NUEVO: Botón Ver más */}
+                        <button
+                          onClick={() => {
+                            setServicioExpandido(
+                              servicioExpandido === servicio.serviceNumber
+                                ? null
+                                : servicio.serviceNumber || 0
+                            )
+                          }}
+                          className='px-3 py-2 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 flex-shrink-0'
+                        >
+                          {servicioExpandido === servicio.serviceNumber
+                            ? '👁️ Ver menos'
+                            : '👁️ Ver más'}
+                        </button>
+                      </div>
                     </div>
 
                     {/* NUEVO: Trabajos expandibles */}
@@ -479,60 +489,11 @@ export default function SeguimientoPage() {
                                               key={archivo.id}
                                               className='relative group cursor-pointer'
                                               onClick={() => {
-                                                // Abrir archivo en modal
-                                                const modal =
-                                                  document.createElement('div')
-                                                modal.className =
-                                                  'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[99999] cursor-pointer'
-                                                modal.onclick = () =>
-                                                  document.body.removeChild(
-                                                    modal
-                                                  )
-
-                                                const container =
-                                                  document.createElement('div')
-                                                container.className =
-                                                  'relative max-w-full max-h-full p-4'
-
-                                                if (archivo.type === 'image') {
-                                                  const img =
-                                                    document.createElement(
-                                                      'img'
-                                                    )
-                                                  img.src = archivo.url
-                                                  img.className =
-                                                    'max-w-full max-h-full object-contain'
-                                                  img.alt = archivo.fileName
-                                                  container.appendChild(img)
-                                                } else {
-                                                  const video =
-                                                    document.createElement(
-                                                      'video'
-                                                    )
-                                                  video.src = archivo.url
-                                                  video.controls = true
-                                                  video.className =
-                                                    'max-w-full max-h-full'
-                                                  container.appendChild(video)
-                                                }
-
-                                                const closeButton =
-                                                  document.createElement(
-                                                    'button'
-                                                  )
-                                                closeButton.innerHTML = '✕'
-                                                closeButton.className =
-                                                  'absolute top-4 right-4 text-white text-2xl bg-black bg-opacity-50 rounded-full w-10 h-10 hover:bg-opacity-75 flex items-center justify-center'
-                                                closeButton.onclick = e => {
-                                                  e.stopPropagation()
-                                                  document.body.removeChild(
-                                                    modal
-                                                  )
-                                                }
-
-                                                modal.appendChild(container)
-                                                modal.appendChild(closeButton)
-                                                document.body.appendChild(modal)
+                                                setArchivoModal({
+                                                  url: archivo.url,
+                                                  fileName: archivo.fileName,
+                                                  type: archivo.type
+                                                })
                                               }}
                                             >
                                               {archivo.type === 'image' ? (
@@ -609,6 +570,66 @@ export default function SeguimientoPage() {
           <div className='h-8 md:h-12 w-full' />
         </div>
       </main>
+
+      {/* Modal de archivo mejorado */}
+      {archivoModal && (
+        <div 
+          className='fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[99999] p-4'
+          onClick={() => setArchivoModal(null)}
+        >
+          <div 
+            className='relative max-w-full max-h-full flex flex-col'
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Barra superior con botones */}
+            <div className='flex justify-end items-center mb-4 bg-black bg-opacity-50 rounded-lg p-3'>
+              <div className='flex gap-2 flex-shrink-0'>
+                {/* Botón descargar */}
+                <button
+                  onClick={() => {
+                    const link = document.createElement('a')
+                    link.href = archivoModal.url
+                    link.download = archivoModal.fileName
+                    link.target = '_blank'
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
+                  }}
+                  className='bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2'
+                >
+                  📥 Descargar
+                </button>
+                {/* Botón cerrar */}
+                <button
+                  onClick={() => setArchivoModal(null)}
+                  className='bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors'
+                >
+                  ✕ Cerrar
+                </button>
+              </div>
+            </div>
+
+            {/* Contenido del archivo */}
+            <div className='flex items-center justify-center max-w-full max-h-[80vh]'>
+              {archivoModal.type === 'image' ? (
+                <img
+                  src={archivoModal.url}
+                  alt={archivoModal.fileName}
+                  className='max-w-full max-h-full object-contain rounded-lg'
+                  style={{ maxHeight: '80vh' }}
+                />
+              ) : (
+                <video
+                  src={archivoModal.url}
+                  controls
+                  className='max-w-full max-h-full rounded-lg'
+                  style={{ maxHeight: '80vh' }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

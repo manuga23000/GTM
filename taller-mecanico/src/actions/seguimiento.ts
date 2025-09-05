@@ -7,6 +7,8 @@ import {
   where,
   orderBy,
   getDocs,
+  QueryDocumentSnapshot,
+  DocumentData,
 } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 
@@ -343,15 +345,9 @@ export async function buscarHistorialCompleto(
     // Ejecutar ambas consultas
     const queryResults = await Promise.all(queries.map(q => getDocs(q)))
     const historial: SeguimientoData[] = []
-    let totalDocs = 0
-
-    // Combinar resultados de ambas consultas
-    for (const querySnapshot of queryResults) {
-      totalDocs += querySnapshot.size
-    }
 
     // Procesar documentos de ambas consultas
-    const allDocs: any[] = []
+    const allDocs: QueryDocumentSnapshot<DocumentData>[] = []
     for (const querySnapshot of queryResults) {
       querySnapshot.forEach(doc => {
         // Evitar duplicados basándose en el ID del documento
@@ -482,7 +478,7 @@ export async function buscarHistorialCompleto(
  * (útil para implementar búsqueda con autocompletado en el futuro)
  */
 export async function buscarVehiculosPorPatente(
-  patenteParc: string
+  _patenteParc: string
 ): Promise<SeguimientoData[]> {
   try {
     // Esta función se puede implementar usando queries de Firestore
@@ -499,12 +495,12 @@ export async function buscarVehiculosPorPatente(
  */
 export async function actualizarEstadoVehiculo(
   patente: string,
-  nuevoEstado: string,
-  notas?: string
+  _nuevoEstado: string,
+  _notas?: string
 ): Promise<boolean> {
   try {
     const patenteNormalizada = patente.toUpperCase().trim()
-    const docRef = doc(db, 'vehicles', patenteNormalizada)
+    const _docRef = doc(db, 'vehicles', patenteNormalizada)
 
     // Esta función se implementaría cuando necesites actualizar estados
 

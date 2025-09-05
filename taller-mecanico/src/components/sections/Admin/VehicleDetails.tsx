@@ -2,7 +2,6 @@ import { motion } from 'framer-motion'
 import Image from 'next/image'
 import {
   doc,
-  updateDoc,
   getFirestore,
   setDoc,
   deleteDoc,
@@ -11,6 +10,8 @@ import {
   where,
   getDocs,
   getDoc,
+  QueryDocumentSnapshot,
+  DocumentData,
 } from 'firebase/firestore'
 import { app } from '@/lib/firebase'
 import { useState } from 'react'
@@ -235,10 +236,7 @@ export default function VehicleDetails({
   onDeleteVehicle,
   onVehicleFinalized,
 }: VehicleDetailsProps) {
-  const [vehicle, setVehicle] = useState(initialVehicle)
-  const [_, setUpdate] = useState({})
-
-  const forceUpdate = () => setUpdate({})
+  const [vehicle] = useState(initialVehicle)
   const totalSteps = vehicle.steps.length
 
   const totalFiles = vehicle.steps.reduce((acc, step) => {
@@ -428,7 +426,7 @@ export default function VehicleDetails({
                     queries.map(q => getDocs(q))
                   )
 
-                  const allDocs: any[] = []
+                  const allDocs: QueryDocumentSnapshot<DocumentData>[] = []
                   for (const querySnapshot of queryResults) {
                     querySnapshot.forEach(doc => {
                       if (

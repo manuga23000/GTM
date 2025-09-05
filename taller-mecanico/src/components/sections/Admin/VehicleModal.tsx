@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
+import Image from 'next/image'
 import VehicleForm from './VehicleForm'
 import {
   uploadFileToStorage,
@@ -168,11 +169,12 @@ const StepFileViewer = ({
       {files?.map(file => (
         <div key={file.id} className='relative group'>
           {file.type === 'image' ? (
-            <img
+            <Image
               src={file.thumbnailUrl || file.url}
               alt={file.fileName}
+              width={64}
+              height={64}
               className='w-16 h-16 object-cover rounded border border-gray-500 cursor-pointer hover:border-blue-400'
-              loading='lazy'
               onClick={() => {
                 const modal = document.createElement('div')
                 modal.className =
@@ -242,9 +244,11 @@ const StepFileViewer = ({
         <div key={pendingFile.id} className='relative group'>
           <div className='w-16 h-16 relative'>
             {pendingFile.type === 'image' ? (
-              <img
+              <Image
                 src={pendingFile.tempUrl}
                 alt='Subiendo...'
+                width={64}
+                height={64}
                 className='w-full h-full object-cover rounded border border-yellow-500'
               />
             ) : (
@@ -899,8 +903,8 @@ export default function VehicleModal({
   addVehicleError,
   isAddingVehicle,
   onPatenteChange,
-  isLoadingHistorial = false,
-  datosHistorialCargados = false,
+  isLoadingHistorial: _isLoadingHistorial = false,
+  datosHistorialCargados: _datosHistorialCargados = false,
   showEditVehicleModal,
   setShowEditVehicleModal,
   editVehicle,
@@ -947,10 +951,10 @@ export default function VehicleModal({
     return () => clearTimeout(timer)
   }, [patenteDebounce, onPatenteChange])
 
-  const handlePatenteInputChange = (value: string) => {
+  const _handlePatenteInputChange = (value: string) => {
     const normalizedValue = value.toUpperCase()
 
-    setNewVehicle((prev: any) => ({ ...prev, plateNumber: normalizedValue }))
+    setNewVehicle((prev: NewVehicleData) => ({ ...prev, plateNumber: normalizedValue }))
 
     setPatenteDebounce(normalizedValue)
   }

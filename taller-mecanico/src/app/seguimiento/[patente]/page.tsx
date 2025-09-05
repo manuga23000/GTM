@@ -448,18 +448,11 @@ export default function SeguimientoPage() {
                                   transition={{ delay: trabajoIndex * 0.1 }}
                                   className='bg-white p-4 rounded-lg border border-gray-200 shadow-sm'
                                 >
-                                  <div className='flex justify-between items-start mb-2'>
-                                    <div className='flex items-center gap-2 flex-1'>
-                                      <span className='text-lg'>✅</span>
-                                      <h6 className='font-medium text-gray-900'>
-                                        {trabajo.titulo}
-                                      </h6>
-                                    </div>
-                                    <span className='text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded'>
-                                      {new Date(
-                                        trabajo.fecha
-                                      ).toLocaleDateString('es-AR')}
-                                    </span>
+                                  <div className='flex items-center gap-2 mb-2'>
+                                    <span className='text-lg'>✅</span>
+                                    <h6 className='font-medium text-gray-900'>
+                                      {trabajo.titulo}
+                                    </h6>
                                   </div>
 
                                   {trabajo.descripcion && (

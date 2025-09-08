@@ -142,18 +142,23 @@ export default function AdminDashboard() {
       variants={containerVariants}
       initial='hidden'
       animate='visible'
-      className='w-full max-w-7xl mx-auto p-8 rounded-xl shadow-2xl bg-black/70 backdrop-blur-md'
+      className='w-full max-w-7xl mx-auto p-2 sm:p-4 md:p-8 rounded-xl shadow-2xl bg-black/70 backdrop-blur-md'
     >
-      {/* Header */}
+      {/* Header - RESPONSIVE */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className='flex justify-between items-center mb-8'
+        className='flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-8 gap-3 sm:gap-0'
       >
-        <h1 className='text-4xl font-extrabold text-white drop-shadow-lg'>
-          Panel de Administración
+        {/* Título - Responsive */}
+        <h1 className='text-lg sm:text-2xl md:text-4xl font-extrabold text-white drop-shadow-lg text-center sm:text-left leading-tight'>
+          <span className='block sm:hidden'>PANEL DE</span>
+          <span className='block sm:hidden'>ADMINISTRACIÓN</span>
+          <span className='hidden sm:block'>Panel de Administración</span>
         </h1>
+
+        {/* Botón logout - Siempre visible */}
         <motion.button
           whileHover={{
             scale: 1.1,
@@ -162,13 +167,13 @@ export default function AdminDashboard() {
           whileTap={{ scale: 0.95 }}
           onClick={handleLogout}
           aria-label='Cerrar sesión'
-          className='bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-colors duration-200 cursor-pointer flex items-center justify-center shadow-md'
+          className='bg-red-600 hover:bg-red-700 text-white p-2 sm:p-3 rounded-full transition-colors duration-200 cursor-pointer flex items-center justify-center shadow-md self-center sm:self-auto'
         >
-          {/* Icono logout */}
           <svg
             xmlns='http://www.w3.org/2000/svg'
-            width='22'
-            height='22'
+            width='18'
+            height='18'
+            className='sm:w-6 sm:h-6'
             fill='none'
             viewBox='0 0 24 24'
           >
@@ -188,32 +193,32 @@ export default function AdminDashboard() {
             initial='hidden'
             animate='visible'
             exit='exit'
-            className='mb-6 p-4 bg-blue-600 text-white rounded-lg shadow-lg'
+            className='mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-600 text-white rounded-lg shadow-lg text-sm sm:text-base'
           >
             {message}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Tabs - Ahora con 4 tabs */}
+      {/* Tabs - RESPONSIVE */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className='flex mb-8 bg-gray-800 rounded-xl p-2 shadow-inner'
+        className='flex flex-col sm:flex-row mb-6 sm:mb-8 bg-gray-800 rounded-xl p-1 sm:p-2 shadow-inner gap-1 sm:gap-0'
       >
         {[
-          { id: 'turnos', label: '📋 Turnos', emoji: '📋' },
-          { id: 'stats', label: '📊 Estadísticas', emoji: '📊' },
-          { id: 'config', label: '⚙️ Configuración', emoji: '⚙️' },
-          { id: 'vehicles', label: '🚗 Vehículos', emoji: '🚗' },
+          { id: 'turnos', label: 'Turnos', emoji: '📋' },
+          { id: 'stats', label: 'Stats', emoji: '📊' },
+          { id: 'config', label: 'Config', emoji: '⚙️' },
+          { id: 'vehicles', label: 'Autos', emoji: '🚗' },
         ].map((tab, index) => (
           <motion.button
             key={tab.id}
             onClick={() =>
               setActiveTab(tab.id as 'turnos' | 'stats' | 'config' | 'vehicles')
             }
-            className={`flex-1 py-4 px-6 rounded-lg font-semibold text-center transition-all duration-300 relative overflow-hidden ${
+            className={`flex-1 py-2 sm:py-4 px-2 sm:px-6 rounded-lg font-semibold text-center transition-all duration-300 relative overflow-hidden text-xs sm:text-base ${
               activeTab === tab.id
                 ? 'bg-blue-600 text-white shadow-lg'
                 : 'text-gray-300 hover:text-white hover:bg-gray-700'
@@ -252,12 +257,12 @@ export default function AdminDashboard() {
             {activeTab === tab.id && (
               <motion.div
                 layoutId='activeTab'
-                className='absolute bottom-0 left-0 right-0 h-1 bg-white rounded-full'
+                className='absolute bottom-0 left-0 right-0 h-0.5 sm:h-1 bg-white rounded-full'
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               />
             )}
 
-            <span className='relative z-10 flex items-center justify-center gap-2'>
+            <span className='relative z-10 flex items-center justify-center gap-1 sm:gap-2'>
               <motion.span
                 animate={{
                   scale: activeTab === tab.id ? 1.2 : 1,
@@ -267,19 +272,19 @@ export default function AdminDashboard() {
                   duration: 0.3,
                   rotate: { duration: 0.6, ease: [0.4, 0.0, 0.2, 1] },
                 }}
+                className='text-sm sm:text-base'
               >
                 {tab.emoji}
               </motion.span>
-              <span className='hidden sm:inline'>
-                {tab.label.replace(tab.emoji + ' ', '')}
-              </span>
+              <span className='hidden sm:inline'>{tab.label}</span>
+              <span className='sm:hidden'>{tab.label}</span>
             </span>
           </motion.button>
         ))}
       </motion.div>
 
       {/* Content */}
-      <div className='min-h-[600px]'>
+      <div className='min-h-[300px] sm:min-h-[600px]'>
         <AnimatePresence mode='wait'>
           <motion.div
             key={activeTab}

@@ -140,9 +140,10 @@ export default function VehicleConfig() {
     estimatedCompletionDate: null as Date | null,
   })
 
-  const selectedVehicleData = vehiclesInTracking.find(
-    v => v.id === selectedVehicle
-  )
+  const selectedVehicleData = useMemo(() => {
+    if (!selectedVehicle) return null
+    return vehiclesInTracking.find(v => v.id === selectedVehicle) || null
+  }, [selectedVehicle, vehiclesInTracking])
 
   const showMessage = (msg: string, duration = 3000) => {
     setMessage(msg)
@@ -268,6 +269,10 @@ export default function VehicleConfig() {
       })
       if (response.success) {
         await fetchVehicles()
+        const currentSelected = selectedVehicle
+        setSelectedVehicle('')
+        setTimeout(() => setSelectedVehicle(currentSelected), 50)
+
         setShowEditVehicleModal(false)
         showMessage('Vehículo actualizado')
       } else {
@@ -323,6 +328,10 @@ export default function VehicleConfig() {
 
       if (updateResult.success) {
         await fetchVehicles()
+        const currentSelected = selectedVehicle
+        setSelectedVehicle('')
+        setTimeout(() => setSelectedVehicle(currentSelected), 50)
+
         setShowTrackingModal(false)
         showMessage('Seguimiento actualizado')
       } else {
@@ -431,39 +440,22 @@ export default function VehicleConfig() {
     }
   }
 
-
-
   return (
     <div className='min-h-screen bg-gray-900 text-white'>
-      <div className='bg-gray-800 shadow-lg py-6'>
-        <div className='max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 gap-4'>
-          <div>
-            <h2 className='text-3xl font-bold text-white'>
-              Gestión de Vehículos
-            </h2>
-            <p className='text-gray-400 mt-1'>
-              {filteredVehicles.length} vehículos encontrados
-            </p>
-          </div>
-          <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto'>
-            <div className='relative'>
-              <input
-                type='text'
-                placeholder='Buscar por patente...'
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className='px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 w-full sm:w-64'
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className='absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white'
-                >
-                  ✕
-                </button>
-              )}
+      {/* Header - RESPONSIVE */}
+      <div className='bg-gray-800 shadow-lg py-4 sm:py-6'>
+        <div className='max-w-6xl mx-auto flex flex-col gap-4 px-3 sm:px-4'>
+          <div className='flex flex-col sm:flex-row justify-between items-start gap-3'>
+            <div>
+              <h2 className='text-xl sm:text-2xl md:text-3xl font-bold text-white'>
+                Gestión de Vehículos
+              </h2>
+              <p className='text-gray-400 mt-1 text-sm sm:text-base'>
+                {filteredVehicles.length} vehículos encontrados
+              </p>
             </div>
 
+            {/* Botón Nuevo - Prioridad en móviles */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -471,22 +463,42 @@ export default function VehicleConfig() {
                 setAddVehicleError('')
                 setShowAddForm(true)
               }}
-              className='px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors whitespace-nowrap'
+              className='w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors text-sm sm:text-base'
             >
               Nuevo Vehículo
             </motion.button>
           </div>
+
+          {/* Buscador - Full width en móviles */}
+          <div className='relative w-full sm:max-w-md'>
+            <input
+              type='text'
+              placeholder='Buscar por patente...'
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className='w-full px-3 sm:px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm sm:text-base'
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className='absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white p-1'
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      <main className='max-w-6xl mx-auto px-4 py-8 space-y-8'>
+      <main className='max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-8'>
+        {/* Mensaje - RESPONSIVE */}
         <AnimatePresence>
           {message && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className='p-4 bg-blue-600 text-white rounded-lg text-center'
+              className='p-3 sm:p-4 bg-blue-600 text-white rounded-lg text-center text-sm sm:text-base'
             >
               {message}
             </motion.div>
@@ -501,30 +513,47 @@ export default function VehicleConfig() {
           getStatusText={getStatusText}
         />
 
+        {/* Paginación - RESPONSIVE */}
         {totalPages > 1 && (
-          <div className='flex justify-center items-center gap-2 mt-6'>
+          <div className='flex justify-center items-center gap-1 sm:gap-2 mt-4 sm:mt-6'>
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className='px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors'
+              className='px-2 sm:px-3 py-1 sm:py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors text-xs sm:text-sm'
             >
-              ← Anterior
+              ← Ant
             </button>
 
+            {/* Páginas - Mostrar menos en móviles */}
             <div className='flex gap-1'>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-3 py-2 rounded transition-colors ${
-                    currentPage === page
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700 hover:bg-gray-600 text-white'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                let page
+                if (totalPages <= 5) {
+                  page = i + 1
+                } else {
+                  if (currentPage <= 3) {
+                    page = i + 1
+                  } else if (currentPage >= totalPages - 2) {
+                    page = totalPages - 4 + i
+                  } else {
+                    page = currentPage - 2 + i
+                  }
+                }
+
+                return (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-2 sm:px-3 py-1 sm:py-2 rounded transition-colors text-xs sm:text-sm ${
+                      currentPage === page
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-700 hover:bg-gray-600 text-white'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                )
+              })}
             </div>
 
             <button
@@ -532,16 +561,18 @@ export default function VehicleConfig() {
                 setCurrentPage(Math.min(totalPages, currentPage + 1))
               }
               disabled={currentPage === totalPages}
-              className='px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors'
+              className='px-2 sm:px-3 py-1 sm:py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors text-xs sm:text-sm'
             >
-              Siguiente →
+              Sig →
             </button>
           </div>
         )}
 
-        <AnimatePresence>
+        {/* Detalles - RESPONSIVE */}
+        <AnimatePresence mode='wait'>
           {selectedVehicleData && (
             <VehicleDetails
+              key={selectedVehicleData.id}
               vehicle={selectedVehicleData}
               onClose={() => setSelectedVehicle('')}
               onEditVehicle={handleOpenEditVehicle}

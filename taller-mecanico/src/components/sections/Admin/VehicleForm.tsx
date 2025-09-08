@@ -146,13 +146,13 @@ export default function VehicleForm(
   }
 
   return (
-    <div className='space-y-4'>
+    <div className='space-y-3 sm:space-y-4'>
       {/* Mostrar error de validación de fechas */}
       {hasDateError && (
-        <div className='p-3 bg-red-600 bg-opacity-20 border border-red-500 rounded-lg'>
+        <div className='p-2 sm:p-3 bg-red-600 bg-opacity-20 border border-red-500 rounded-lg'>
           <div className='flex items-center gap-2'>
-            <span className='text-red-400 text-lg'>⚠️</span>
-            <p className='text-red-300 text-sm font-medium'>
+            <span className='text-red-400 text-sm sm:text-lg'>⚠️</span>
+            <p className='text-red-300 text-xs sm:text-sm font-medium'>
               La fecha de ingreso no puede ser posterior a la fecha estimada de
               finalización
             </p>
@@ -160,153 +160,200 @@ export default function VehicleForm(
         </div>
       )}
 
-      {/* Fechas */}
-      <div className='grid grid-cols-2 gap-3'>
-        <div>
-          <label className='block text-gray-300 text-sm mb-1'>
-            Fecha de ingreso *
-          </label>
+      {/* SECCIÓN 1: Fechas importantes - PRIORIDAD EN MÓVILES */}
+      <div className='bg-blue-900/20 p-2 sm:p-3 rounded-lg border border-blue-500/30'>
+        <h4 className='text-blue-300 font-medium mb-2 text-xs sm:text-sm flex items-center gap-1'>
+          📅 Fechas
+        </h4>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3'>
+          <div>
+            <label className='block text-gray-300 text-xs sm:text-sm mb-1'>
+              Fecha de ingreso *
+            </label>
+            <input
+              type='date'
+              value={formatDate(
+                isEdit && 'entryDate' in vehicle
+                  ? vehicle.entryDate
+                  : 'createdAt' in vehicle
+                  ? vehicle.createdAt
+                  : undefined
+              )}
+              onChange={e => {
+                const fieldName = isEdit ? 'entryDate' : 'createdAt'
+                const localDate = e.target.value
+                  ? new Date(e.target.value + 'T12:00:00')
+                  : new Date()
+                handleVehicleUpdate({ [fieldName]: localDate })
+              }}
+              className={`w-full h-8 sm:h-9 p-2 bg-gray-700 border rounded-lg text-white text-xs sm:text-sm ${
+                hasDateError ? 'border-red-500' : 'border-gray-600'
+              }`}
+            />
+          </div>
+          <div>
+            <label className='block text-gray-300 text-xs sm:text-sm mb-1'>
+              Fecha estimada de finalización
+            </label>
+            <input
+              type='date'
+              value={formatDate(vehicle.estimatedCompletionDate)}
+              onChange={e =>
+                handleVehicleUpdate({
+                  estimatedCompletionDate: e.target.value
+                    ? new Date(e.target.value + 'T12:00:00')
+                    : null,
+                })
+              }
+              className={`w-full h-8 sm:h-9 p-2 bg-gray-700 border rounded-lg text-white text-xs sm:text-sm ${
+                hasDateError ? 'border-red-500' : 'border-gray-600'
+              }`}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* SECCIÓN 2: Datos del cliente - IMPORTANTE EN MÓVILES */}
+      <div className='bg-green-900/20 p-2 sm:p-3 rounded-lg border border-green-500/30'>
+        <h4 className='text-green-300 font-medium mb-2 text-xs sm:text-sm flex items-center gap-1'>
+          👤 Cliente
+        </h4>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3'>
           <input
-            type='date'
-            value={formatDate(
-              isEdit && 'entryDate' in vehicle
-                ? vehicle.entryDate
-                : 'createdAt' in vehicle
-                ? vehicle.createdAt
-                : undefined
-            )}
-            onChange={e => {
-              const fieldName = isEdit ? 'entryDate' : 'createdAt'
-              const localDate = e.target.value
-                ? new Date(e.target.value + 'T12:00:00')
-                : new Date()
-              handleVehicleUpdate({ [fieldName]: localDate })
-            }}
-            className={`w-full h-9 p-2.5 bg-gray-700 border rounded-lg text-white ${
-              hasDateError ? 'border-red-500' : 'border-gray-600'
-            }`}
+            type='text'
+            placeholder='Cliente *'
+            value={vehicle.clientName}
+            onChange={e => handleVehicleUpdate({ clientName: e.target.value })}
+            className='w-full h-8 sm:h-9 p-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 text-xs sm:text-sm'
+          />
+          <input
+            type='text'
+            placeholder='Teléfono'
+            value={vehicle.clientPhone || ''}
+            onChange={e => handleVehicleUpdate({ clientPhone: e.target.value })}
+            className='w-full h-8 sm:h-9 p-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 text-xs sm:text-sm'
           />
         </div>
-        <div>
-          <label className='block text-gray-300 text-sm mb-1'>
-            Fecha estimada de finalización
+      </div>
+
+      {/* SECCIÓN 3: Datos del vehículo */}
+      <div className='bg-purple-900/20 p-2 sm:p-3 rounded-lg border border-purple-500/30'>
+        <h4 className='text-purple-300 font-medium mb-2 text-xs sm:text-sm flex items-center gap-1'>
+          🚗 Vehículo
+        </h4>
+
+        {/* Patente - DESTACADA */}
+        <div className='mb-2 sm:mb-3'>
+          <label className='block text-gray-300 text-xs sm:text-sm mb-1'>
+            Patente *
           </label>
           <input
-            type='date'
-            value={formatDate(vehicle.estimatedCompletionDate)}
+            type='text'
+            placeholder='ABC 123 o AB 123 CD'
+            value={vehicle.plateNumber}
+            onChange={e => {
+              const formattedPlate = formatPlateNumber(e.target.value)
+
+              handleVehicleUpdate({
+                plateNumber: formattedPlate,
+              })
+
+              if (!isEdit && onPatenteChange && formattedPlate.length >= 6) {
+                onPatenteChange(formattedPlate)
+              }
+            }}
+            maxLength={9}
+            className='w-full h-8 sm:h-9 p-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 text-xs sm:text-sm font-mono'
+          />
+        </div>
+
+        {/* Marca y modelo */}
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-2 sm:mb-3'>
+          <input
+            type='text'
+            placeholder='Marca'
+            value={vehicle.brand || ''}
+            onChange={e => handleVehicleUpdate({ brand: e.target.value })}
+            className='w-full h-8 sm:h-9 p-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 text-xs sm:text-sm'
+          />
+          <input
+            type='text'
+            placeholder='Modelo'
+            value={vehicle.model || ''}
+            onChange={e => handleVehicleUpdate({ model: e.target.value })}
+            className='w-full h-8 sm:h-9 p-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 text-xs sm:text-sm'
+          />
+        </div>
+
+        {/* Año y KM */}
+        <div className='grid grid-cols-2 gap-2 sm:gap-3'>
+          <input
+            type='number'
+            placeholder='Año'
+            value={vehicle.year || ''}
             onChange={e =>
               handleVehicleUpdate({
-                estimatedCompletionDate: e.target.value
-                  ? new Date(e.target.value + 'T12:00:00')
-                  : null,
+                year: parseInt(e.target.value) || new Date().getFullYear(),
               })
             }
-            className={`w-full h-9 p-2.5 bg-gray-700 border rounded-lg text-white ${
-              hasDateError ? 'border-red-500' : 'border-gray-600'
-            }`}
+            className='w-full h-8 sm:h-9 p-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 text-xs sm:text-sm'
+          />
+          <input
+            type='number'
+            placeholder='KM'
+            value={vehicle.km || ''}
+            onChange={e =>
+              handleVehicleUpdate({
+                km: parseFloat(e.target.value) || 0,
+              })
+            }
+            className='w-full h-8 sm:h-9 p-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 text-xs sm:text-sm'
           />
         </div>
       </div>
 
-      {/* Cliente y teléfono */}
-      <div className='grid grid-cols-2 gap-3'>
-        <input
-          type='text'
-          placeholder='Cliente *'
-          value={vehicle.clientName}
-          onChange={e => handleVehicleUpdate({ clientName: e.target.value })}
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
-        <input
-          type='text'
-          placeholder='Teléfono'
-          value={vehicle.clientPhone || ''}
-          onChange={e => handleVehicleUpdate({ clientPhone: e.target.value })}
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
-      </div>
+      {/* SECCIÓN 4: Información adicional - COLAPSABLE EN MÓVILES */}
+      <div className='bg-gray-700/30 p-2 sm:p-3 rounded-lg border border-gray-600'>
+        <h4 className='text-gray-300 font-medium mb-2 text-xs sm:text-sm flex items-center gap-1'>
+          📋 Información adicional
+        </h4>
 
-      {/* Marca y modelo */}
-      <div className='grid grid-cols-2 gap-3'>
-        <input
-          type='text'
-          placeholder='Marca'
-          value={vehicle.brand || ''}
-          onChange={e => handleVehicleUpdate({ brand: e.target.value })}
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
-        <input
-          type='text'
-          placeholder='Modelo'
-          value={vehicle.model || ''}
-          onChange={e => handleVehicleUpdate({ model: e.target.value })}
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
-      </div>
+        <div className='space-y-2 sm:space-y-3'>
+          {/* Tipo de servicio */}
+          <input
+            type='text'
+            placeholder='Tipo de servicio'
+            value={vehicle.serviceType || ''}
+            onChange={e => handleVehicleUpdate({ serviceType: e.target.value })}
+            className='w-full h-8 sm:h-9 p-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 text-xs sm:text-sm'
+          />
 
-      {/* Año y patente */}
-      <div className='grid grid-cols-2 gap-3'>
-        <input
-          type='number'
-          placeholder='Año'
-          value={vehicle.year || ''}
-          onChange={e =>
-            handleVehicleUpdate({
-              year: parseInt(e.target.value) || new Date().getFullYear(),
-            })
-          }
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
-        <input
-          type='text'
-          placeholder='Patente *'
-          value={vehicle.plateNumber}
-          onChange={e => {
-            const formattedPlate = formatPlateNumber(e.target.value)
-
-            handleVehicleUpdate({
-              plateNumber: formattedPlate,
-            })
-
-            if (!isEdit && onPatenteChange && formattedPlate.length >= 6) {
-              onPatenteChange(formattedPlate)
+          {/* Número de chasis */}
+          <input
+            type='text'
+            placeholder='N° de chasis (opcional)'
+            value={vehicle.chassisNumber || ''}
+            onChange={e =>
+              handleVehicleUpdate({ chassisNumber: e.target.value })
             }
-          }}
-          maxLength={9}
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
+            className='w-full h-8 sm:h-9 p-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 text-xs sm:text-sm'
+          />
+        </div>
       </div>
 
-      {/* Chasis y KM */}
-      <div className='grid grid-cols-2 gap-3'>
-        <input
-          type='text'
-          placeholder='N° de chasis'
-          value={vehicle.chassisNumber || ''}
-          onChange={e => handleVehicleUpdate({ chassisNumber: e.target.value })}
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
-        <input
-          type='number'
-          placeholder='KM'
-          value={vehicle.km || ''}
-          onChange={e =>
-            handleVehicleUpdate({
-              km: parseFloat(e.target.value) || 0,
-            })
-          }
-          className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-        />
+      {/* Información de ayuda - COMPACTA EN MÓVILES */}
+      <div className='bg-yellow-900/20 p-2 rounded-lg border border-yellow-500/30'>
+        <div className='flex items-start gap-2'>
+          <span className='text-yellow-400 text-xs sm:text-sm'>💡</span>
+          <div className='text-yellow-200 text-xs space-y-1'>
+            <p>• Los campos marcados con * son obligatorios</p>
+            <p>• La patente se formatea automáticamente</p>
+            <p className='hidden sm:block'>
+              • Los datos del historial se cargan automáticamente si existen
+            </p>
+          </div>
+        </div>
       </div>
-
-      {/* Tipo de servicio */}
-      <input
-        type='text'
-        placeholder='Tipo de servicio'
-        value={vehicle.serviceType || ''}
-        onChange={e => handleVehicleUpdate({ serviceType: e.target.value })}
-        className='w-full h-9 p-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white'
-      />
     </div>
   )
 }

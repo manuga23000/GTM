@@ -165,20 +165,20 @@ const StepFileViewer = ({
   }
 
   return (
-    <div className='mt-2 flex gap-2 flex-wrap'>
+    <div className='mt-2 flex gap-1 sm:gap-2 flex-wrap'>
       {files?.map(file => (
         <div key={file.id} className='relative group'>
           {file.type === 'image' ? (
             <Image
               src={file.thumbnailUrl || file.url}
               alt={file.fileName}
-              width={64}
-              height={64}
-              className='w-16 h-16 object-cover rounded border border-gray-500 cursor-pointer hover:border-blue-400'
+              width={48}
+              height={48}
+              className='w-12 h-12 sm:w-16 sm:h-16 object-cover rounded border border-gray-500 cursor-pointer hover:border-blue-400'
               onClick={() => {
                 const modal = document.createElement('div')
                 modal.className =
-                  'fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[99999] cursor-pointer'
+                  'fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[99999] cursor-pointer p-4'
                 modal.onclick = () => document.body.removeChild(modal)
 
                 const img = document.createElement('img')
@@ -202,11 +202,11 @@ const StepFileViewer = ({
           ) : (
             <video
               src={file.url}
-              className='w-16 h-16 object-cover rounded border border-gray-500 cursor-pointer hover:border-blue-400'
+              className='w-12 h-12 sm:w-16 sm:h-16 object-cover rounded border border-gray-500 cursor-pointer hover:border-blue-400'
               onClick={() => {
                 const modal = document.createElement('div')
                 modal.className =
-                  'fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[99999] cursor-pointer'
+                  'fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[99999] cursor-pointer p-4'
                 modal.onclick = e => {
                   if (e.target === modal) document.body.removeChild(modal)
                 }
@@ -224,31 +224,26 @@ const StepFileViewer = ({
 
           <button
             onClick={() => onRemoveFile(file.id)}
-            className='absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity'
+            className='absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-xs hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity'
           >
             ✕
           </button>
 
           <div className='absolute bottom-0 right-0 bg-gray-800 text-white text-xs px-1 rounded-tl'>
             {file.type === 'image' ? '📷' : '🎥'}
-            {file.dimensions && (
-              <div className='text-xs opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-70 p-1 rounded absolute bottom-full right-0 mb-1 whitespace-nowrap'>
-                {file.dimensions.width}x{file.dimensions.height}
-              </div>
-            )}
           </div>
         </div>
       ))}
 
       {pendingFiles?.map(pendingFile => (
         <div key={pendingFile.id} className='relative group'>
-          <div className='w-16 h-16 relative'>
+          <div className='w-12 h-12 sm:w-16 sm:h-16 relative'>
             {pendingFile.type === 'image' ? (
               <Image
                 src={pendingFile.tempUrl}
                 alt='Subiendo...'
-                width={64}
-                height={64}
+                width={48}
+                height={48}
                 className='w-full h-full object-cover rounded border border-yellow-500'
               />
             ) : (
@@ -275,7 +270,7 @@ const StepFileViewer = ({
 
           <button
             onClick={() => onRemovePendingFile(pendingFile.id)}
-            className='absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity'
+            className='absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-xs hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity'
           >
             ✕
           </button>
@@ -338,7 +333,7 @@ const FileUploader = ({
               className='hidden'
               disabled={disabled}
             />
-            <div className='w-8 h-8 bg-green-600 hover:bg-green-700 text-white rounded flex items-center justify-center text-sm transition-colors disabled:opacity-50'>
+            <div className='w-6 h-6 sm:w-8 sm:h-8 bg-green-600 hover:bg-green-700 text-white rounded flex items-center justify-center text-xs sm:text-sm transition-colors disabled:opacity-50'>
               📷
             </div>
           </label>
@@ -352,7 +347,7 @@ const FileUploader = ({
                 className='hidden'
                 disabled={disabled}
               />
-              <div className='w-8 h-8 bg-purple-600 hover:bg-purple-700 text-white rounded flex items-center justify-center text-sm transition-colors disabled:opacity-50'>
+              <div className='w-6 h-6 sm:w-8 sm:h-8 bg-purple-600 hover:bg-purple-700 text-white rounded flex items-center justify-center text-xs sm:text-sm transition-colors disabled:opacity-50'>
                 🎥
               </div>
             </label>
@@ -625,9 +620,10 @@ const TrackingForm = ({
   }
 
   return (
-    <div className='space-y-6'>
-      <div className='flex flex-col items-center justify-center py-2 w-full max-w-md mx-auto'>
-        <label className='text-green-300 font-medium mb-1 text-sm self-start'>
+    <div className='space-y-4 sm:space-y-6'>
+      {/* Agregar trabajo - COMPACTO MÓVIL */}
+      <div className='flex flex-col items-center justify-center py-2 w-full'>
+        <label className='text-green-300 font-medium mb-1 text-xs sm:text-sm self-start'>
           Agregar trabajo realizado
         </label>
         <div className='flex flex-row items-center gap-2 w-full'>
@@ -636,7 +632,7 @@ const TrackingForm = ({
             placeholder='Agregar trabajo realizado...'
             value={newStep.title}
             onChange={e => setNewStep({ title: e.target.value })}
-            className='flex-1 px-4 py-2 bg-gray-700 border border-green-400 rounded text-white text-base shadow'
+            className='flex-1 px-2 sm:px-4 py-2 bg-gray-700 border border-green-400 rounded text-white text-sm sm:text-base shadow'
             onKeyDown={e => {
               if (e.key === 'Enter') handleAddStep()
             }}
@@ -646,15 +642,15 @@ const TrackingForm = ({
           <button
             onClick={handleAddStep}
             disabled={!newStep.title.trim()}
-            className='px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-base disabled:opacity-50 disabled:cursor-not-allowed'
-            style={{ minWidth: '48px' }}
+            className='px-2 sm:px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed min-w-[40px] sm:min-w-[48px]'
           >
             ➕
           </button>
         </div>
       </div>
 
-      <div className='space-y-2 max-h-48 overflow-y-auto mb-4'>
+      {/* Lista de trabajos - ALTURA LIMITADA EN MÓVIL */}
+      <div className='space-y-2 max-h-32 sm:max-h-48 overflow-y-auto mb-4'>
         {localSteps.map(step => {
           const stepFiles = step.files || []
           const pendingFiles = step.pendingFiles || []
@@ -671,15 +667,15 @@ const TrackingForm = ({
               className='bg-gray-700/50 p-2 rounded border border-gray-600 text-xs'
             >
               <div className='flex items-center justify-between w-full mb-1'>
-                <div className='flex items-center gap-2 flex-1'>
-                  <span className='text-base'>✅</span>
+                <div className='flex items-center gap-1 sm:gap-2 flex-1 min-w-0'>
+                  <span className='text-sm sm:text-base'>✅</span>
                   {editingStepId === step.id ? (
                     <>
                       <input
                         type='text'
                         value={editingStepTitle}
                         onChange={e => setEditingStepTitle(e.target.value)}
-                        className='flex-1 px-2 py-1 bg-gray-800 border border-green-400 rounded text-white text-xs shadow mr-2'
+                        className='flex-1 px-2 py-1 bg-gray-800 border border-green-400 rounded text-white text-xs shadow mr-1'
                         maxLength={120}
                         autoFocus
                         onKeyDown={e => {
@@ -697,7 +693,7 @@ const TrackingForm = ({
                       </button>
                       <button
                         onClick={handleCancelEditStep}
-                        className='text-gray-400 hover:text-gray-300 text-xs p-1 ml-1'
+                        className='text-gray-400 hover:text-gray-300 text-xs p-1'
                         title='Cancelar'
                       >
                         ❌
@@ -705,10 +701,12 @@ const TrackingForm = ({
                     </>
                   ) : (
                     <>
-                      <span className='text-white flex-1'>{step.title}</span>
+                      <span className='text-white flex-1 truncate text-xs sm:text-sm'>
+                        {step.title}
+                      </span>
                       <button
                         onClick={() => handleEditStep(step.id)}
-                        className='text-yellow-400 hover:text-yellow-300 text-xs p-1 ml-1'
+                        className='text-yellow-400 hover:text-yellow-300 text-xs p-1'
                         title='Editar'
                       >
                         ✏️
@@ -727,7 +725,7 @@ const TrackingForm = ({
 
                   <button
                     onClick={() => handleDeleteStep(step.id)}
-                    className='text-red-400 hover:text-red-300 text-xs p-1 ml-2'
+                    className='text-red-400 hover:text-red-300 text-xs p-1'
                     title='Eliminar'
                   >
                     🗑️
@@ -748,9 +746,10 @@ const TrackingForm = ({
         })}
       </div>
 
-      <div className='bg-blue-900/30 p-4 rounded border border-blue-500/30 mt-6 max-w-md mx-auto flex flex-col items-start'>
+      {/* Próximo paso - COMPACTO MÓVIL */}
+      <div className='bg-blue-900/30 p-3 sm:p-4 rounded border border-blue-500/30 w-full flex flex-col items-start'>
         <div className='flex flex-row items-center w-full mb-2'>
-          <span className='text-blue-300 font-medium text-sm'>
+          <span className='text-blue-300 font-medium text-xs sm:text-sm'>
             Próximo paso
           </span>
         </div>
@@ -761,7 +760,7 @@ const TrackingForm = ({
                 type='text'
                 value={editingNextStepValue}
                 onChange={e => setEditingNextStepValue(e.target.value)}
-                className='flex-1 px-4 py-2 bg-gray-700 border border-blue-400 rounded text-white text-base shadow'
+                className='flex-1 px-2 sm:px-4 py-2 bg-gray-700 border border-blue-400 rounded text-white text-sm sm:text-base shadow'
                 maxLength={120}
                 autoFocus
                 onKeyDown={e => {
@@ -791,7 +790,7 @@ const TrackingForm = ({
                   }
                 }}
                 disabled={!editingNextStepValue.trim()}
-                className='text-green-400 hover:text-green-300 text-base p-2 rounded'
+                className='text-green-400 hover:text-green-300 text-sm sm:text-base p-2 rounded'
                 title='Guardar'
               >
                 💾
@@ -801,7 +800,7 @@ const TrackingForm = ({
                   setEditingNextStep(false)
                   setEditingNextStepValue(tracking.nextStep || '')
                 }}
-                className='text-gray-400 hover:text-gray-300 text-base p-2 rounded'
+                className='text-gray-400 hover:text-gray-300 text-sm sm:text-base p-2 rounded'
                 title='Cancelar'
               >
                 ❌
@@ -809,20 +808,22 @@ const TrackingForm = ({
             </>
           ) : tracking.nextStep ? (
             <>
-              <span className='text-white flex-1'>{tracking.nextStep}</span>
+              <span className='text-white flex-1 text-xs sm:text-sm'>
+                {tracking.nextStep}
+              </span>
               <button
                 onClick={() => {
                   setEditingNextStep(true)
                   setEditingNextStepValue(tracking.nextStep || '')
                 }}
-                className='text-yellow-400 hover:text-yellow-300 text-base p-2 rounded ml-1'
+                className='text-yellow-400 hover:text-yellow-300 text-sm sm:text-base p-2 rounded'
                 title='Editar'
               >
                 ✏️
               </button>
               <button
                 onClick={() => setTracking(prev => ({ ...prev, nextStep: '' }))}
-                className='text-red-400 hover:text-red-300 text-base p-2 rounded ml-1'
+                className='text-red-400 hover:text-red-300 text-sm sm:text-base p-2 rounded'
                 title='Borrar próximo paso'
               >
                 🗑️
@@ -835,7 +836,7 @@ const TrackingForm = ({
                 placeholder='Agregar próximo paso...'
                 value={nextStepInput}
                 onChange={e => setNextStepInput(e.target.value)}
-                className='flex-1 px-4 py-2 bg-gray-700 border border-blue-400 rounded text-white text-base shadow'
+                className='flex-1 px-2 sm:px-4 py-2 bg-gray-700 border border-blue-400 rounded text-white text-sm sm:text-base shadow'
                 maxLength={120}
                 onKeyDown={e => {
                   if (e.key === 'Enter' && nextStepInput.trim()) {
@@ -858,8 +859,7 @@ const TrackingForm = ({
                   }
                 }}
                 disabled={!nextStepInput.trim()}
-                className='px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-base disabled:opacity-50 disabled:cursor-not-allowed'
-                style={{ minWidth: '48px' }}
+                className='px-2 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed min-w-[40px] sm:min-w-[48px]'
               >
                 ➕
               </button>
@@ -868,8 +868,9 @@ const TrackingForm = ({
         </div>
       </div>
 
-      <div className='bg-purple-900/30 p-2 rounded border border-purple-500/30'>
-        <h5 className='text-purple-300 font-medium mb-1 text-xs'>
+      {/* Fecha estimada - COMPACTO */}
+      <div className='bg-purple-900/30 p-2 sm:p-3 rounded border border-purple-500/30'>
+        <h5 className='text-purple-300 font-medium mb-1 text-xs sm:text-sm'>
           🕒 Fecha estimada de finalización
         </h5>
         <input
@@ -887,7 +888,7 @@ const TrackingForm = ({
                 : null,
             }))
           }
-          className='w-full p-1 bg-gray-700 border border-gray-600 rounded text-white text-xs'
+          className='w-full p-1 sm:p-2 bg-gray-700 border border-gray-600 rounded text-white text-xs sm:text-sm'
         />
       </div>
     </div>
@@ -954,7 +955,10 @@ export default function VehicleModal({
   const _handlePatenteInputChange = (value: string) => {
     const normalizedValue = value.toUpperCase()
 
-    setNewVehicle((prev: NewVehicleData) => ({ ...prev, plateNumber: normalizedValue }))
+    setNewVehicle((prev: NewVehicleData) => ({
+      ...prev,
+      plateNumber: normalizedValue,
+    }))
 
     setPatenteDebounce(normalizedValue)
   }
@@ -974,67 +978,38 @@ export default function VehicleModal({
 
   return (
     <>
+      {/* Modal Nuevo Vehículo - OPTIMIZADO MÓVIL */}
       <Portal>
         <AnimatePresence>
           {showAddForm && (
             <div
-              className='fixed z-[99999]'
-              style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '1rem',
-              }}
+              className='fixed z-[99999] inset-0 flex items-center justify-center p-2 sm:p-4'
               onClick={e => {
                 if (e.target === e.currentTarget) {
                   handleCloseAddForm()
                 }
               }}
             >
-              <div
-                className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
-                style={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  zIndex: 1,
-                }}
-              />
+              <div className='absolute inset-0 bg-black bg-opacity-80 backdrop-blur-sm' />
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className='relative bg-gray-800 rounded-xl p-6 w-full shadow-2xl'
-                style={{
-                  maxWidth: '32rem',
-                  maxHeight: '90vh',
-                  overflowY: 'auto',
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-                onClick={e => {
-                  e.stopPropagation()
-                }}
+                className='relative bg-gray-800 rounded-xl p-3 sm:p-6 w-full shadow-2xl max-w-sm sm:max-w-lg max-h-[95vh] overflow-y-auto'
+                onClick={e => e.stopPropagation()}
               >
-                <div className='flex justify-between items-center mb-4'>
+                <div className='flex justify-between items-center mb-3 sm:mb-4'>
                   <div>
-                    <h3 className='text-xl font-bold text-white'>
+                    <h3 className='text-lg sm:text-xl font-bold text-white'>
                       Crear Nuevo Vehículo
                     </h3>
-                    <p className='text-gray-400 text-sm mt-1'>
+                    <p className='text-gray-400 text-xs sm:text-sm mt-1'>
                       Ingresa los datos del nuevo vehículo al sistema
                     </p>
                   </div>
                   <button
                     onClick={handleCloseAddForm}
-                    className='text-gray-400 hover:text-white text-2xl'
+                    className='text-gray-400 hover:text-white text-xl sm:text-2xl'
                   >
                     ✕
                   </button>
@@ -1044,15 +1019,15 @@ export default function VehicleModal({
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className='mb-4 p-3 bg-green-900/30 border border-green-500/30 rounded-lg'
+                    className='mb-3 sm:mb-4 p-2 sm:p-3 bg-green-900/30 border border-green-500/30 rounded-lg'
                   >
                     <div className='flex items-center gap-2 text-green-300'>
                       <span>✅</span>
-                      <span className='font-medium'>
+                      <span className='font-medium text-xs sm:text-sm'>
                         Datos cargados del historial
                       </span>
                     </div>
-                    <p className='text-green-200 text-sm mt-1'>
+                    <p className='text-green-200 text-xs mt-1'>
                       Se han precargado los datos del cliente de servicios
                       anteriores. Verifica y ajusta según sea necesario.
                     </p>
@@ -1067,27 +1042,29 @@ export default function VehicleModal({
                 />
 
                 {addVehicleError && (
-                  <div className='mt-4 p-3 bg-red-600 bg-opacity-20 border border-red-500 rounded-lg'>
+                  <div className='mt-3 sm:mt-4 p-2 sm:p-3 bg-red-600 bg-opacity-20 border border-red-500 rounded-lg'>
                     <div className='flex items-center gap-2'>
-                      <span className='text-red-400 text-lg'>⚠️</span>
-                      <p className='text-red-300 text-sm font-medium'>
+                      <span className='text-red-400 text-sm sm:text-lg'>
+                        ⚠️
+                      </span>
+                      <p className='text-red-300 text-xs sm:text-sm font-medium'>
                         {addVehicleError}
                       </p>
                     </div>
                   </div>
                 )}
 
-                <div className='flex gap-3 pt-4 mt-6 border-t border-gray-700'>
+                <div className='flex gap-2 sm:gap-3 pt-3 sm:pt-4 mt-4 sm:mt-6 border-t border-gray-700'>
                   <button
                     onClick={handleCloseAddForm}
-                    className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
+                    className='flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium text-sm sm:text-base'
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={handleAddVehicle}
                     disabled={!isValidVehicle(newVehicle) || isAddingVehicle}
-                    className={`flex-1 px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium ${
+                    className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium text-sm sm:text-base ${
                       !isValidVehicle(newVehicle) || isAddingVehicle
                         ? 'opacity-50 cursor-not-allowed'
                         : ''
@@ -1095,8 +1072,8 @@ export default function VehicleModal({
                   >
                     {isAddingVehicle ? (
                       <div className='flex items-center justify-center gap-2'>
-                        <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
-                        Creando...
+                        <div className='w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                        <span className='text-xs sm:text-sm'>Creando...</span>
                       </div>
                     ) : (
                       '✅ Crear Vehículo'
@@ -1109,63 +1086,34 @@ export default function VehicleModal({
         </AnimatePresence>
       </Portal>
 
+      {/* Modal Editar Vehículo - OPTIMIZADO MÓVIL */}
       <Portal>
         <AnimatePresence>
           {showEditVehicleModal && editVehicle && (
             <div
-              className='fixed z-[99999]'
-              style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '1rem',
-              }}
+              className='fixed z-[99999] inset-0 flex items-center justify-center p-2 sm:p-4'
               onClick={() => setShowEditVehicleModal(false)}
             >
-              <div
-                className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
-                style={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  zIndex: 1,
-                }}
-              />
+              <div className='absolute inset-0 bg-black bg-opacity-80 backdrop-blur-sm' />
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className='relative bg-gray-800 rounded-xl p-6 w-full shadow-2xl'
-                style={{
-                  maxWidth: '32rem',
-                  maxHeight: '90vh',
-                  overflowY: 'auto',
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-                onClick={e => {
-                  e.stopPropagation()
-                }}
+                className='relative bg-gray-800 rounded-xl p-3 sm:p-6 w-full shadow-2xl max-w-sm sm:max-w-lg max-h-[95vh] overflow-y-auto'
+                onClick={e => e.stopPropagation()}
               >
-                <div className='flex justify-between items-center mb-4'>
+                <div className='flex justify-between items-center mb-3 sm:mb-4'>
                   <div>
-                    <h3 className='text-xl font-bold text-white'>
+                    <h3 className='text-lg sm:text-xl font-bold text-white'>
                       Editar Datos del Vehículo
                     </h3>
-                    <p className='text-gray-400 text-sm mt-1'>
+                    <p className='text-gray-400 text-xs sm:text-sm mt-1'>
                       Modificar información básica del vehículo
                     </p>
                   </div>
                   <button
                     onClick={() => setShowEditVehicleModal(false)}
-                    className='text-gray-400 hover:text-white text-2xl'
+                    className='text-gray-400 hover:text-white text-xl sm:text-2xl'
                   >
                     ✕
                   </button>
@@ -1183,24 +1131,24 @@ export default function VehicleModal({
                   isEdit={true}
                 />
 
-                <div className='flex gap-3 pt-4 mt-6 border-t border-gray-700'>
+                <div className='flex gap-2 sm:gap-3 pt-3 sm:pt-4 mt-4 sm:mt-6 border-t border-gray-700'>
                   <button
                     onClick={() => setShowEditVehicleModal(false)}
-                    className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
+                    className='flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium text-sm sm:text-base'
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={handleSaveVehicleEdit}
                     disabled={isEditingVehicle}
-                    className={`flex-1 px-4 py-3 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors font-medium ${
+                    className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors font-medium text-sm sm:text-base ${
                       isEditingVehicle ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
                     {isEditingVehicle ? (
                       <div className='flex items-center justify-center gap-2'>
-                        <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
-                        Guardando...
+                        <div className='w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                        <span className='text-xs sm:text-sm'>Guardando...</span>
                       </div>
                     ) : (
                       '💾 Guardar Cambios'
@@ -1213,63 +1161,32 @@ export default function VehicleModal({
         </AnimatePresence>
       </Portal>
 
+      {/* Modal Seguimiento - OPTIMIZADO MÓVIL */}
       <Portal>
         <AnimatePresence>
           {showTrackingModal && editTracking && (
-            <div
-              className='fixed z-[99999]'
-              style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '1rem',
-              }}
-            >
-              <div
-                className='absolute bg-black bg-opacity-80 backdrop-blur-sm'
-                style={{
-                  position: 'fixed',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  zIndex: 1,
-                }}
-              />
+            <div className='fixed z-[99999] inset-0 flex items-center justify-center p-2 sm:p-4'>
+              <div className='absolute inset-0 bg-black bg-opacity-80 backdrop-blur-sm' />
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className='relative bg-gray-800 rounded-xl p-6 w-full shadow-2xl'
-                style={{
-                  maxWidth: '32rem',
-                  maxHeight: '90vh',
-                  overflowY: 'auto',
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-                onClick={e => {
-                  e.stopPropagation()
-                }}
+                className='relative bg-gray-800 rounded-xl p-3 sm:p-6 w-full shadow-2xl max-w-sm sm:max-w-lg max-h-[95vh] overflow-y-auto'
+                onClick={e => e.stopPropagation()}
               >
-                <div className='flex justify-between items-center mb-6'>
+                <div className='flex justify-between items-center mb-4 sm:mb-6'>
                   <div>
-                    <h3 className='text-xl font-bold text-white'>
+                    <h3 className='text-lg sm:text-xl font-bold text-white'>
                       Actualizar Seguimiento
                     </h3>
-                    <p className='text-gray-400 text-sm mt-1'>
+                    <p className='text-gray-400 text-xs sm:text-sm mt-1'>
                       {editTracking.plateNumber} - {editTracking.brand}{' '}
                       {editTracking.model}
                     </p>
                   </div>
                   <button
                     onClick={() => setShowTrackingModal(false)}
-                    className='text-gray-400 hover:text-white text-2xl'
+                    className='text-gray-400 hover:text-white text-xl sm:text-2xl'
                   >
                     ✕
                   </button>
@@ -1282,24 +1199,24 @@ export default function VehicleModal({
                   }
                 />
 
-                <div className='flex gap-3 pt-6 mt-6 border-t border-gray-700'>
+                <div className='flex gap-2 sm:gap-3 pt-4 sm:pt-6 mt-4 sm:mt-6 border-t border-gray-700'>
                   <button
                     onClick={() => setShowTrackingModal(false)}
-                    className='flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium'
+                    className='flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium text-sm sm:text-base'
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={handleSaveTrackingEdit}
                     disabled={isEditingTracking}
-                    className={`flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium ${
+                    className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium text-sm sm:text-base ${
                       isEditingTracking ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
                     {isEditingTracking ? (
                       <div className='flex items-center justify-center gap-2'>
-                        <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
-                        Guardando...
+                        <div className='w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+                        <span className='text-xs sm:text-sm'>Guardando...</span>
                       </div>
                     ) : (
                       '💾 Guardar'

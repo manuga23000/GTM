@@ -26,36 +26,43 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className='w-full max-w-lg mx-auto p-8 rounded-xl shadow-2xl bg-black/70 backdrop-blur-md flex flex-col items-center'>
-      <h1 className='text-4xl font-extrabold mb-6 text-white drop-shadow-lg text-center'>
-        Panel de Administración
+    <div className='w-full max-w-lg mx-auto p-4 sm:p-6 md:p-8 rounded-xl shadow-2xl bg-black/70 backdrop-blur-md flex flex-col items-center min-h-[400px] sm:min-h-[500px]'>
+      <h1 className='text-2xl sm:text-3xl md:text-4xl font-extrabold mb-3 sm:mb-4 md:mb-6 text-white drop-shadow-lg text-center leading-tight'>
+        PANEL DE
+        <br className='sm:hidden' />
+        <span className='sm:ml-2'>ADMINISTRACIÓN</span>
       </h1>
-      <form onSubmit={handleSubmit} className='flex flex-col gap-4 w-full'>
+
+      <form
+        onSubmit={handleSubmit}
+        className='flex flex-col gap-3 sm:gap-4 w-full max-w-sm sm:max-w-md'
+      >
         <input
           type='email'
-          placeholder='Email'
+          placeholder='gtmsn291@gmail.com'
           value={email}
           onChange={e => setEmail(e.target.value)}
-          className='p-3 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-600'
+          className='p-3 sm:p-4 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm sm:text-base'
           required
         />
+
         <div className='relative'>
           <input
             type={showPassword ? 'text' : 'password'}
-            placeholder='Contraseña'
+            placeholder='••••••••'
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className='p-3 rounded bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-600 w-full pr-12'
+            className='p-3 sm:p-4 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-600 w-full pr-12 text-sm sm:text-base'
             required
           />
           <button
             type='button'
             onClick={() => setShowPassword(!showPassword)}
-            className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors'
+            className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors p-1'
           >
             {showPassword ? (
               <svg
-                className='w-5 h-5'
+                className='w-3 h-3 sm:w-5 sm:h-5'
                 fill='none'
                 stroke='currentColor'
                 viewBox='0 0 24 24'
@@ -90,12 +97,14 @@ export default function AdminLogin() {
             )}
           </button>
         </div>
+
         {error && (
-          <span className='text-red-400 text-sm text-center'>{error}</span>
+          <span className='text-red-400 text-sm text-center py-1'>{error}</span>
         )}
+
         <button
           type='submit'
-          className='bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded transition-colors duration-200 cursor-pointer'
+          className='bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-4 px-4 rounded-lg transition-colors duration-200 cursor-pointer text-sm sm:text-base mt-2 disabled:opacity-50 disabled:cursor-not-allowed'
           disabled={loading}
         >
           {loading ? 'Entrando...' : 'Entrar'}

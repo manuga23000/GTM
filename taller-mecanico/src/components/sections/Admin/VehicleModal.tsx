@@ -983,7 +983,7 @@ export default function VehicleModal({
         <AnimatePresence>
           {showAddForm && (
             <div
-              className='fixed z-[99999] inset-0 flex items-center justify-center p-2 sm:p-4'
+              className='fixed z-[99999] inset-0 flex items-center justify-center p-2 sm:p-4 pt-16 pb-8 sm:pt-4 sm:pb-4'
               onClick={e => {
                 if (e.target === e.currentTarget) {
                   handleCloseAddForm()
@@ -995,7 +995,7 @@ export default function VehicleModal({
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className='relative bg-gray-800 rounded-xl p-3 sm:p-6 w-full shadow-2xl max-w-sm sm:max-w-lg max-h-[95vh] overflow-y-auto'
+                className='relative bg-gray-800 rounded-xl p-3 sm:p-6 w-full shadow-2xl max-w-sm sm:max-w-lg max-h-[75vh] sm:max-h-[90vh] overflow-y-auto'
                 onClick={e => e.stopPropagation()}
               >
                 <div className='flex justify-between items-center mb-3 sm:mb-4'>
@@ -1099,7 +1099,7 @@ export default function VehicleModal({
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className='relative bg-gray-800 rounded-xl p-3 sm:p-6 w-full shadow-2xl max-w-sm sm:max-w-lg max-h-[95vh] overflow-y-auto'
+                className='relative bg-gray-800 rounded-xl p-3 sm:p-6 w-full shadow-2xl max-w-sm sm:max-w-lg max-h-[75vh] sm:max-h-[90vh] overflow-y-auto'
                 onClick={e => e.stopPropagation()}
               >
                 <div className='flex justify-between items-center mb-3 sm:mb-4'>

@@ -168,7 +168,7 @@ export default function VehicleForm(
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3'>
           <div>
             <label className='block text-gray-300 text-xs sm:text-sm mb-1'>
-              Fecha de ingreso *
+              Fecha ingreso *
             </label>
             <input
               type='date'
@@ -192,8 +192,8 @@ export default function VehicleForm(
             />
           </div>
           <div>
-            <label className='block text-gray-300 text-xs sm:text-sm mb-1'>
-              Fecha estimada de finalización
+            <label className='text-gray-300 text-xs sm:text-sm mb-1 flex items-start'>
+              Fecha estimada finalización
             </label>
             <input
               type='date'

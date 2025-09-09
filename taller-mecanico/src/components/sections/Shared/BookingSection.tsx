@@ -115,7 +115,7 @@ export default function BookingSection() {
                     duration: 0.5,
                     ease: 'easeOut' as const,
                   }}
-                  className='absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold'
+                  className='absolute top-2 right-2 sm:-top-3 sm:-right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold'
                 >
                   {index + 1}
                 </motion.div>
@@ -133,16 +133,17 @@ export default function BookingSection() {
           {/* Botón y texto adicional */}
           <motion.div variants={animations.fadeInUp} className='mt-12'>
             <Link href='/turnos'>
-  <Button variant='primary' size='xl'>
-    RESERVAR TURNO
-  </Button>
-</Link>
+              <Button variant='primary' size='xl'>
+                RESERVAR TURNO
+              </Button>
+            </Link>
 
             <motion.p
               variants={animations.fadeInUp}
               className='text-gray-400 mt-4 text-sm'
             >
-              Ya podés reservar tu turno online desde el sistema. Si tenés dudas, también podés contactarnos por{' '}
+              Ya podés reservar tu turno online desde el sistema. Si tenés
+              dudas, también podés contactarnos por{' '}
               <Link
                 href='https://wa.me/5493364694921'
                 target='_blank'

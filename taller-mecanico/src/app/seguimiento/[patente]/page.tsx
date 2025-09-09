@@ -11,6 +11,7 @@ import LoadingScreen from '@/components/ui/LoadingScreen'
 import { SeguimientoData } from '@/actions/seguimiento'
 import { getFirestore } from 'firebase/firestore'
 import { app } from '@/lib/firebase'
+import FileViewer from '@/components/sections/Seguimiento/FileViewer'
 
 export default function SeguimientoPage() {
   const params = useParams()
@@ -26,11 +27,6 @@ export default function SeguimientoPage() {
   const [servicioExpandido, setServicioExpandido] = useState<number | null>(
     null
   )
-  const [archivoModal, setArchivoModal] = useState<{
-    url: string
-    fileName: string
-    type: string
-  } | null>(null)
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -461,78 +457,11 @@ export default function SeguimientoPage() {
                                     </p>
                                   )}
 
-                                  {/* Archivos del trabajo */}
+                                  {/* Archivos del trabajo - usando FileViewer */}
                                   {trabajo.archivos &&
                                     trabajo.archivos.length > 0 && (
-                                      <div className='mt-3 ml-7'>
-                                        <div className='flex items-center gap-2 mb-2'>
-                                          <span className='text-xs text-gray-500'>
-                                            Archivos:
-                                          </span>
-                                          <span className='bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium'>
-                                            {trabajo.archivos.length} archivo
-                                            {trabajo.archivos.length !== 1
-                                              ? 's'
-                                              : ''}
-                                          </span>
-                                        </div>
-                                        <div className='flex gap-2 flex-wrap'>
-                                          {trabajo.archivos.map(archivo => (
-                                            <div
-                                              key={archivo.id}
-                                              className='relative group cursor-pointer'
-                                              onClick={() => {
-                                                setArchivoModal({
-                                                  url: archivo.url,
-                                                  fileName: archivo.fileName,
-                                                  type: archivo.type
-                                                })
-                                              }}
-                                            >
-                                              {archivo.type === 'image' ? (
-                                                <img
-                                                  src={
-                                                    archivo.thumbnailUrl ||
-                                                    archivo.url
-                                                  }
-                                                  alt={archivo.fileName}
-                                                  className='w-16 h-16 object-cover rounded border border-gray-300 hover:border-blue-400 transition-colors'
-                                                />
-                                              ) : (
-                                                <video
-                                                  src={archivo.url}
-                                                  className='w-16 h-16 object-cover rounded border border-gray-300 hover:border-blue-400 transition-colors'
-                                                />
-                                              )}
-
-                                              {/* Tipo de archivo */}
-                                              <div className='absolute bottom-0 right-0 bg-gray-800 text-white text-xs px-1 rounded-tl'>
-                                                {archivo.type === 'image'
-                                                  ? '📷'
-                                                  : '🎥'}
-                                              </div>
-
-                                              {/* Info en hover */}
-                                              <div className='absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded flex items-end'>
-                                                <div className='opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 w-full'>
-                                                  <div className='bg-black bg-opacity-70 text-white text-xs p-1 rounded text-center'>
-                                                    <div className='truncate font-medium'>
-                                                      {archivo.fileName}
-                                                    </div>
-                                                    <div className='text-gray-300'>
-                                                      {(
-                                                        archivo.size /
-                                                        1024 /
-                                                        1024
-                                                      ).toFixed(1)}
-                                                      MB
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          ))}
-                                        </div>
+                                      <div className='ml-7'>
+                                        <FileViewer archivos={trabajo.archivos} />
                                       </div>
                                     )}
                                 </motion.div>
@@ -564,65 +493,7 @@ export default function SeguimientoPage() {
         </div>
       </main>
 
-      {/* Modal de archivo mejorado */}
-      {archivoModal && (
-        <div 
-          className='fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[99999] p-4'
-          onClick={() => setArchivoModal(null)}
-        >
-          <div 
-            className='relative max-w-full max-h-full flex flex-col'
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Barra superior con botones */}
-            <div className='flex justify-end items-center mb-4 bg-black bg-opacity-50 rounded-lg p-3'>
-              <div className='flex gap-2 flex-shrink-0'>
-                {/* Botón descargar */}
-                <button
-                  onClick={() => {
-                    const link = document.createElement('a')
-                    link.href = archivoModal.url
-                    link.download = archivoModal.fileName
-                    link.target = '_blank'
-                    document.body.appendChild(link)
-                    link.click()
-                    document.body.removeChild(link)
-                  }}
-                  className='bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2'
-                >
-                  📥 Descargar
-                </button>
-                {/* Botón cerrar */}
-                <button
-                  onClick={() => setArchivoModal(null)}
-                  className='bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors'
-                >
-                  ✕ Cerrar
-                </button>
-              </div>
-            </div>
 
-            {/* Contenido del archivo */}
-            <div className='flex items-center justify-center max-w-full max-h-[80vh]'>
-              {archivoModal.type === 'image' ? (
-                <img
-                  src={archivoModal.url}
-                  alt={archivoModal.fileName}
-                  className='max-w-full max-h-full object-contain rounded-lg'
-                  style={{ maxHeight: '80vh' }}
-                />
-              ) : (
-                <video
-                  src={archivoModal.url}
-                  controls
-                  className='max-w-full max-h-full rounded-lg'
-                  style={{ maxHeight: '80vh' }}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }

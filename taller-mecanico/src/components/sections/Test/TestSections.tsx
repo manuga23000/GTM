@@ -56,7 +56,6 @@ export default function TestSections({
               {section.title}
             </h2>
 
-            {/* Botón para abrir modal */}
             <div className='text-center mb-8'>
               <button
                 onClick={() => section.setModal(true)}
@@ -70,7 +69,6 @@ export default function TestSections({
               </p>
             </div>
 
-            {/* Texto largo para scroll */}
             <div className='grid md:grid-cols-2 gap-6'>
               <div>
                 <h3 className='text-2xl font-semibold mb-4'>Párrafo 1</h3>
@@ -88,7 +86,6 @@ export default function TestSections({
               </div>
             </div>
 
-            {/* Más contenido */}
             <div className='mt-8'>
               <h3 className='text-2xl font-semibold mb-4'>Más Contenido</h3>
               <div className='grid md:grid-cols-3 gap-4'>
@@ -103,7 +100,6 @@ export default function TestSections({
               </div>
             </div>
 
-            {/* Indicador de posición */}
             <div className='text-center mt-8 p-4 bg-black/40 rounded-lg'>
               <p className='text-yellow-400 font-bold'>
                 📍 ESTÁS EN LA {section.title}
@@ -117,7 +113,6 @@ export default function TestSections({
         </section>
       ))}
 
-      {/* Sección final con instrucciones */}
       <section className='bg-gray-800 text-white p-8 min-h-screen flex items-center justify-center'>
         <div className='max-w-4xl mx-auto text-center'>
           <h2 className='text-4xl font-bold mb-6'>

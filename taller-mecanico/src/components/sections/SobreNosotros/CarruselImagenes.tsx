@@ -34,7 +34,6 @@ export default function CarruselImagenes() {
   const siguiente = () => setActual((actual + 1) % total)
   const anterior = () => setActual((actual - 1 + total) % total)
 
-  // Animaciones simplificadas
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0 },

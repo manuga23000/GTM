@@ -53,7 +53,6 @@ export default function ProgramacionModulos() {
             módulos de control y sistemas electrónicos
           </motion.p>
         </motion.div>
-        {/* Grid de servicios de programación */}
         <motion.div
           variants={animations.staggerContainer}
           initial='hidden'
@@ -161,7 +160,7 @@ export default function ProgramacionModulos() {
             </p>
           </motion.div>
         </motion.div>
-        {/* Servicios adicionales */}
+
         <motion.div
           variants={animations.staggerContainer}
           initial='hidden'
@@ -231,7 +230,6 @@ export default function ProgramacionModulos() {
             </motion.ul>
           </motion.div>
         </motion.div>
-        {/* Call to action */}
         <motion.div
           variants={animations.fadeInUp}
           initial='hidden'

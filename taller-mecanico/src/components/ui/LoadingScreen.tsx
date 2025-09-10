@@ -16,7 +16,6 @@ export default function LoadingScreen({
   const [progress, setProgress] = useState(0)
 
   useEffect(() => {
-    // Prevenir scroll durante el loading
     document.body.classList.add('loading')
 
     const startTime = Date.now()
@@ -32,20 +31,18 @@ export default function LoadingScreen({
       if (currentTime < endTime) {
         requestAnimationFrame(updateProgress)
       } else {
-        // Simular un pequeño delay antes de ocultar
         setTimeout(() => {
           setIsVisible(false)
           setTimeout(() => {
             document.body.classList.remove('loading')
             onLoadingComplete()
-          }, 500) // Delay para la animación de salida
+          }, 500)
         }, 200)
       }
     }
 
     requestAnimationFrame(updateProgress)
 
-    // Cleanup
     return () => {
       document.body.classList.remove('loading')
     }
@@ -61,7 +58,6 @@ export default function LoadingScreen({
           className='fixed inset-0 z-50 flex items-center justify-center bg-black'
         >
           <div className='flex flex-col items-center space-y-8'>
-            {/* Logo con animación de entrada */}
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -82,7 +78,6 @@ export default function LoadingScreen({
               />
             </motion.div>
 
-            {/* Texto de carga */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -98,7 +93,6 @@ export default function LoadingScreen({
               </h2>
             </motion.div>
 
-            {/* Barra de progreso */}
             <motion.div
               initial={{ opacity: 0, scaleX: 0 }}
               animate={{ opacity: 1, scaleX: 1 }}
@@ -120,7 +114,6 @@ export default function LoadingScreen({
               />
             </motion.div>
 
-            {/* Indicador de progreso numérico */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -136,7 +129,6 @@ export default function LoadingScreen({
               </span>
             </motion.div>
 
-            {/* Elementos decorativos */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

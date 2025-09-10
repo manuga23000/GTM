@@ -11,7 +11,7 @@ import FormFields from './FormFields'
 import MobileInputStyles from './MobileInputStyles'
 import SuccessModal from './SuccessModal'
 import DatePickerStyles from './DatePickerStyles'
-import { getAllServiceConfigs } from '@/actions/serviceconfig' // Nueva importación
+import { getAllServiceConfigs } from '@/actions/serviceconfig'
 
 export default function TurnosFormulario() {
   const router = useRouter()
@@ -37,7 +37,7 @@ export default function TurnosFormulario() {
   const [availabilityCache, setAvailabilityCache] = useState<
     Record<string, boolean>
   >({})
-  const [serviceConfigs, setServiceConfigs] = useState<ServiceConfig[]>([]) // Nueva state
+  const [serviceConfigs, setServiceConfigs] = useState<ServiceConfig[]>([])
 
   const sectionRef = useRef(null)
   const isSectionInView = useInView(sectionRef, {
@@ -45,13 +45,10 @@ export default function TurnosFormulario() {
     margin: '-100px',
   })
 
-  // Cargar configuraciones de servicios
   const loadServiceConfigs = async () => {
     try {
-   
       const configs = await getAllServiceConfigs()
       setServiceConfigs(configs)
-    
     } catch (error) {
       console.error(
         '❌ Firebase Status Check - Error conectando a Firebase:',
@@ -63,14 +60,12 @@ export default function TurnosFormulario() {
     }
   }
 
-  // Obtener configuración de un servicio específico
   const getServiceConfig = (serviceName: string): ServiceConfig | null => {
     return (
       serviceConfigs.find(config => config.serviceName === serviceName) || null
     )
   }
 
-  // Función para generar fecha local consistente (evita problemas de zona horaria)
   const getLocalDateString = (date: Date): string => {
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -78,12 +73,10 @@ export default function TurnosFormulario() {
     return `${year}-${month}-${day}`
   }
 
-  // Función para cargar disponibilidad
   const loadAvailability = useCallback(async (specificService?: string) => {
     setIsLoadingDates(true)
     const newCache: Record<string, boolean> = { ...availabilityCache }
 
-    // Generar fechas para los próximos 15 días laborables
     const datesToCheck: string[] = []
     const now = new Date()
     const today8AM = new Date(
@@ -95,33 +88,29 @@ export default function TurnosFormulario() {
       0
     )
 
-    // Determinar desde qué día empezar
-    let startDay = 0 // Empezar desde hoy
+    let startDay = 0
     if (now >= today8AM) {
-      startDay = 1 // Empezar desde mañana
+      startDay = 1
     }
 
     for (let i = startDay; i < 15; i++) {
       const date = new Date()
       date.setDate(date.getDate() + i)
 
-      // Solo verificar días laborables (lunes a viernes por defecto, pero cada servicio puede tener sus propios días)
       const day = date.getDay()
       if (day >= 1 && day <= 5) {
-        const dateString = getLocalDateString(date) // Usar función local consistente
+        const dateString = getLocalDateString(date)
         datesToCheck.push(dateString)
       }
     }
 
     try {
-    
       const availabilityPromises: Promise<{
         dateString: string
         service: string
         available: boolean
       }>[] = []
 
-      // Si se especifica un servicio específico, solo cargar ese
       if (specificService) {
         datesToCheck.forEach(dateString => {
           availabilityPromises.push(
@@ -144,7 +133,6 @@ export default function TurnosFormulario() {
           )
         })
       } else {
-        // Para cada fecha, verificar todos los servicios que requieren fecha
         datesToCheck.forEach(dateString => {
           const servicesRequiringDate = [
             'Diagnóstico',
@@ -164,7 +152,6 @@ export default function TurnosFormulario() {
           })
         })
 
-        // Para cada fecha, verificar todos los sub-servicios de caja automática
         datesToCheck.forEach(dateString => {
           const cajaAutomaticaSubServices = [
             'Service de mantenimiento',
@@ -187,7 +174,6 @@ export default function TurnosFormulario() {
           })
         })
 
-        // Para cada fecha, verificar todos los sub-servicios de mecánica general
         datesToCheck.forEach(dateString => {
           const mecanicaGeneralSubServices = [
             'Correa de distribución',
@@ -223,7 +209,6 @@ export default function TurnosFormulario() {
       })
 
       setAvailabilityCache(newCache)
-    
     } catch (error) {
       console.error(
         '❌ Firebase Status Check - Error cargando disponibilidad desde Firebase:',
@@ -237,7 +222,6 @@ export default function TurnosFormulario() {
     }
   }, [])
 
-  // Cargar configuraciones y disponibilidad al montar el componente
   useEffect(() => {
     const initializeData = async () => {
       await loadServiceConfigs()
@@ -246,7 +230,6 @@ export default function TurnosFormulario() {
     initializeData()
   }, [loadAvailability])
 
-  // Recargar disponibilidad cuando cambie el servicio principal
   useEffect(() => {
     if (formData.service === 'Diagnóstico') {
       loadAvailability('Diagnóstico')
@@ -261,7 +244,6 @@ export default function TurnosFormulario() {
     ) {
       loadAvailability(formData.subService)
     } else {
-      // Para otros servicios, limpiar cache
       setAvailabilityCache({})
     }
   }, [formData.service, formData.subService])
@@ -277,7 +259,6 @@ export default function TurnosFormulario() {
       [name]: value,
     }))
 
-    // Si se cambia el servicio, limpiar sub-servicio si no es caja automática o mecánica general
     if (
       name === 'service' &&
       value !== 'Caja automática' &&
@@ -302,9 +283,7 @@ export default function TurnosFormulario() {
     setIsLoading(true)
     setStatus({ type: null, message: '' })
 
-  
     try {
-      // Validación básica - Solo servicio obligatorio para testing
       if (!formData.service) {
         setStatus({
           type: 'error',
@@ -371,7 +350,6 @@ export default function TurnosFormulario() {
 
       try {
         const result = await createTurno(formData)
-     
 
         if (result.success) {
           setShowSuccessModal(true)
@@ -423,7 +401,6 @@ export default function TurnosFormulario() {
 
   return (
     <>
-      {/* Formulario Section */}
       <section className='py-20 bg-gray-900 overflow-x-hidden'>
         <motion.div
           ref={sectionRef}
@@ -457,10 +434,9 @@ export default function TurnosFormulario() {
                 isLoadingDates={isLoadingDates}
                 onFieldChange={handleChange}
                 onDateChange={handleDateChange}
-                getServiceConfig={getServiceConfig} // Pasar función para obtener configuración
+                getServiceConfig={getServiceConfig}
               />
 
-              {/* Mensaje adicional */}
               <div>
                 <label
                   htmlFor='message'
@@ -479,7 +455,6 @@ export default function TurnosFormulario() {
                 />
               </div>
 
-              {/* Estado del formulario */}
               {status.type && (
                 <div
                   className={`p-4 rounded-lg ${
@@ -492,7 +467,6 @@ export default function TurnosFormulario() {
                 </div>
               )}
 
-              {/* Botón de envío */}
               <div className='text-center'>
                 <Button
                   type='submit'
@@ -505,7 +479,6 @@ export default function TurnosFormulario() {
             </form>
           </motion.div>
 
-          {/* Información adicional */}
           <motion.div
             variants={animations.fadeInUp}
             className='mt-8 text-center space-y-4'
@@ -519,11 +492,7 @@ export default function TurnosFormulario() {
         <DatePickerStyles />
       </section>
 
-      <SuccessModal
-        isOpen={showSuccessModal}
-        onGoHome={handleGoHome}
-        //  onNewTurno={handleNewTurno}
-      />
+      <SuccessModal isOpen={showSuccessModal} onGoHome={handleGoHome} />
     </>
   )
 }

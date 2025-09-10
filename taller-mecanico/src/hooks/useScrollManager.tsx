@@ -18,10 +18,8 @@ class ScrollManager {
   }
 
   addLock(id: string, priority: number = 0) {
-    // Remover lock existente del mismo ID
     this.removeLock(id)
 
-    // Agregar nuevo lock
     this.locks.push({ id, priority })
     this.locks.sort((a, b) => b.priority - a.priority)
 
@@ -42,10 +40,8 @@ class ScrollManager {
   }
 
   private enableScrollLock() {
-    // Guardar posición actual
     this.originalScrollY = window.scrollY
 
-    // Guardar estilos originales
     const bodyStyle = window.getComputedStyle(document.body)
     const htmlStyle = window.getComputedStyle(document.documentElement)
 
@@ -58,28 +54,19 @@ class ScrollManager {
       htmlOverflow: htmlStyle.overflow,
     }
 
-    // Calcular ancho del scrollbar
     const scrollBarWidth =
       window.innerWidth - document.documentElement.clientWidth
-
-    // Aplicar lock
     document.body.style.overflow = 'hidden'
     document.body.style.paddingRight = `${scrollBarWidth}px`
     document.documentElement.style.overflow = 'hidden'
 
-    // Remover clases conflictivas
     document.body.classList.remove('loading')
-
- 
   }
 
   private disableScrollLock() {
-    // Restaurar estilos
     document.body.style.overflow = this.originalStyles.bodyOverflow
     document.body.style.paddingRight = this.originalStyles.bodyPaddingRight
     document.documentElement.style.overflow = this.originalStyles.htmlOverflow
-
-
   }
 
   hasLocks(): boolean {
@@ -90,7 +77,6 @@ class ScrollManager {
     return [...this.locks]
   }
 
-  // Método para debug
   getStatus() {
     return {
       hasLocks: this.hasLocks(),
@@ -100,10 +86,8 @@ class ScrollManager {
   }
 }
 
-// Singleton global
 const scrollManager = new ScrollManager()
 
-// Hook principal para usar en componentes
 export const useScrollLock = (
   id: string,
   isActive: boolean,
@@ -122,7 +106,6 @@ export const useScrollLock = (
   }, [id, isActive, priority])
 }
 
-// Hook para debug (opcional)
 export const useScrollManagerDebug = () => {
   return scrollManager.getStatus()
 }

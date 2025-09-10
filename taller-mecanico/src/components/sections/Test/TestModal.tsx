@@ -20,11 +20,9 @@ export default function TestModal({
   showModal3,
   setShowModal3,
 }: TestModalProps) {
-  // ✅ USAR EL SCROLL MANAGER
   const anyModalOpen = showModal1 || showModal2 || showModal3
   useScrollLock('test-modal', anyModalOpen, 100)
 
-  // Componente Modal reutilizable
   const Modal = ({
     isOpen,
     onClose,
@@ -55,10 +53,8 @@ export default function TestModal({
           }}
           onClick={onClose}
         >
-          {/* Backdrop */}
           <div className='absolute inset-0 bg-black/80 backdrop-blur-sm' />
 
-          {/* Modal content */}
           <motion.div
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -85,7 +81,6 @@ export default function TestModal({
 
   return (
     <>
-      {/* Modal 1 - Azul */}
       <Modal
         isOpen={showModal1}
         onClose={() => setShowModal1(false)}
@@ -128,7 +123,6 @@ export default function TestModal({
         </div>
       </Modal>
 
-      {/* Modal 2 - Verde */}
       <Modal
         isOpen={showModal2}
         onClose={() => setShowModal2(false)}
@@ -177,7 +171,6 @@ export default function TestModal({
         </div>
       </Modal>
 
-      {/* Modal 3 - Púrpura */}
       <Modal
         isOpen={showModal3}
         onClose={() => setShowModal3(false)}
@@ -237,7 +230,6 @@ export default function TestModal({
         </div>
       </Modal>
 
-      {/* Botones flotantes para debug */}
       <div className='fixed bottom-4 right-4 space-y-2 z-30'>
         <button
           onClick={() => setShowModal1(true)}

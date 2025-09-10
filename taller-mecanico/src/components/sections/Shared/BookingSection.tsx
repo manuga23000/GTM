@@ -27,7 +27,6 @@ export default function BookingSection() {
     },
   ]
 
-  // Animaciones más suaves para las tarjetas
   const cardVariants = {
     hidden: { opacity: 0, y: 40, scale: 0.95 },
     visible: (custom: number) => ({
@@ -35,8 +34,8 @@ export default function BookingSection() {
       y: 0,
       scale: 1,
       transition: {
-        duration: 1.0, // Más lento
-        delay: custom * 0.3, // Más espaciado
+        duration: 1.0,
+        delay: custom * 0.3,
         ease: 'easeOut' as const,
       },
     }),
@@ -51,7 +50,6 @@ export default function BookingSection() {
           animate={isInView ? 'visible' : 'hidden'}
           className='space-y-8'
         >
-          {/* Título principal */}
           <motion.h2
             variants={animations.fadeInUp}
             className='text-4xl md:text-6xl font-bold text-white'
@@ -65,7 +63,6 @@ export default function BookingSection() {
             </motion.span>
           </motion.h2>
 
-          {/* Párrafo descriptivo */}
           <motion.p
             variants={animations.fadeInUp}
             className='text-gray-300 text-lg max-w-3xl mx-auto leading-relaxed'
@@ -75,7 +72,6 @@ export default function BookingSection() {
             vehículo en manos expertas.
           </motion.p>
 
-          {/* Cards de pasos */}
           <motion.div
             variants={animations.staggerContainer}
             className='flex flex-col sm:flex-row gap-6 justify-center items-center'
@@ -94,7 +90,6 @@ export default function BookingSection() {
                 whileTap={{ scale: 0.98 }}
                 className='relative bg-gray-800 p-8 rounded-lg text-center max-w-sm cursor-pointer border border-transparent hover:border-red-500/30 hover:bg-gray-700 transition-all duration-300'
               >
-                {/* Ícono con animación */}
                 <motion.div
                   whileHover={{
                     scale: 1.2,
@@ -106,7 +101,6 @@ export default function BookingSection() {
                   {step.icon}
                 </motion.div>
 
-                {/* Número de paso */}
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={isInView ? { scale: 1 } : { scale: 0 }}
@@ -130,7 +124,6 @@ export default function BookingSection() {
             ))}
           </motion.div>
 
-          {/* Botón y texto adicional */}
           <motion.div variants={animations.fadeInUp} className='mt-12'>
             <Link href='/turnos'>
               <Button variant='primary' size='xl'>
@@ -157,7 +150,6 @@ export default function BookingSection() {
         </motion.div>
       </div>
 
-      {/* Líneas conectoras entre las cards (opcional, para desktop) */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : { opacity: 0 }}
@@ -166,14 +158,13 @@ export default function BookingSection() {
       >
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-center'>
           <div className='flex items-center justify-center space-x-6 mt-20'>
-            {/* Línea 1 */}
             <motion.div
               initial={{ width: 0 }}
               animate={isInView ? { width: '100px' } : { width: 0 }}
               transition={{ delay: 1.2, duration: 0.8 }}
               className='h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent'
             />
-            {/* Línea 2 */}
+
             <motion.div
               initial={{ width: 0 }}
               animate={isInView ? { width: '100px' } : { width: 0 }}

@@ -1,6 +1,4 @@
 import { VehicleInput } from '../types/types'
-
-// Interfaces for Firebase data structures
 interface FirestoreTimestamp {
   toDate(): Date
 }
@@ -73,7 +71,6 @@ interface RawFirestoreVehicle {
 
 type ValidationObject = Record<string, unknown> | unknown[] | unknown
 
-// Type guard for valid step status
 function isValidStepStatus(
   status: unknown
 ): status is 'completed' | 'pending' | 'in-progress' {
@@ -83,10 +80,6 @@ function isValidStepStatus(
   )
 }
 
-/**
- * NUEVO: Validar datos antes de enviar a Firestore
- * Detecta valores undefined anidados
- */
 export function validateFirestoreData(
   obj: ValidationObject,
   path = ''
@@ -120,10 +113,6 @@ export function validateFirestoreData(
   return errors
 }
 
-/**
- * NUEVO: Limpiar datos de archivo para Firestore
- * Elimina campos undefined y valida tipos
- */
 export function cleanStepFileForFirestore(
   file: RawFirestoreFile
 ): CleanStepFile {
@@ -137,12 +126,10 @@ export function cleanStepFileForFirestore(
     size: typeof file.size === 'number' ? file.size : 0,
   }
 
-  // Solo agregar thumbnailUrl si existe y no es undefined
   if (file.thumbnailUrl && typeof file.thumbnailUrl === 'string') {
     cleanFile.thumbnailUrl = file.thumbnailUrl
   }
 
-  // Solo agregar dimensions si es válido
   if (
     file.dimensions &&
     typeof file.dimensions.width === 'number' &&
@@ -159,9 +146,6 @@ export function cleanStepFileForFirestore(
   return cleanFile
 }
 
-/**
- * NUEVO: Limpiar step completo para Firestore
- */
 export function cleanStepForFirestore(step: RawFirestoreStep): CleanStep {
   const cleanStep: CleanStep = {
     id: step.id || '',
@@ -171,7 +155,6 @@ export function cleanStepForFirestore(step: RawFirestoreStep): CleanStep {
     notes: step.notes || '',
   }
 
-  // Limpiar archivos si existen
   if (Array.isArray(step.files) && step.files.length > 0) {
     cleanStep.files = step.files.map(cleanStepFileForFirestore)
   }
@@ -179,31 +162,26 @@ export function cleanStepForFirestore(step: RawFirestoreStep): CleanStep {
   return cleanStep
 }
 
-/**
- * Filtrar valores undefined para Firebase (CORREGIDO - conserva updatedAt)
- */
 export function filterUndefinedValues(
   obj: Record<string, unknown>
 ): Record<string, unknown> {
   const filtered: Record<string, unknown> = {}
 
   for (const [key, value] of Object.entries(obj)) {
-    // EXCEPCIÓN para fechas: conservar si son string (ISO) o Date
     if (
       (key === 'createdAt' ||
         key === 'estimatedCompletionDate' ||
-        key === 'updatedAt') && // ← AGREGADO updatedAt
+        key === 'updatedAt') &&
       (typeof value === 'string' || value instanceof Date)
     ) {
       filtered[key] = value
       continue
     }
     if (value === undefined || value === null) {
-      continue // Saltar valores undefined y null
+      continue
     }
 
     if (Array.isArray(value)) {
-      // Filtrar arrays recursivamente
       const filteredArray = value
         .filter(item => item !== undefined && item !== null)
         .map(item => {
@@ -217,7 +195,6 @@ export function filterUndefinedValues(
         filtered[key] = filteredArray
       }
     } else if (typeof value === 'object' && value !== null) {
-      // Filtrar objetos recursivamente
       const filteredObject = filterUndefinedValues(
         value as Record<string, unknown>
       )
@@ -225,7 +202,6 @@ export function filterUndefinedValues(
         filtered[key] = filteredObject
       }
     } else {
-      // Valores primitivos válidos
       filtered[key] = value
     }
   }
@@ -233,10 +209,6 @@ export function filterUndefinedValues(
   return filtered
 }
 
-/**
- * Normalizar datos de vehículo desde Firebase
- * ACTUALIZADO: Maneja archivos de Storage en los steps
- */
 export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
   return {
     plateNumber: data.plateNumber || '',
@@ -296,9 +268,8 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
               ? (step.date as FirestoreTimestamp).toDate()
               : step.date
               ? new Date(step.date as string)
-              : new Date(), // SEGURO: Siempre devuelve una fecha válida
+              : new Date(),
           notes: typeof step.notes === 'string' ? step.notes : '',
-          // ACTUALIZADO: Normalizar archivos del step con thumbnails y dimensiones
           files: Array.isArray(step.files)
             ? step.files.map((file: RawFirestoreFile) => ({
                 id: typeof file.id === 'string' ? file.id : '',
@@ -311,7 +282,7 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
                 thumbnailUrl:
                   typeof file.thumbnailUrl === 'string'
                     ? file.thumbnailUrl
-                    : undefined, // NUEVO
+                    : undefined,
                 storageRef:
                   typeof file.storageRef === 'string' ? file.storageRef : '',
                 uploadedAt:
@@ -326,7 +297,7 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
                     : new Date(),
                 size: typeof file.size === 'number' ? file.size : 0,
                 dimensions:
-                  file.dimensions && typeof file.dimensions === 'object' // NUEVO
+                  file.dimensions && typeof file.dimensions === 'object'
                     ? {
                         width:
                           typeof file.dimensions.width === 'number'
@@ -357,9 +328,8 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
               ? (step.date as FirestoreTimestamp).toDate()
               : step.date
               ? new Date(step.date as string)
-              : new Date(), // SEGURO: Siempre devuelve una fecha válida
+              : new Date(),
           notes: typeof step.notes === 'string' ? step.notes : '',
-          // ACTUALIZADO: Normalizar archivos del step (legacy) con thumbnails
           files: Array.isArray(step.files)
             ? step.files.map((file: RawFirestoreFile) => ({
                 id: typeof file.id === 'string' ? file.id : '',
@@ -372,7 +342,7 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
                 thumbnailUrl:
                   typeof file.thumbnailUrl === 'string'
                     ? file.thumbnailUrl
-                    : undefined, // NUEVO
+                    : undefined,
                 storageRef:
                   typeof file.storageRef === 'string' ? file.storageRef : '',
                 uploadedAt:
@@ -387,7 +357,7 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
                     : new Date(),
                 size: typeof file.size === 'number' ? file.size : 0,
                 dimensions:
-                  file.dimensions && typeof file.dimensions === 'object' // NUEVO
+                  file.dimensions && typeof file.dimensions === 'object'
                     ? {
                         width:
                           typeof file.dimensions.width === 'number'
@@ -406,9 +376,6 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
   }
 }
 
-/**
- * Formatear fecha para Firestore
- */
 export function formatDateForFirestore(date: unknown): Date | null {
   if (!date) return null
 
@@ -419,7 +386,6 @@ export function formatDateForFirestore(date: unknown): Date | null {
     return isNaN(parsed.getTime()) ? null : parsed
   }
 
-  // Si es Timestamp de Firestore
   if (typeof date === 'object' && date !== null && 'toDate' in date) {
     return (date as FirestoreTimestamp).toDate()
   }
@@ -427,10 +393,6 @@ export function formatDateForFirestore(date: unknown): Date | null {
   return null
 }
 
-/**
- * NUEVO: Limpiar URLs temporales de archivos
- * Útil para evitar memory leaks
- */
 export function cleanupTempUrls(files: { tempUrl?: string }[]): void {
   files.forEach(file => {
     if (file.tempUrl && file.tempUrl.startsWith('blob:')) {
@@ -439,9 +401,6 @@ export function cleanupTempUrls(files: { tempUrl?: string }[]): void {
   })
 }
 
-/**
- * NUEVO: Convertir bytes a formato legible
- */
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes'
 
@@ -452,9 +411,6 @@ export function formatFileSize(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
 
-/**
- * NUEVO: Validar estructura de archivo del step
- */
 export function isValidStepFile(file: unknown): file is CleanStepFile {
   return (
     typeof file === 'object' &&

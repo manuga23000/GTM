@@ -10,7 +10,6 @@ export interface BaseEntity {
   updatedAt: Date
 }
 
-// === TURNOS ===
 export interface Turno extends BaseEntity {
   name: string
   email: string
@@ -50,13 +49,12 @@ export interface AvailabilityCheck {
   usedSlots: number
 }
 
-// === CONFIGURACIÓN DE SERVICIOS ===
 export interface ServiceConfig extends BaseEntity {
   serviceName: string
   maxPerDay: number | null
   maxPerWeek: number | null
   requiresDate: boolean
-  allowedDays: number[] // 1=Lunes, 2=Martes, etc.
+  allowedDays: number[]
   isActive: boolean
 }
 
@@ -73,48 +71,43 @@ export interface ServiceConfigResponse extends AdminResponse {
   config?: ServiceConfig
 }
 
-// === ARCHIVOS DE STORAGE ===
-// ACTUALIZADO: Interface para archivos del step (con Storage y thumbnails)
 export interface StepFile {
   id: string
-  fileName: string // Nombre original del archivo
+  fileName: string
   type: 'image' | 'video'
-  url: string // URL de Firebase Storage (permanente)
-  thumbnailUrl?: string // URL del thumbnail (solo para imágenes)
-  storageRef: string // Referencia en Storage para eliminar
-  uploadedAt: Date // Fecha de subida
-  size: number // Tamaño del archivo en bytes
+  url: string
+  thumbnailUrl?: string
+  storageRef: string
+  uploadedAt: Date
+  size: number
   dimensions?: {
-    // Dimensiones originales (solo para imágenes)
     width: number
     height: number
   }
 }
 
-// NUEVO: Interface para archivos en proceso de subida (temporal)
 export interface PendingStepFile {
   id: string
   file: File
   type: 'image' | 'video'
-  tempUrl: string // URL temporal para preview
-  uploadProgress?: number // Progreso de subida (0-100)
-  uploading?: boolean // Si está subiendo
-  error?: string // Error de subida
+  tempUrl: string
+  uploadProgress?: number
+  uploading?: boolean
+  error?: string
 }
 
-// === VEHÍCULOS ===
 export interface VehicleStep {
   id: string
   title: string
   status: 'completed' | 'pending' | 'in-progress'
   date: Date
   notes?: string
-  files?: StepFile[] // ACTUALIZADO: archivos de Storage
+  files?: StepFile[]
 }
 
 export interface VehicleInput {
-  plateNumber: string // obligatorio
-  clientName: string // obligatorio
+  plateNumber: string
+  clientName: string
   brand?: string
   model?: string
   year?: number
@@ -128,8 +121,6 @@ export interface VehicleInput {
   nextStep?: string
   steps?: VehicleStep[]
 }
-
-// === SEGUIMIENTO ===
 export interface TimelineItem {
   id: number
   fecha: string
@@ -162,5 +153,5 @@ export interface SeguimientoData {
   fechaEstimadaEntrega?: string
   timeline?: TimelineItem[]
   imagenes?: ImagenItem[]
-  updatedAt?: string // Agregado campo para última actualización
+  updatedAt?: string
 }

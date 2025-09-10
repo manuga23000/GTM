@@ -12,7 +12,7 @@ import { StepFile, PendingStepFile } from '@/actions/types/types'
 interface UseVehicleFilesOptions {
   plateNumber: string
   maxFilesPerStep?: number
-  maxFileSize?: number // en MB
+  maxFileSize?: number
   allowMultipleVideos?: boolean
 }
 
@@ -38,7 +38,6 @@ export function useVehicleFiles({
   >(new Map())
   const abortControllersRef = useRef<Map<string, AbortController>>(new Map())
 
-  // Limpiar al desmontar
   useEffect(() => {
     return () => {
       cleanup()
@@ -46,13 +45,11 @@ export function useVehicleFiles({
   }, [])
 
   const cleanup = useCallback(() => {
-    // Abortar uploads en progreso
     abortControllersRef.current.forEach(controller => {
       controller.abort()
     })
     abortControllersRef.current.clear()
 
-    // Limpiar URLs temporales
     pendingFiles.forEach(stepFiles => {
       stepFiles.forEach(file => {
         if (file.tempUrl) {
@@ -73,19 +70,16 @@ export function useVehicleFiles({
       const errors: string[] = []
 
       for (const file of files) {
-        // Verificar límite de archivos
         if (currentFileCount + validFiles.length >= maxFilesPerStep) {
           errors.push(`Máximo ${maxFilesPerStep} archivos por trabajo`)
           break
         }
 
-        // Validar tipo
         if (!validateFileType(file)) {
           errors.push(`${file.name}: Tipo de archivo no permitido`)
           continue
         }
 
-        // Validar tamaño
         if (!validateFileSize(file, maxFileSize)) {
           errors.push(
             `${file.name}: Tamaño muy grande (máximo ${maxFileSize}MB)`
@@ -93,7 +87,6 @@ export function useVehicleFiles({
           continue
         }
 
-        // Validar video único
         const isVideo = getFileType(file) === 'video'
         if (
           isVideo &&
@@ -116,7 +109,6 @@ export function useVehicleFiles({
     async (stepId: string, files: File[]): Promise<StepFile[]> => {
       if (!files.length) return []
 
-      // Crear archivos pendientes
       const newPendingFiles: PendingStepFile[] = files.map(file => ({
         id: Date.now().toString() + Math.random(),
         file,
@@ -126,7 +118,6 @@ export function useVehicleFiles({
         uploading: true,
       }))
 
-      // Agregar a pendientes
       setPendingFiles(prev => {
         const newMap = new Map(prev)
         const existingFiles = newMap.get(stepId) || []
@@ -136,7 +127,6 @@ export function useVehicleFiles({
 
       const uploadedFiles: StepFile[] = []
 
-      // Subir archivos uno por uno
       for (const pendingFile of newPendingFiles) {
         try {
           const abortController = new AbortController()
@@ -152,7 +142,6 @@ export function useVehicleFiles({
             pendingFile.file,
             fileName,
             progress => {
-              // Actualizar progreso
               setPendingFiles(prev => {
                 const newMap = new Map(prev)
                 const stepFiles = newMap.get(stepId) || []
@@ -167,23 +156,20 @@ export function useVehicleFiles({
             }
           )
 
-          // Archivo subido exitosamente - FIXED: destructure the upload result
           const uploadedFile: StepFile = {
             id: pendingFile.id,
             fileName: pendingFile.file.name,
             type: pendingFile.type,
-            url: uploadResult.url, // Extract the URL string from the result
-            thumbnailUrl: uploadResult.thumbnailUrl, // Include thumbnail if available
+            url: uploadResult.url,
+            thumbnailUrl: uploadResult.thumbnailUrl,
             storageRef: fileName,
             uploadedAt: new Date(),
             size: pendingFile.file.size,
-            // Include dimensions from metadata if available
             dimensions: uploadResult.metadata.dimensions,
           }
 
           uploadedFiles.push(uploadedFile)
 
-          // Remover de pendientes
           setPendingFiles(prev => {
             const newMap = new Map(prev)
             const stepFiles = newMap.get(stepId) || []
@@ -198,13 +184,11 @@ export function useVehicleFiles({
             return newMap
           })
 
-          // Limpiar URL temporal
           URL.revokeObjectURL(pendingFile.tempUrl)
           abortControllersRef.current.delete(pendingFile.id)
         } catch (error) {
           console.error('Error uploading file:', error)
 
-          // Marcar como error
           setPendingFiles(prev => {
             const newMap = new Map(prev)
             const stepFiles = newMap.get(stepId) || []
@@ -229,13 +213,11 @@ export function useVehicleFiles({
       const newMap = new Map(prev)
       const stepFiles = newMap.get(stepId) || []
 
-      // Encontrar archivo para limpiar URL temporal
       const fileToRemove = stepFiles.find(f => f.id === fileId)
       if (fileToRemove?.tempUrl) {
         URL.revokeObjectURL(fileToRemove.tempUrl)
       }
 
-      // Abortar upload si está en progreso
       const abortController = abortControllersRef.current.get(fileId)
       if (abortController) {
         abortController.abort()
@@ -282,14 +264,12 @@ export function useVehicleFiles({
     (stepId: string) => {
       const stepFiles = pendingFiles.get(stepId) || []
 
-      // Limpiar URLs temporales
       stepFiles.forEach(file => {
         if (file.tempUrl) {
           URL.revokeObjectURL(file.tempUrl)
         }
       })
 
-      // Abortar uploads
       stepFiles.forEach(file => {
         const abortController = abortControllersRef.current.get(file.id)
         if (abortController) {

@@ -79,152 +79,136 @@ interface VehicleDetailsProps {
 const StepFileDisplay = ({ files }: { files: StepFile[] }) => {
   if (!files || files.length === 0) return null
 
+  const totalFiles = files.length
+  const imageCount = files.filter(f => f.type === 'image').length
+  const videoCount = totalFiles - imageCount
+
+  const openFileViewer = () => {
+    const modal = document.createElement('div')
+    modal.className = 'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[99999] p-4'
+    modal.onclick = (e) => {
+      if (e.target === modal) document.body.removeChild(modal)
+    }
+
+    const container = document.createElement('div')
+    container.className = 'relative w-full h-full max-w-4xl max-h-[90vh] bg-gray-900 rounded-lg overflow-hidden flex flex-col'
+
+    // Header
+    const header = document.createElement('div')
+    header.className = 'bg-gray-800 p-4 flex justify-between items-center border-b border-gray-700'
+    
+    const title = document.createElement('h3')
+    title.className = 'text-white font-medium text-lg'
+    title.textContent = `Archivos (${totalFiles})`
+    
+    const closeButton = document.createElement('button')
+    closeButton.className = 'text-white hover:text-gray-300 p-2'
+    closeButton.innerHTML = '✕'
+    closeButton.onclick = () => document.body.removeChild(modal)
+    
+    header.appendChild(title)
+    header.appendChild(closeButton)
+
+    // Content
+    const content = document.createElement('div')
+    content.className = 'flex-1 overflow-y-auto p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'
+
+    files.forEach((file) => {
+      const fileElement = document.createElement('div')
+      fileElement.className = 'bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-blue-500 transition-colors cursor-pointer'
+      
+      const preview = document.createElement('div')
+      preview.className = 'relative pt-[100%] bg-gray-700 flex items-center justify-center'
+      
+      if (file.type === 'image') {
+        const img = document.createElement('img')
+        img.src = file.thumbnailUrl || file.url
+        img.className = 'absolute inset-0 w-full h-full object-cover'
+        img.alt = file.fileName
+        preview.appendChild(img)
+      } else {
+        const videoIcon = document.createElement('div')
+        videoIcon.className = 'text-4xl text-gray-400'
+        videoIcon.innerHTML = '▶️'
+        preview.appendChild(videoIcon)
+      }
+      
+      const info = document.createElement('div')
+      info.className = 'p-2 text-xs text-gray-300 truncate'
+      info.title = file.fileName
+      info.textContent = file.fileName
+      
+      fileElement.appendChild(preview)
+      fileElement.appendChild(info)
+      
+      // Click handler for each file
+      fileElement.onclick = (e) => {
+        e.stopPropagation()
+        const fileViewer = document.createElement('div')
+        fileViewer.className = 'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[100000] p-4'
+        
+        const closeBtn = document.createElement('button')
+        closeBtn.className = 'absolute top-4 right-4 text-white text-2xl z-10 bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75'
+        closeBtn.innerHTML = '✕'
+        closeBtn.onclick = () => document.body.removeChild(fileViewer)
+        
+        const viewerContent = document.createElement('div')
+        viewerContent.className = 'relative w-full h-full max-w-4xl max-h-[90vh] flex items-center justify-center'
+        
+        if (file.type === 'image') {
+          const img = document.createElement('img')
+          img.src = file.url
+          img.className = 'max-w-full max-h-full object-contain'
+          img.alt = file.fileName
+          viewerContent.appendChild(img)
+        } else {
+          const video = document.createElement('video')
+          video.src = file.url
+          video.controls = true
+          video.className = 'max-w-full max-h-full'
+          video.autoplay = true
+          viewerContent.appendChild(video)
+        }
+        
+        fileViewer.appendChild(closeBtn)
+        fileViewer.appendChild(viewerContent)
+        
+        // Close on ESC key
+        const handleKeyDown = (e: KeyboardEvent) => {
+          if (e.key === 'Escape') {
+            document.body.removeChild(fileViewer)
+            document.removeEventListener('keydown', handleKeyDown)
+          }
+        }
+        
+        document.addEventListener('keydown', handleKeyDown)
+        document.body.appendChild(fileViewer)
+      }
+      
+      content.appendChild(fileElement)
+    })
+
+    // Footer
+    const footer = document.createElement('div')
+    footer.className = 'bg-gray-800 p-3 border-t border-gray-700 text-sm text-gray-400 text-center'
+    footer.textContent = `${totalFiles} archivos (${imageCount} imagen${imageCount !== 1 ? 'es' : ''}${videoCount > 0 ? `, ${videoCount} video${videoCount !== 1 ? 's' : ''}` : ''})`
+
+    container.appendChild(header)
+    container.appendChild(content)
+    container.appendChild(footer)
+    modal.appendChild(container)
+    document.body.appendChild(modal)
+  }
+
   return (
-    <div className='mt-2 flex gap-1 sm:gap-2 flex-wrap'>
-      {files.map(file => (
-        <div key={file.id} className='relative group'>
-          {file.type === 'image' ? (
-            <Image
-              src={file.thumbnailUrl || file.url}
-              alt={file.fileName}
-              width={48}
-              height={48}
-              className='w-12 h-12 sm:w-16 sm:h-16 object-cover rounded border border-gray-500 cursor-pointer hover:border-blue-400 transition-colors'
-              onClick={() => {
-                const modal = document.createElement('div')
-                modal.className =
-                  'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[99999] cursor-pointer p-4'
-                modal.onclick = () => document.body.removeChild(modal)
-
-                const container = document.createElement('div')
-                container.className = 'relative max-w-full max-h-full'
-
-                const loader = document.createElement('div')
-                loader.className = 'text-white text-center'
-                loader.innerHTML = '🔄 Cargando imagen original...'
-                container.appendChild(loader)
-
-                const img = document.createElement('img')
-                img.src = file.url
-                img.className = 'max-w-full max-h-full object-contain'
-                img.alt = file.fileName
-
-                img.onload = () => {
-                  container.removeChild(loader)
-                  container.appendChild(img)
-                }
-
-                const closeButton = document.createElement('button')
-                closeButton.innerHTML = '✕'
-                closeButton.className =
-                  'absolute top-4 right-4 text-white text-2xl bg-black bg-opacity-50 rounded-full w-10 h-10 hover:bg-opacity-75 flex items-center justify-center'
-                closeButton.onclick = e => {
-                  e.stopPropagation()
-                  document.body.removeChild(modal)
-                }
-
-                const infoBar = document.createElement('div')
-                infoBar.className =
-                  'absolute bottom-4 left-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded text-sm'
-                infoBar.innerHTML = `
-                  <div class="font-medium">${file.fileName}</div>
-                  <div class="text-xs text-gray-300 flex justify-between">
-                    <span>${(file.size / 1024 / 1024).toFixed(1)}MB</span>
-                    <span>${new Date(file.uploadedAt).toLocaleDateString(
-                      'es-AR'
-                    )}</span>
-                    ${
-                      file.dimensions
-                        ? `<span>${file.dimensions.width}x${file.dimensions.height}px</span>`
-                        : ''
-                    }
-                  </div>
-                `
-
-                modal.appendChild(container)
-                modal.appendChild(closeButton)
-                modal.appendChild(infoBar)
-                document.body.appendChild(modal)
-              }}
-            />
-          ) : (
-            <video
-              src={file.url}
-              className='w-12 h-12 sm:w-16 sm:h-16 object-cover rounded border border-gray-500 cursor-pointer hover:border-blue-400 transition-colors'
-              onClick={() => {
-                const modal = document.createElement('div')
-                modal.className =
-                  'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[99999] p-4'
-                modal.onclick = e => {
-                  if (e.target === modal) document.body.removeChild(modal)
-                }
-
-                const container = document.createElement('div')
-                container.className = 'relative max-w-full max-h-full'
-
-                const video = document.createElement('video')
-                video.src = file.url
-                video.controls = true
-                video.className = 'max-w-full max-h-full'
-
-                const closeButton = document.createElement('button')
-                closeButton.innerHTML = '✕'
-                closeButton.className =
-                  'absolute top-4 right-4 text-white text-2xl bg-black bg-opacity-50 rounded-full w-10 h-10 hover:bg-opacity-75 flex items-center justify-center'
-                closeButton.onclick = () => document.body.removeChild(modal)
-
-                const infoBar = document.createElement('div')
-                infoBar.className =
-                  'absolute bottom-4 left-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded text-sm'
-                infoBar.innerHTML = `
-                  <div class="font-medium">${file.fileName}</div>
-                  <div class="text-xs text-gray-300 flex justify-between">
-                    <span>${(file.size / 1024 / 1024).toFixed(1)}MB</span>
-                    <span>${new Date(file.uploadedAt).toLocaleDateString(
-                      'es-AR'
-                    )}</span>
-                  </div>
-                `
-
-                container.appendChild(video)
-                modal.appendChild(container)
-                modal.appendChild(closeButton)
-                modal.appendChild(infoBar)
-                document.body.appendChild(modal)
-              }}
-            />
-          )}
-
-          {/* Información del archivo en hover - MÓVIL OPTIMIZADA */}
-          <div className='absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 rounded flex items-end'>
-            <div className='opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 w-full'>
-              <div className='bg-black bg-opacity-70 text-white text-xs p-1 rounded text-center'>
-                <div className='truncate font-medium text-xs'>
-                  {file.fileName}
-                </div>
-                <div className='text-gray-300 flex justify-between text-xs'>
-                  <span>{(file.size / 1024 / 1024).toFixed(1)}MB</span>
-                  {file.dimensions && (
-                    <span className='hidden sm:inline'>
-                      {file.dimensions.width}x{file.dimensions.height}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Indicador de tipo - MEJORADO PARA MÓVIL */}
-          <div className='absolute bottom-0 right-0 bg-gray-800 text-white text-xs px-1 rounded-tl flex items-center gap-1'>
-            {file.type === 'image' ? '📷' : '🎥'}
-            {file.thumbnailUrl && file.type === 'image' && (
-              <span className='text-green-400' title='Thumbnail optimizado'>
-                ⚡
-              </span>
-            )}
-          </div>
-        </div>
-      ))}
+    <div className='mt-2'>
+      <button
+        onClick={openFileViewer}
+        className='px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2'
+      >
+        <span>📁</span>
+        <span>Ver archivos ({totalFiles})</span>
+      </button>
     </div>
   )
 }
@@ -577,7 +561,9 @@ export default function VehicleDetails({
                         </div>
 
                         {/* Archivos del step - RESPONSIVE */}
-                        <StepFileDisplay files={stepFiles} />
+                        <div className='mt-2'>
+                          <StepFileDisplay files={stepFiles} />
+                        </div>
                       </motion.div>
                     )
                   })}
@@ -632,36 +618,7 @@ export default function VehicleDetails({
               </div>
             </div>
 
-            {/* Resumen de archivos multimedia */}
-            {totalFiles > 0 && (
-              <div className='bg-blue-900/30 p-3 sm:p-4 rounded border border-blue-500/30'>
-                <h5 className='text-blue-300 font-medium mb-2 sm:mb-3 text-xs sm:text-sm'>
-                  📂 Archivos Multimedia
-                </h5>
-                <div className='space-y-1 sm:space-y-2 text-xs sm:text-sm'>
-                  <div className='flex justify-between'>
-                    <span className='text-blue-200'>Total archivos:</span>
-                    <span className='text-white font-medium'>{totalFiles}</span>
-                  </div>
-                  {totalImages > 0 && (
-                    <div className='flex justify-between'>
-                      <span className='text-blue-200'>Imágenes:</span>
-                      <span className='text-white font-medium'>
-                        {totalImages}
-                      </span>
-                    </div>
-                  )}
-                  {totalVideos > 0 && (
-                    <div className='flex justify-between'>
-                      <span className='text-blue-200'>Videos:</span>
-                      <span className='text-white font-medium'>
-                        {totalVideos}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+
           </div>
         </div>
 

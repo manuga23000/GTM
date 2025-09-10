@@ -1,4 +1,3 @@
-// components/sections/Seguimiento/FileViewer.tsx
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -17,11 +16,11 @@ interface FileViewerProps {
   archivos: StepFile[]
 }
 
-// Hook para precargar imágenes
+
 const useImagePreloader = (urls: string[]) => {
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set())
 
-  // Memoizar la lista de URLs para evitar re-renders
+
   const urlsString = useMemo(() => urls.join(','), [urls])
 
   useEffect(() => {
@@ -55,7 +54,6 @@ const useImagePreloader = (urls: string[]) => {
   return loadedImages
 }
 
-// Componente para galería de archivos
 const FileGallery = ({
   archivos,
   isOpen,
@@ -75,7 +73,6 @@ const FileGallery = ({
 
   const currentFile = archivos[currentIndex]
 
-  // Memoizar URLs para evitar re-renders
   const imageUrls = useMemo(
     () => archivos.filter(f => f.type === 'image').map(f => f.url),
     [archivos]
@@ -86,12 +83,11 @@ const FileGallery = ({
     setCurrentIndex(initialIndex)
   }, [initialIndex])
 
-  // Reset image loaded state when changing images
   useEffect(() => {
     if (currentFile?.type === 'image') {
       setImageLoaded(loadedImages.has(currentFile.url))
     } else {
-      setImageLoaded(true) // Videos no necesitan precarga
+      setImageLoaded(true)
     }
   }, [currentFile?.url, currentFile?.type, loadedImages])
 
@@ -103,7 +99,6 @@ const FileGallery = ({
     setCurrentIndex(prev => (prev - 1 + archivos.length) % archivos.length)
   }, [archivos.length])
 
-  // Navegación con teclado - memoizar la función
   const handleKeyPress = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') {
@@ -144,12 +139,10 @@ const FileGallery = ({
     }
   }
 
-  // Detectar si es un gesto de zoom (dos dedos)
   const detectZoomGesture = (e: React.TouchEvent) => {
     return e.touches.length > 1
   }
 
-  // Mejorado manejo táctil
   const onTouchStart = (e: React.TouchEvent) => {
     if (detectZoomGesture(e)) {
       setIsZooming(true)
@@ -182,7 +175,6 @@ const FileGallery = ({
       goToPrevious()
     }
 
-    // Reset
     setTouchStart(null)
     setTouchEnd(null)
   }
@@ -207,11 +199,11 @@ const FileGallery = ({
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
-          style={{ touchAction: 'pan-x pan-y' }} // Permitir zoom nativo
+          style={{ touchAction: 'pan-x pan-y' }}
         >
-          {/* Header con contador y controles - FIJO */}
+
           <div className='flex-shrink-0 flex justify-between items-center p-4'>
-            {/* Contador e información */}
+
             <div className='bg-black bg-opacity-70 text-white px-3 py-2 rounded-lg'>
               <div className='flex items-center gap-2 text-sm'>
                 {currentFile.type === 'image' ? (
@@ -225,7 +217,7 @@ const FileGallery = ({
               </div>
             </div>
 
-            {/* Controles */}
+
             <div className='flex gap-2'>
               <button
                 onClick={downloadFile}
@@ -244,9 +236,9 @@ const FileGallery = ({
             </div>
           </div>
 
-          {/* Contenedor principal - FLEXIBLE */}
+
           <div className='flex-1 relative min-h-0'>
-            {/* Flechas de navegación - Solo si hay más de 1 archivo y no está haciendo zoom */}
+
             {archivos.length > 1 && !isZooming && (
               <>
                 <button
@@ -266,9 +258,9 @@ const FileGallery = ({
               </>
             )}
 
-            {/* Contenido del archivo - OCUPA EL ESPACIO RESTANTE */}
+
             <div className='bg-white rounded-lg overflow-hidden h-full flex items-center justify-center'>
-              {/* Indicador de carga para imágenes */}
+
               {currentFile.type === 'image' && !imageLoaded && (
                 <div className='w-full h-full flex items-center justify-center bg-gray-100'>
                   <motion.div
@@ -283,7 +275,7 @@ const FileGallery = ({
                 </div>
               )}
 
-              {/* Contenido principal - Sin AnimatePresence para evitar parpadeos */}
+
               <div
                 className={`h-full w-full flex items-center justify-center ${
                   imageLoaded || currentFile.type === 'video'
@@ -305,7 +297,7 @@ const FileGallery = ({
                       }}
                       onLoad={() => setImageLoaded(true)}
                       priority
-                      unoptimized // Para URLs externas que no están optimizadas por Next.js
+                      unoptimized
                     />
                   </div>
                 ) : (
@@ -323,7 +315,7 @@ const FileGallery = ({
             </div>
           </div>
 
-          {/* Footer con información - FIJO EN LA PARTE INFERIOR */}
+
           <div className='flex-shrink-0 bg-black bg-opacity-80 text-white p-4 rounded-b-lg'>
             <div className='text-center'>
               <h3 className='font-medium text-lg mb-1'>
@@ -337,7 +329,7 @@ const FileGallery = ({
               </p>
             </div>
 
-            {/* Indicadores de puntos - AHORA PARTE DEL FOOTER */}
+
             {archivos.length > 1 && !isZooming && (
               <div className='flex justify-center gap-2 mt-3'>
                 {archivos.map((_, index) => (
@@ -383,7 +375,7 @@ export default function FileViewer({ archivos }: FileViewerProps) {
   return (
     <>
       <div className='mt-3'>
-        {/* Botón para ver archivos */}
+
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={() => openGallery(0)}
@@ -408,7 +400,7 @@ export default function FileViewer({ archivos }: FileViewerProps) {
         </motion.button>
       </div>
 
-      {/* Galería de archivos */}
+
       <FileGallery
         archivos={archivos}
         isOpen={galleryOpen}

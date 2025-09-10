@@ -30,7 +30,6 @@ export default function ContactoFormulario() {
     margin: '-100px',
   })
 
-  // Inicializar EmailJS cuando el componente se monta
   useEffect(() => {
     initEmailJS()
   }, [])
@@ -50,8 +49,7 @@ export default function ContactoFormulario() {
     setIsLoading(true)
     setStatus({ type: null, message: '' })
 
-    // Validación básica
-    if (!formData.name || !formData.email || !formData.message) {
+      if (!formData.name || !formData.email || !formData.message) {
       setStatus({
         type: 'error',
         message: 'Por favor, completa todos los campos.',
@@ -68,7 +66,6 @@ export default function ContactoFormulario() {
           type: 'success',
           message: '¡Mensaje enviado correctamente! Te contactaremos pronto.',
         })
-        // Limpiar el formulario
         setFormData({ name: '', email: '', message: '' })
       } else {
         setStatus({
@@ -94,7 +91,6 @@ export default function ContactoFormulario() {
       animate={isSectionInView ? 'visible' : 'hidden'}
       className='max-w-7xl mx-auto px-4 py-8 md:py-16 grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-start'
     >
-      {/* Columna izquierda: Datos y mapa */}
       <motion.div variants={animations.fadeInLeft}>
         <motion.p
           variants={animations.fadeInUp}
@@ -105,7 +101,6 @@ export default function ContactoFormulario() {
           en ponerte en contacto con nosotros. ¡Estamos para ayudarte!
         </motion.p>
 
-        {/* Mapa */}
         <motion.div
           variants={animations.fadeInUp}
           className='rounded-lg overflow-hidden shadow-lg'
@@ -128,7 +123,6 @@ export default function ContactoFormulario() {
         </motion.div>
       </motion.div>
 
-      {/* Columna derecha: Formulario */}
       <motion.div
         variants={animations.fadeInRight}
         className='bg-black/80 rounded-lg shadow-lg p-6 md:p-10 flex flex-col justify-center'
@@ -187,7 +181,6 @@ export default function ContactoFormulario() {
             ></motion.textarea>
           </motion.div>
 
-          {/* Mensaje de estado */}
           {status.message && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}

@@ -9,7 +9,6 @@ export default function ContactoSection() {
   const contactRef = useRef(null)
   const isContactInView = useInView(contactRef, { once: true, margin: '-50px' })
 
-  // Animaciones simplificadas
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0 },

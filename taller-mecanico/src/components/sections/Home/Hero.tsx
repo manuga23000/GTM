@@ -21,7 +21,6 @@ export default function Hero() {
       }}
       ref={heroRef}
     >
-      {/* Overlay para legibilidad del texto - Más claro en móvil */}
       <div className='absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/50 mobile-overlay'></div>
 
       <motion.div
@@ -31,7 +30,6 @@ export default function Hero() {
         className='relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
       >
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
-          {/* Left Content */}
           <div className='space-y-8 text-center lg:text-left'>
             <motion.div variants={animations.fadeInUp} className='space-y-4'>
               <motion.p
@@ -84,7 +82,6 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Right Content - Hidden on mobile, visible on large screens */}
           <div className='hidden lg:block'></div>
         </div>
       </motion.div>
@@ -98,7 +95,7 @@ export default function Hero() {
             background-repeat: no-repeat !important;
           }
           
-          /* Overlay más claro en móvil para que la imagen se vea mejor */
+
           .mobile-overlay {
             background: linear-gradient(
               to right, 
@@ -110,7 +107,7 @@ export default function Hero() {
         }
 
         @media (min-width: 641px) {
-          /* Overlay normal en desktop */
+
           .mobile-overlay {
             background: linear-gradient(
               to right, 

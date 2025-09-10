@@ -1,4 +1,3 @@
-// components/sections/Seguimiento/SeguimientoHeader.tsx
 'use client'
 import { motion } from 'framer-motion'
 import { FaCar, FaCalendarAlt, FaUser, FaWrench } from 'react-icons/fa'
@@ -11,7 +10,7 @@ interface SeguimientoHeaderProps {
     año: string
     cliente: string
     fechaIngreso: string
-    tipoServicio?: string // Agregado para mostrar el tipo de servicio
+    tipoServicio?: string
   }
 }
 
@@ -40,7 +39,6 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
       transition={{ duration: 0.6 }}
       className='bg-gradient-to-r from-gray-900 to-gray-800 text-white relative overflow-hidden'
     >
-      {/* Patrón de fondo */}
       <div className='absolute inset-0 opacity-10'>
         <div
           className='absolute inset-0'
@@ -58,14 +56,12 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
           </h1>
         </div>
 
-        {/* Info principal del vehículo */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
           className='bg-white/10 backdrop-blur-sm rounded-2xl p-3 md:p-4 border border-white/20'
         >
-          {/* Layout mobile: patente centrada arriba */}
           <motion.div
             whileHover={{ scale: 1.02 }}
             className='text-center mb-3 md:hidden'
@@ -76,9 +72,7 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
             </div>
           </motion.div>
 
-          {/* Layout desktop: grid de 3 columnas */}
           <div className='hidden md:grid md:grid-cols-3 gap-4 items-center'>
-            {/* Patente */}
             <motion.div
               whileHover={{ scale: 1.02 }}
               className='text-center md:text-left'
@@ -89,7 +83,6 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
               </div>
             </motion.div>
 
-            {/* Info del vehículo */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -106,7 +99,6 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
               </div>
             </motion.div>
 
-            {/* Fecha de ingreso */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -127,9 +119,7 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
             </motion.div>
           </div>
 
-          {/* Layout mobile: info del vehículo y fecha */}
           <div className='grid grid-cols-1 gap-3 md:hidden'>
-            {/* Info del vehículo */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -146,7 +136,6 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
               </div>
             </motion.div>
 
-            {/* Fecha de ingreso */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -167,7 +156,6 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
             </motion.div>
           </div>
 
-          {/* NUEVO: Tipo de Servicio - Visible en desktop y mobile */}
           {data.tipoServicio && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -187,7 +175,6 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
             </motion.div>
           )}
 
-          {/* Barra separadora roja */}
           <motion.div
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
@@ -196,7 +183,6 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
           />
         </motion.div>
 
-        {/* Indicador de estado */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

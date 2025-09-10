@@ -86,7 +86,6 @@ export default function ServiciosParticulares() {
           </motion.div>
         </motion.div>
 
-        {/* Columna derecha vacía para dejar ver la imagen */}
         <div className='hidden lg:block'></div>
       </div>
 

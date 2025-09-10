@@ -22,7 +22,6 @@ export default function ContactoInfo() {
         animate={isSectionInView ? 'visible' : 'hidden'}
         className='flex flex-col md:flex-row gap-6 md:gap-8 w-full max-w-5xl justify-center'
       >
-        {/* Teléfono */}
         <motion.div
           variants={animations.fadeInUp}
           className='flex-1 bg-white text-black rounded-lg shadow p-6 md:p-8 flex flex-col items-center min-w-[280px] md:min-w-[220px] max-w-xs'
@@ -53,7 +52,6 @@ export default function ContactoInfo() {
             +54 9 3364 69-4921
           </motion.span>
         </motion.div>
-        {/* Email */}
         <motion.div
           variants={animations.fadeInUp}
           className='flex-1 bg-white text-black rounded-lg shadow p-6 md:p-8 flex flex-col items-center min-w-[280px] md:min-w-[220px] max-w-xs'
@@ -84,7 +82,6 @@ export default function ContactoInfo() {
             gtmsn291@gmail.com
           </motion.span>
         </motion.div>
-        {/* Dirección */}
         <motion.div
           variants={animations.fadeInUp}
           className='flex-1 bg-white text-black rounded-lg shadow p-6 md:p-8 flex flex-col items-center min-w-[280px] md:min-w-[220px] max-w-xs'

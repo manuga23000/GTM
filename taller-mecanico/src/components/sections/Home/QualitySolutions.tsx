@@ -9,7 +9,7 @@ export default function QualitySolutions() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
-  // Animaciones para las imágenes - más suaves
+
   const imageVariants = {
     hidden: {
       opacity: 0,
@@ -23,26 +23,26 @@ export default function QualitySolutions() {
       y: 0,
       rotate: custom,
       transition: {
-        duration: 1.2, // Más lento
-        delay: custom * 0.3, // Más espaciado
+        duration: 1.2,
+        delay: custom * 0.3,
         ease: 'easeOut' as const,
       },
     }),
   }
 
-  // Animación continua de levitación - más suave
+
   const floatVariants = {
     animate: {
       y: [-4, 4, -4],
       transition: {
-        duration: 6, // Más lento
+        duration: 6,
         repeat: Infinity,
         ease: 'easeInOut' as const,
       },
     },
   }
 
-  // Datos de las imágenes con sus rotaciones
+
   const images = [
     {
       src: '/images/soluciones/motor1.jpg',
@@ -70,7 +70,7 @@ export default function QualitySolutions() {
     <section className='py-20 bg-white text-black' ref={ref}>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-12 items-center'>
-          {/* Grid de 4 imágenes 2x2 - ANIMADO */}
+
           <div className='grid grid-cols-2 gap-4'>
             {images.map((image, index) => (
               <motion.div
@@ -100,7 +100,6 @@ export default function QualitySolutions() {
                     className='object-cover transition-transform duration-300'
                   />
 
-                  {/* Overlay que aparece en hover */}
                   <motion.div
                     initial={{ opacity: 0 }}
                     whileHover={{
@@ -137,7 +136,7 @@ export default function QualitySolutions() {
             ))}
           </div>
 
-          {/* Contenido de texto - ANIMADO */}
+
           <div className='space-y-6'>
             <div>
               <motion.p

@@ -159,7 +159,6 @@ export default function VehicleForm(
         </div>
       )}
 
-      {/* SECCIÓN 1: Fechas importantes - PRIORIDAD EN MÓVILES */}
       <div className='bg-blue-900/20 p-2 sm:p-3 rounded-lg border border-blue-500/30'>
         <h4 className='text-blue-300 font-medium mb-2 text-xs sm:text-sm flex items-center gap-1'>
           📅 Fechas

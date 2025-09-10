@@ -85,41 +85,45 @@ const StepFileDisplay = ({ files }: { files: StepFile[] }) => {
 
   const openFileViewer = () => {
     const modal = document.createElement('div')
-    modal.className = 'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[99999] p-4'
-    modal.onclick = (e) => {
+    modal.className =
+      'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[99999] p-4'
+    modal.onclick = e => {
       if (e.target === modal) document.body.removeChild(modal)
     }
 
     const container = document.createElement('div')
-    container.className = 'relative w-full h-full max-w-4xl max-h-[90vh] bg-gray-900 rounded-lg overflow-hidden flex flex-col'
+    container.className =
+      'relative w-full h-full max-w-4xl max-h-[90vh] bg-gray-900 rounded-lg overflow-hidden flex flex-col'
 
-    // Header
     const header = document.createElement('div')
-    header.className = 'bg-gray-800 p-4 flex justify-between items-center border-b border-gray-700'
-    
+    header.className =
+      'bg-gray-800 p-4 flex justify-between items-center border-b border-gray-700'
+
     const title = document.createElement('h3')
     title.className = 'text-white font-medium text-lg'
     title.textContent = `Archivos (${totalFiles})`
-    
+
     const closeButton = document.createElement('button')
     closeButton.className = 'text-white hover:text-gray-300 p-2'
     closeButton.innerHTML = '✕'
     closeButton.onclick = () => document.body.removeChild(modal)
-    
+
     header.appendChild(title)
     header.appendChild(closeButton)
 
-    // Content
     const content = document.createElement('div')
-    content.className = 'flex-1 overflow-y-auto p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'
+    content.className =
+      'flex-1 overflow-y-auto p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'
 
-    files.forEach((file) => {
+    files.forEach(file => {
       const fileElement = document.createElement('div')
-      fileElement.className = 'bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-blue-500 transition-colors cursor-pointer'
-      
+      fileElement.className =
+        'bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-blue-500 transition-colors cursor-pointer'
+
       const preview = document.createElement('div')
-      preview.className = 'relative pt-[100%] bg-gray-700 flex items-center justify-center'
-      
+      preview.className =
+        'relative pt-[100%] bg-gray-700 flex items-center justify-center'
+
       if (file.type === 'image') {
         const img = document.createElement('img')
         img.src = file.thumbnailUrl || file.url
@@ -132,29 +136,31 @@ const StepFileDisplay = ({ files }: { files: StepFile[] }) => {
         videoIcon.innerHTML = '▶️'
         preview.appendChild(videoIcon)
       }
-      
+
       const info = document.createElement('div')
       info.className = 'p-2 text-xs text-gray-300 truncate'
       info.title = file.fileName
       info.textContent = file.fileName
-      
+
       fileElement.appendChild(preview)
       fileElement.appendChild(info)
-      
-      // Click handler for each file
-      fileElement.onclick = (e) => {
+
+      fileElement.onclick = e => {
         e.stopPropagation()
         const fileViewer = document.createElement('div')
-        fileViewer.className = 'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[100000] p-4'
-        
+        fileViewer.className =
+          'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[100000] p-4'
+
         const closeBtn = document.createElement('button')
-        closeBtn.className = 'absolute top-4 right-4 text-white text-2xl z-10 bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75'
+        closeBtn.className =
+          'absolute top-4 right-4 text-white text-2xl z-10 bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75'
         closeBtn.innerHTML = '✕'
         closeBtn.onclick = () => document.body.removeChild(fileViewer)
-        
+
         const viewerContent = document.createElement('div')
-        viewerContent.className = 'relative w-full h-full max-w-4xl max-h-[90vh] flex items-center justify-center'
-        
+        viewerContent.className =
+          'relative w-full h-full max-w-4xl max-h-[90vh] flex items-center justify-center'
+
         if (file.type === 'image') {
           const img = document.createElement('img')
           img.src = file.url
@@ -169,29 +175,34 @@ const StepFileDisplay = ({ files }: { files: StepFile[] }) => {
           video.autoplay = true
           viewerContent.appendChild(video)
         }
-        
+
         fileViewer.appendChild(closeBtn)
         fileViewer.appendChild(viewerContent)
-        
-        // Close on ESC key
+
         const handleKeyDown = (e: KeyboardEvent) => {
           if (e.key === 'Escape') {
             document.body.removeChild(fileViewer)
             document.removeEventListener('keydown', handleKeyDown)
           }
         }
-        
+
         document.addEventListener('keydown', handleKeyDown)
         document.body.appendChild(fileViewer)
       }
-      
+
       content.appendChild(fileElement)
     })
 
-    // Footer
     const footer = document.createElement('div')
-    footer.className = 'bg-gray-800 p-3 border-t border-gray-700 text-sm text-gray-400 text-center'
-    footer.textContent = `${totalFiles} archivos (${imageCount} imagen${imageCount !== 1 ? 'es' : ''}${videoCount > 0 ? `, ${videoCount} video${videoCount !== 1 ? 's' : ''}` : ''})`
+    footer.className =
+      'bg-gray-800 p-3 border-t border-gray-700 text-sm text-gray-400 text-center'
+    footer.textContent = `${totalFiles} archivos (${imageCount} imagen${
+      imageCount !== 1 ? 'es' : ''
+    }${
+      videoCount > 0
+        ? `, ${videoCount} video${videoCount !== 1 ? 's' : ''}`
+        : ''
+    })`
 
     container.appendChild(header)
     container.appendChild(content)
@@ -242,15 +253,12 @@ export default function VehicleDetails({
       exit={{ opacity: 0, y: -20 }}
       className='bg-gray-800 rounded-xl p-3 sm:p-6'
     >
-      {/* Header - RESPONSIVE */}
       <div className='flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4 mb-4 sm:mb-6'>
         <div className='flex-1 w-full sm:w-auto'>
           <div className='flex justify-between items-start sm:block'>
             <h3 className='text-lg sm:text-2xl font-bold text-white mb-1 sm:mb-3'>
               {vehicle.plateNumber} - {vehicle.brand} {vehicle.model}
             </h3>
-
-            {/* Botón cerrar - MÓVIL */}
             <button
               onClick={onClose}
               className='text-gray-400 hover:text-white text-xl p-1 sm:hidden'
@@ -260,7 +268,6 @@ export default function VehicleDetails({
             </button>
           </div>
 
-          {/* Información básica - LAYOUT MÓVIL OPTIMIZADO */}
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm mb-3 sm:mb-4'>
             <div className='bg-gray-700 p-2 sm:p-3 rounded-lg'>
               <span className='text-gray-400 block'>Cliente:</span>
@@ -298,7 +305,6 @@ export default function VehicleDetails({
             </div>
           </div>
 
-          {/* Fechas importantes - RESPONSIVE */}
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm mb-3 sm:mb-4'>
             <div className='bg-blue-900/30 p-2 sm:p-3 rounded-lg border border-blue-500/30'>
               <span className='text-blue-300 block'>Fecha de Ingreso:</span>
@@ -316,7 +322,6 @@ export default function VehicleDetails({
             </div>
           </div>
 
-          {/* Resumen de archivos - COMPACTO EN MÓVIL */}
           {totalFiles > 0 && (
             <div className='bg-gray-700/50 p-2 sm:p-3 rounded-lg mb-3 sm:mb-4'>
               <div className='flex items-center gap-2 sm:gap-4 text-xs sm:text-sm flex-wrap'>
@@ -347,9 +352,7 @@ export default function VehicleDetails({
           )}
         </div>
 
-        {/* Botones de acción - RESPONSIVE */}
         <div className='flex flex-row sm:flex-col gap-2 w-full sm:w-auto'>
-          {/* Botón cerrar - DESKTOP */}
           <button
             onClick={onClose}
             className='hidden sm:block text-gray-400 hover:text-white text-xl p-1 self-end'
@@ -358,7 +361,6 @@ export default function VehicleDetails({
             ✕
           </button>
 
-          {/* Botones principales - RESPONSIVE */}
           <div className='flex flex-col sm:flex-col gap-2 w-full sm:w-auto'>
             <button
               onClick={onEditVehicle}
@@ -475,7 +477,6 @@ export default function VehicleDetails({
         </div>
       </div>
 
-      {/* Sección de seguimiento - RESPONSIVE */}
       <div className='border-t border-gray-700 pt-4 sm:pt-6'>
         <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 sm:mb-4 gap-2'>
           <h4 className='text-base sm:text-lg font-semibold text-white'>
@@ -490,7 +491,6 @@ export default function VehicleDetails({
         </div>
 
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6'>
-          {/* Lista de trabajos realizados - MÓVIL OPTIMIZADA */}
           <div className='bg-gray-700/50 p-3 sm:p-4 rounded-lg'>
             <h5 className='text-white font-medium mb-2 sm:mb-3 flex items-center text-sm sm:text-base'>
               🔧 Lista de Trabajos
@@ -537,7 +537,6 @@ export default function VehicleDetails({
                             </div>
                           </div>
                           <div className='flex items-center gap-1 sm:gap-2 ml-2'>
-                            {/* Contador de archivos - COMPACTO */}
                             {stepFiles.length > 0 && (
                               <div className='flex items-center gap-1 text-xs'>
                                 <div className='flex items-center gap-1 bg-gray-700 px-1 sm:px-2 py-1 rounded'>
@@ -560,7 +559,6 @@ export default function VehicleDetails({
                           </div>
                         </div>
 
-                        {/* Archivos del step - RESPONSIVE */}
                         <div className='mt-2'>
                           <StepFileDisplay files={stepFiles} />
                         </div>
@@ -571,9 +569,7 @@ export default function VehicleDetails({
             )}
           </div>
 
-          {/* Información adicional - RESPONSIVE */}
           <div className='space-y-3 sm:space-y-4'>
-            {/* Fecha estimada */}
             <div className='bg-purple-900/30 p-3 sm:p-4 rounded-lg border border-purple-500/30'>
               <h5 className='text-purple-300 font-medium mb-2 text-xs sm:text-sm'>
                 🕒 Fecha Estimada de Finalización
@@ -593,7 +589,6 @@ export default function VehicleDetails({
               </div>
             </div>
 
-            {/* Próximo paso */}
             <div className='bg-blue-100/80 p-3 sm:p-4 rounded-lg border border-blue-300/70'>
               <h5 className='text-blue-700 font-semibold mb-2 flex items-center gap-2 text-xs sm:text-sm'>
                 <span>🔜</span> Próximo paso
@@ -607,7 +602,6 @@ export default function VehicleDetails({
               </div>
             </div>
 
-            {/* Resumen */}
             <div className='bg-green-900/30 p-3 sm:p-4 rounded border border-green-500/30 text-center'>
               <div className='text-green-300 font-bold text-xl sm:text-2xl'>
                 {totalSteps}
@@ -617,12 +611,9 @@ export default function VehicleDetails({
                 {totalSteps !== 1 ? 's' : ''}
               </div>
             </div>
-
-
           </div>
         </div>
 
-        {/* Mantener notas legacy si existen */}
         {vehicle.notes && vehicle.notes.trim() && (
           <div className='mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-900/20 rounded-lg border border-blue-500/30'>
             <h5 className='text-blue-300 font-medium mb-2 text-xs sm:text-sm'>

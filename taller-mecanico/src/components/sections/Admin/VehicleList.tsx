@@ -83,16 +83,13 @@ export default function VehicleList({
                     : 'bg-gray-700 border-gray-600 hover:border-gray-500'
                 }`}
                 onClick={() => {
-                  // Si hacemos click en el mismo vehículo, lo deseleccionamos
                   if (selectedVehicle === vehicle.id) {
                     setSelectedVehicle('')
                   } else {
-                    // Si hacemos click en un vehículo diferente, lo seleccionamos directamente
                     setSelectedVehicle(vehicle.id)
                   }
                 }}
               >
-                {/* Header de la card - OPTIMIZADO MOBILE */}
                 <div className='flex justify-between items-start mb-2 sm:mb-3'>
                   <div className='flex-1 min-w-0'>
                     <h4 className='font-bold text-base sm:text-lg text-white truncate'>
@@ -103,7 +100,6 @@ export default function VehicleList({
                     </p>
                   </div>
 
-                  {/* Status - COMPACTO EN MÓVILES */}
                   <div className='flex flex-col items-end gap-1 ml-2'>
                     <span
                       className={`px-2 py-1 rounded text-xs text-white ${getStatusColor(
@@ -115,9 +111,7 @@ export default function VehicleList({
                   </div>
                 </div>
 
-                {/* Información principal - LAYOUT VERTICAL EN MÓVILES */}
                 <div className='space-y-1 sm:space-y-2 text-xs sm:text-sm'>
-                  {/* Cliente - PRIORIDAD EN MÓVILES */}
                   <div className='flex items-center gap-2'>
                     <span className='text-blue-400'>👤</span>
                     <p className='text-gray-300 truncate flex-1'>
@@ -125,7 +119,6 @@ export default function VehicleList({
                     </p>
                   </div>
 
-                  {/* Servicio */}
                   <div className='flex items-center gap-2'>
                     <span className='text-green-400'>🔧</span>
                     <p className='text-gray-400 truncate flex-1'>
@@ -133,7 +126,6 @@ export default function VehicleList({
                     </p>
                   </div>
 
-                  {/* Fechas - LAYOUT RESPONSIVO */}
                   <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-2 pt-1 sm:pt-2'>
                     <div className='flex items-center gap-1'>
                       <span className='text-yellow-400'>📅</span>
@@ -142,7 +134,6 @@ export default function VehicleList({
                       </p>
                     </div>
 
-                    {/* KM - DESTACADO SI EXISTE */}
                     {vehicle.km && vehicle.km > 0 && (
                       <div className='flex items-center gap-1'>
                         <span className='text-purple-400'>🛣️</span>
@@ -153,7 +144,6 @@ export default function VehicleList({
                     )}
                   </div>
 
-                  {/* Trabajos realizados - NUEVO INDICADOR */}
                   {vehicle.steps && vehicle.steps.length > 0 && (
                     <div className='flex items-center justify-between pt-1 sm:pt-2 border-t border-gray-600 mt-2'>
                       <div className='flex items-center gap-1'>
@@ -164,7 +154,6 @@ export default function VehicleList({
                         </span>
                       </div>
 
-                      {/* Próximo paso indicator */}
                       {vehicle.nextStep && (
                         <div className='flex items-center gap-1'>
                           <span className='text-blue-400'>🔜</span>
@@ -176,7 +165,6 @@ export default function VehicleList({
                     </div>
                   )}
 
-                  {/* Fecha estimada de entrega - SI EXISTE */}
                   {vehicle.estimatedCompletionDate && (
                     <div className='flex items-center gap-1 pt-1'>
                       <span className='text-purple-400'>⏰</span>
@@ -190,7 +178,6 @@ export default function VehicleList({
                   )}
                 </div>
 
-                {/* Visual indicator cuando está seleccionado */}
                 {selectedVehicle === vehicle.id && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}

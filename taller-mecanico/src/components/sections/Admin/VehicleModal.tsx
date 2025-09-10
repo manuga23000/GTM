@@ -621,7 +621,6 @@ const TrackingForm = ({
 
   return (
     <div className='space-y-4 sm:space-y-6'>
-      {/* Agregar trabajo - COMPACTO MÓVIL */}
       <div className='flex flex-col items-center justify-center py-2 w-full'>
         <label className='text-green-300 font-medium mb-1 text-xs sm:text-sm self-start'>
           Agregar trabajo realizado
@@ -649,7 +648,6 @@ const TrackingForm = ({
         </div>
       </div>
 
-      {/* Lista de trabajos - ALTURA LIMITADA EN MÓVIL */}
       <div className='space-y-2 max-h-32 sm:max-h-48 overflow-y-auto mb-4'>
         {localSteps.map(step => {
           const stepFiles = step.files || []
@@ -746,7 +744,6 @@ const TrackingForm = ({
         })}
       </div>
 
-      {/* Próximo paso - COMPACTO MÓVIL */}
       <div className='bg-blue-900/30 p-3 sm:p-4 rounded border border-blue-500/30 w-full flex flex-col items-start'>
         <div className='flex flex-row items-center w-full mb-2'>
           <span className='text-blue-300 font-medium text-xs sm:text-sm'>
@@ -868,7 +865,6 @@ const TrackingForm = ({
         </div>
       </div>
 
-      {/* Fecha estimada - COMPACTO */}
       <div className='bg-purple-900/30 p-2 sm:p-3 rounded border border-purple-500/30'>
         <h5 className='text-purple-300 font-medium mb-1 text-xs sm:text-sm'>
           🕒 Fecha estimada de finalización
@@ -978,7 +974,6 @@ export default function VehicleModal({
 
   return (
     <>
-      {/* Modal Nuevo Vehículo - OPTIMIZADO MÓVIL */}
       <Portal>
         <AnimatePresence>
           {showAddForm && (
@@ -1086,7 +1081,6 @@ export default function VehicleModal({
         </AnimatePresence>
       </Portal>
 
-      {/* Modal Editar Vehículo - OPTIMIZADO MÓVIL */}
       <Portal>
         <AnimatePresence>
           {showEditVehicleModal && editVehicle && (
@@ -1161,7 +1155,6 @@ export default function VehicleModal({
         </AnimatePresence>
       </Portal>
 
-      {/* Modal Seguimiento - OPTIMIZADO MÓVIL */}
       <Portal>
         <AnimatePresence>
           {showTrackingModal && editTracking && (

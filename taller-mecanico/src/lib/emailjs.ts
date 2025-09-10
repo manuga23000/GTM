@@ -1,28 +1,23 @@
-// src/lib/emailjs.ts
 import emailjs from '@emailjs/browser'
 
-// Configuración de EmailJS
 export const emailjsConfig = {
   serviceId: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || '',
   templateId: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || '',
   turnoTemplateId:
-    process.env.NEXT_PUBLIC_EMAILJS_TURNO_CLIENTE_TEMPLATE_ID || '', // ⚠️ Esta es la que falla
+    process.env.NEXT_PUBLIC_EMAILJS_TURNO_CLIENTE_TEMPLATE_ID || '',
   publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC || '',
 }
 
-// Inicializar EmailJS (opcional, solo si lo usás en el frontend)
 export const initEmailJS = () => {
   emailjs.init(emailjsConfig.publicKey)
 }
 
-// Función para enviar email desde el formulario de contacto
 export const sendEmail = async (formData: {
   name: string
   email: string
   message: string
 }) => {
   try {
-    // ✅ ASEGURAR INICIALIZACIÓN
     if (emailjsConfig.publicKey) {
       emailjs.init(emailjsConfig.publicKey)
     }
@@ -38,7 +33,7 @@ export const sendEmail = async (formData: {
       emailjsConfig.serviceId,
       emailjsConfig.templateId,
       templateParams,
-      emailjsConfig.publicKey // ✅ PASAR PUBLIC KEY DIRECTAMENTE
+      emailjsConfig.publicKey
     )
 
     return {
@@ -56,7 +51,6 @@ export const sendEmail = async (formData: {
   }
 }
 
-// Función para enviar email de confirmación de turno al cliente
 export const sendTurnoConfirmationToClient = async (turnoData: {
   name: string
   email: string
@@ -69,14 +63,12 @@ export const sendTurnoConfirmationToClient = async (turnoData: {
   cancelToken: string
 }) => {
   try {
-    // ✅ FIX: INICIALIZAR EMAILJS ANTES DE USAR
     if (!emailjsConfig.publicKey) {
       throw new Error('EmailJS public key no configurada')
     }
 
     emailjs.init(emailjsConfig.publicKey)
 
-    // Formatear la fecha
     const formattedDate = turnoData.date
       ? turnoData.date.toLocaleDateString('es-ES', {
           weekday: 'long',
@@ -86,7 +78,6 @@ export const sendTurnoConfirmationToClient = async (turnoData: {
         })
       : 'A coordinar'
 
-    // Formatear el servicio completo
     const servicioCompleto = turnoData.subService
       ? `${turnoData.service} - ${turnoData.subService}`
       : turnoData.service
@@ -113,7 +104,7 @@ export const sendTurnoConfirmationToClient = async (turnoData: {
       emailjsConfig.serviceId,
       emailjsConfig.turnoTemplateId,
       templateParams,
-      emailjsConfig.publicKey // ✅ PASAR PUBLIC KEY DIRECTAMENTE
+      emailjsConfig.publicKey
     )
 
     return {

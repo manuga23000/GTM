@@ -8,22 +8,15 @@ import {
 } from 'firebase/storage'
 import { storage } from './firebase'
 
-/**
- * MEJORADO: Generar nombre de archivo seguro para URL
- * Remueve caracteres problemáticos que pueden causar CORS issues
- */
 function sanitizeFileName(fileName: string): string {
   return fileName
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Quitar acentos
-    .replace(/[^a-zA-Z0-9.-]/g, '_') // Reemplazar caracteres especiales
-    .replace(/_{2,}/g, '_') // Evitar múltiples underscores
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9.-]/g, '_')
+    .replace(/_{2,}/g, '_')
     .toLowerCase()
 }
 
-/**
- * Generar thumbnail de imagen
- */
 async function generateThumbnail(file: File): Promise<{
   thumbnail: Blob | null
   originalDimensions: { width: number; height: number }
@@ -36,7 +29,6 @@ async function generateThumbnail(file: File): Promise<{
     img.onload = () => {
       const originalDimensions = { width: img.width, height: img.height }
 
-      // Calcular dimensiones del thumbnail (máximo 150px)
       const maxSize = 150
       let { width, height } = originalDimensions
 
@@ -52,7 +44,6 @@ async function generateThumbnail(file: File): Promise<{
         }
       }
 
-      // Generar thumbnail
       canvas.width = width
       canvas.height = height
       ctx?.drawImage(img, 0, 0, width, height)
@@ -80,9 +71,6 @@ async function generateThumbnail(file: File): Promise<{
   })
 }
 
-/**
- * MEJORADO: Subir archivo con mejor manejo de CORS
- */
 export async function uploadFileToStorage(
   file: File,
   path: string,
@@ -99,11 +87,9 @@ export async function uploadFileToStorage(
   }
 }> {
   try {
-    // NUEVO: Sanitizar el path para evitar problemas de encoding
     const sanitizedPath = path
       .split('/')
       .map(segment => {
-        // Mantener la estructura de carpetas pero sanitizar nombres de archivo
         if (segment.includes('.')) {
           const parts = segment.split('.')
           const name = sanitizeFileName(parts.slice(0, -1).join('.'))
@@ -116,7 +102,6 @@ export async function uploadFileToStorage(
 
     const storageRef = ref(storage, sanitizedPath)
 
-    // Generar thumbnail si es imagen
     let thumbnailUrl: string | undefined
     let dimensions: { width: number; height: number } | undefined
 
@@ -125,11 +110,9 @@ export async function uploadFileToStorage(
       dimensions = originalDimensions
 
       if (thumbnail) {
-        // MEJORADO: Path más simple para thumbnail
         const thumbnailPath = sanitizedPath.replace(/\.[^/.]+$/, '_thumb.jpg')
         const thumbnailRef = ref(storage, thumbnailPath)
 
-        // NUEVO: Metadata específica para thumbnail
         const thumbnailMetadata = {
           contentType: 'image/jpeg',
           customMetadata: {
@@ -151,12 +134,10 @@ export async function uploadFileToStorage(
             'Error uploading thumbnail, continuing without it:',
             thumbError
           )
-          // Continuar sin thumbnail si falla
         }
       }
     }
 
-    // MEJORADO: Metadata más robusta
     const metadata = {
       contentType: file.type,
       customMetadata: {
@@ -172,7 +153,6 @@ export async function uploadFileToStorage(
     }
 
     if (onProgress) {
-      // Upload con progreso
       const uploadTask = uploadBytesResumable(storageRef, file, metadata)
 
       return new Promise((resolve, reject) => {
@@ -208,7 +188,6 @@ export async function uploadFileToStorage(
         )
       })
     } else {
-      // Upload simple
       const snapshot = await uploadBytes(storageRef, file, metadata)
       const downloadURL = await getDownloadURL(snapshot.ref)
       return {
@@ -229,30 +208,23 @@ export async function uploadFileToStorage(
   }
 }
 
-/**
- * MEJORADO: Eliminar archivos con mejor manejo de errores
- */
 export async function deleteFileFromStorage(url: string): Promise<void> {
   try {
-    // Extraer path de la URL
     const urlParts = url.split('/o/')
     if (urlParts.length < 2) return
 
     const pathPart = urlParts[1].split('?')[0]
     const filePath = decodeURIComponent(pathPart)
 
-    // Eliminar archivo principal
     const storageRef = ref(storage, filePath)
     await deleteObject(storageRef)
 
-    // Intentar eliminar thumbnail si no es un thumbnail
     if (!filePath.includes('_thumb.')) {
       try {
         const thumbnailPath = filePath.replace(/\.[^/.]+$/, '_thumb.jpg')
         const thumbnailRef = ref(storage, thumbnailPath)
         await deleteObject(thumbnailRef)
       } catch (error) {
-        // Thumbnail no existe o error, continuar silenciosamente
         console.debug(
           'Thumbnail deletion failed (expected if no thumbnail exists):',
           error
@@ -261,13 +233,9 @@ export async function deleteFileFromStorage(url: string): Promise<void> {
     }
   } catch (error) {
     console.error('Error deleting file from storage:', error)
-    // No re-lanzar para evitar fallos en cascada
   }
 }
 
-/**
- * MEJORADO: Generar nombre único más compatible con URLs
- */
 export function generateUniqueFileName(
   originalName: string,
   vehiclePlate: string,
@@ -281,9 +249,6 @@ export function generateUniqueFileName(
   return `vehicles/${cleanPlate}/steps/${stepId}/${timestamp}_${sanitizedName}.${fileExtension}`
 }
 
-/**
- * Validar tipo de archivo
- */
 export function validateFileType(file: File): boolean {
   const allowedTypes = [
     'image/jpeg',
@@ -302,17 +267,11 @@ export function validateFileType(file: File): boolean {
   return allowedTypes.includes(file.type)
 }
 
-/**
- * Validar tamaño de archivo
- */
 export function validateFileSize(file: File, maxSizeMB: number = 10): boolean {
   const maxSizeBytes = maxSizeMB * 1024 * 1024
   return file.size <= maxSizeBytes
 }
 
-/**
- * Obtener tipo de archivo
- */
 export function getFileType(file: File): 'image' | 'video' {
   return file.type.startsWith('video/') ? 'video' : 'image'
 }

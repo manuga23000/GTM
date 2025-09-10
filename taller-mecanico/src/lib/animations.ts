@@ -1,6 +1,5 @@
-// Configuración de animaciones más suaves y naturales
 export const animations = {
-  // Animaciones de entrada básicas
+
   fadeIn: {
     hidden: { opacity: 0 },
     visible: {
@@ -55,19 +54,19 @@ export const animations = {
     },
   },
 
-  // Contenedores con stagger (elementos que aparecen uno tras otro)
+
   staggerContainer: {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.3, // Más lento que antes
+        staggerChildren: 0.3,
         delayChildren: 0.2,
       },
     },
   },
 
-  // Animaciones de hover más suaves
+
   hoverScale: {
     scale: 1.05,
     transition: { duration: 0.4, ease: 'easeOut' as const },
@@ -78,7 +77,7 @@ export const animations = {
     transition: { duration: 0.4, ease: 'easeOut' as const },
   },
 
-  // Animaciones de botones
+
   buttonHover: {
     scale: 1.02,
     transition: { duration: 0.3, ease: 'easeOut' as const },
@@ -89,13 +88,13 @@ export const animations = {
     transition: { duration: 0.1 },
   },
 
-  // Animación de texto con efecto de brillo
+
   textGlow: {
     textShadow: '0px 0px 12px rgb(239, 68, 68)',
     transition: { duration: 0.5, ease: 'easeOut' as const },
   },
 
-  // Animación de flotación suave
+
   float: {
     y: [-4, 4, -4],
     transition: {
@@ -142,7 +141,7 @@ export const animations = {
   },
 }
 
-// Funciones helper para animaciones personalizadas
+
 export const createStaggerAnimation = (
   staggerDelay = 0.3,
   baseDelay = 0.2

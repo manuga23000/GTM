@@ -75,7 +75,6 @@ export default function TurnosTable({
     })
   }
 
-  // Confirmar con el navegador antes de eliminar
   const handleDeleteClick = (turnoId: string) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este turno? Esta acción no se puede deshacer.')) {
       onDelete(turnoId)
@@ -93,7 +92,6 @@ export default function TurnosTable({
 
   return (
     <div className='space-y-6'>
-      {/* Filters */}
       <div className='flex flex-col sm:flex-row gap-4'>
         <div className='flex-1'>
           <input
@@ -125,7 +123,6 @@ export default function TurnosTable({
         </div>
       </div>
 
-      {/* Stats */}
       <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
         <div className='bg-gray-800 p-4 rounded-lg'>
           <div className='text-2xl font-bold text-white'>{turnos.length}</div>
@@ -151,7 +148,6 @@ export default function TurnosTable({
         </div>
       </div>
 
-      {/* Cards mobile */}
       <div className='flex flex-col gap-4 sm:hidden'>
         {filteredTurnos.map(turno => (
           <div
@@ -211,7 +207,6 @@ export default function TurnosTable({
         ))}
       </div>
 
-      {/* Table desktop */}
       <div className='overflow-x-auto w-full rounded-lg shadow-lg border border-gray-700 hidden sm:block'>
         <table className='min-w-full bg-gray-900 rounded-lg overflow-hidden'>
           <thead className='bg-gray-900'>

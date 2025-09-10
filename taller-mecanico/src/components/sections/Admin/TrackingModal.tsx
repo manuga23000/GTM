@@ -40,7 +40,6 @@ export default function TrackingModal({
             exit={{ scale: 0.95, opacity: 0 }}
             className='bg-gray-800 rounded-xl p-3 sm:p-6 w-full max-w-sm sm:max-w-2xl max-h-[95vh] overflow-y-auto'
           >
-            {/* Header - COMPACTO EN MÓVIL */}
             <div className='flex justify-between items-center mb-4 sm:mb-6'>
               <div>
                 <h2 className='text-lg sm:text-2xl font-bold text-white'>
@@ -60,7 +59,6 @@ export default function TrackingModal({
             </div>
 
             <form onSubmit={handleSubmit} className='space-y-4 sm:space-y-6'>
-              {/* Próximo Paso - PRIMERA PRIORIDAD EN MÓVIL */}
               <div className='bg-blue-900/30 p-3 sm:p-4 rounded-lg border border-blue-500/30'>
                 <label className='block text-blue-300 font-medium mb-2 text-xs sm:text-sm'>
                   🔜 Próximo Paso
@@ -79,7 +77,6 @@ export default function TrackingModal({
                 />
               </div>
 
-              {/* Fecha Estimada */}
               <div className='bg-purple-900/30 p-3 sm:p-4 rounded-lg border border-purple-500/30'>
                 <label className='block text-purple-300 font-medium mb-2 text-xs sm:text-sm'>
                   📅 Fecha Estimada de Finalización
@@ -105,7 +102,6 @@ export default function TrackingModal({
                 />
               </div>
 
-              {/* Notas Adicionales */}
               <div className='bg-gray-700/30 p-3 sm:p-4 rounded-lg border border-gray-600'>
                 <label className='block text-gray-300 font-medium mb-2 text-xs sm:text-sm'>
                   📝 Notas Adicionales
@@ -124,7 +120,6 @@ export default function TrackingModal({
                 />
               </div>
 
-              {/* Información del Vehículo - COMPACTA EN MÓVIL */}
               <div className='bg-yellow-900/20 p-3 sm:p-4 rounded-lg border border-yellow-500/30'>
                 <h3 className='text-yellow-300 font-medium mb-2 sm:mb-3 text-xs sm:text-sm'>
                   🚗 Información del Vehículo
@@ -157,7 +152,6 @@ export default function TrackingModal({
                 </div>
               </div>
 
-              {/* Trabajos Realizados - ALTURA LIMITADA EN MÓVIL */}
               <div className='bg-green-900/20 p-3 sm:p-4 rounded-lg border border-green-500/30'>
                 <h3 className='text-green-300 font-medium mb-2 sm:mb-3 text-xs sm:text-sm'>
                   ✅ Trabajos Realizados
@@ -186,7 +180,6 @@ export default function TrackingModal({
                 )}
               </div>
 
-              {/* Botones - RESPONSIVE */}
               <div className='flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-gray-700'>
                 <button
                   type='button'

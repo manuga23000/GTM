@@ -66,16 +66,12 @@ export default function ServiceConfig() {
     try {
       setLoading(true)
 
-      // Primero limpiar configuraciones duplicadas
       await cleanDuplicateConfigs()
 
-      // Luego inicializar configuraciones por defecto si no existen
       await initializeServiceConfigs()
 
-      // Finalmente obtener todas las configuraciones
       const allConfigs = await getAllServiceConfigs()
 
-      // Filtrar configuraciones duplicadas (mantener solo la más reciente)
       const uniqueConfigs = allConfigs.reduce((acc, config) => {
         const existingIndex = acc.findIndex(
           c => c.serviceName === config.serviceName
@@ -83,7 +79,6 @@ export default function ServiceConfig() {
         if (existingIndex === -1) {
           acc.push(config)
         } else {
-          // Si ya existe, mantener la más reciente (con fecha de actualización más nueva)
           const existing = acc[existingIndex]
           if (config.updatedAt > existing.updatedAt) {
             acc[existingIndex] = config
@@ -94,7 +89,6 @@ export default function ServiceConfig() {
 
       setConfigs(uniqueConfigs)
 
-      // Seleccionar automáticamente el primer servicio disponible si no hay ninguno seleccionado
       if (!selectedService && uniqueConfigs.length > 0) {
         const firstAvailableService = uniqueConfigs.find(config =>
           availableServices.includes(config.serviceName)
@@ -111,12 +105,11 @@ export default function ServiceConfig() {
     }
   }, [])
 
-  // Cargar configuraciones al montar el componente
   useEffect(() => {
     loadConfigs()
   }, [loadConfigs])
 
-  // Actualizar una configuración específica
+  
   const updateConfig = (serviceName: string, field: string, value: unknown) => {
     setConfigs(prev =>
       prev.map(config =>
@@ -127,7 +120,7 @@ export default function ServiceConfig() {
     )
   }
 
-  // Alternar día permitido
+  
   const toggleDay = (serviceName: string, dayValue: number) => {
     setConfigs(prev =>
       prev.map(config => {
@@ -143,7 +136,7 @@ export default function ServiceConfig() {
     )
   }
 
-  // Habilitar/deshabilitar todos los días
+  
   const toggleAllDays = (serviceName: string) => {
     setConfigs(prev =>
       prev.map(config => {
@@ -151,8 +144,6 @@ export default function ServiceConfig() {
           const currentDays = config.allowedDays
           const allDays = [1, 2, 3, 4, 5] // Lunes a viernes
 
-          // Si todos los días están habilitados, deshabilitar todos
-          // Si no todos están habilitados, habilitar todos
           const newDays = currentDays.length === allDays.length ? [] : allDays
           return { ...config, allowedDays: newDays }
         }
@@ -161,7 +152,6 @@ export default function ServiceConfig() {
     )
   }
 
-  // Guardar configuración seleccionada en Firebase
   const handleSave = async () => {
     if (!selectedService) {
       setMessage('❌ Por favor, selecciona un servicio para configurar')
@@ -172,8 +162,6 @@ export default function ServiceConfig() {
     setSaving(true)
     try {
       if (selectedService === 'Caja automática') {
-        // Guardar todas las configuraciones de sub-servicios de Caja automática
-
         const subServiceConfigs = configs.filter(config =>
           cajaAutomaticaSubServices.includes(config.serviceName)
         )
@@ -199,8 +187,6 @@ export default function ServiceConfig() {
           '✅ Configuraciones de Caja automática guardadas exitosamente'
         )
       } else if (selectedService === 'Mecánica general') {
-        // Guardar todas las configuraciones de sub-servicios de Mecánica general
-
         const subServiceConfigs = configs.filter(config =>
           mecanicaGeneralSubServices.includes(config.serviceName)
         )
@@ -226,8 +212,6 @@ export default function ServiceConfig() {
           '✅ Configuraciones de Mecánica general guardadas exitosamente'
         )
       } else {
-        // Guardar configuración de un servicio individual
-
         const configToSave = configs.find(
           config => config.serviceName === selectedService
         )
@@ -267,7 +251,7 @@ export default function ServiceConfig() {
     }
   }
 
-  // Renderizar configuración de un servicio
+  
   const renderServiceConfig = (config: ServiceConfig) => {
     const isActiveService = [
       'Diagnóstico',

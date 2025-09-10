@@ -147,7 +147,6 @@ export default function VehicleForm(
 
   return (
     <div className='space-y-3 sm:space-y-4'>
-      {/* Mostrar error de validación de fechas */}
       {hasDateError && (
         <div className='p-2 sm:p-3 bg-red-600 bg-opacity-20 border border-red-500 rounded-lg'>
           <div className='flex items-center gap-2'>
@@ -213,7 +212,6 @@ export default function VehicleForm(
         </div>
       </div>
 
-      {/* SECCIÓN 2: Datos del cliente - IMPORTANTE EN MÓVILES */}
       <div className='bg-green-900/20 p-2 sm:p-3 rounded-lg border border-green-500/30'>
         <h4 className='text-green-300 font-medium mb-2 text-xs sm:text-sm flex items-center gap-1'>
           👤 Cliente
@@ -236,13 +234,11 @@ export default function VehicleForm(
         </div>
       </div>
 
-      {/* SECCIÓN 3: Datos del vehículo */}
       <div className='bg-purple-900/20 p-2 sm:p-3 rounded-lg border border-purple-500/30'>
         <h4 className='text-purple-300 font-medium mb-2 text-xs sm:text-sm flex items-center gap-1'>
           🚗 Vehículo
         </h4>
 
-        {/* Patente - DESTACADA */}
         <div className='mb-2 sm:mb-3'>
           <label className='block text-gray-300 text-xs sm:text-sm mb-1'>
             Patente *
@@ -267,7 +263,6 @@ export default function VehicleForm(
           />
         </div>
 
-        {/* Marca y modelo */}
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-2 sm:mb-3'>
           <input
             type='text'
@@ -285,7 +280,6 @@ export default function VehicleForm(
           />
         </div>
 
-        {/* Año y KM */}
         <div className='grid grid-cols-2 gap-2 sm:gap-3'>
           <input
             type='number'
@@ -312,14 +306,12 @@ export default function VehicleForm(
         </div>
       </div>
 
-      {/* SECCIÓN 4: Información adicional - COLAPSABLE EN MÓVILES */}
       <div className='bg-gray-700/30 p-2 sm:p-3 rounded-lg border border-gray-600'>
         <h4 className='text-gray-300 font-medium mb-2 text-xs sm:text-sm flex items-center gap-1'>
           📋 Información adicional
         </h4>
 
         <div className='space-y-2 sm:space-y-3'>
-          {/* Tipo de servicio */}
           <input
             type='text'
             placeholder='Tipo de servicio'
@@ -328,7 +320,6 @@ export default function VehicleForm(
             className='w-full h-8 sm:h-9 p-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 text-xs sm:text-sm'
           />
 
-          {/* Número de chasis */}
           <input
             type='text'
             placeholder='N° de chasis (opcional)'
@@ -341,7 +332,6 @@ export default function VehicleForm(
         </div>
       </div>
 
-      {/* Información de ayuda - COMPACTA EN MÓVILES */}
       <div className='bg-yellow-900/20 p-2 rounded-lg border border-yellow-500/30'>
         <div className='flex items-start gap-2'>
           <span className='text-yellow-400 text-xs sm:text-sm'>💡</span>

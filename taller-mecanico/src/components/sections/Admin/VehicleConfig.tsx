@@ -442,7 +442,6 @@ export default function VehicleConfig() {
 
   return (
     <div className='min-h-screen bg-gray-900 text-white'>
-      {/* Header - RESPONSIVE */}
       <div className='bg-gray-800 shadow-lg py-4 sm:py-6'>
         <div className='max-w-6xl mx-auto flex flex-col gap-4 px-3 sm:px-4'>
           <div className='flex flex-col sm:flex-row justify-between items-start gap-3'>
@@ -455,7 +454,6 @@ export default function VehicleConfig() {
               </p>
             </div>
 
-            {/* Botón Nuevo - Prioridad en móviles */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -469,7 +467,6 @@ export default function VehicleConfig() {
             </motion.button>
           </div>
 
-          {/* Buscador - Full width en móviles */}
           <div className='relative w-full sm:max-w-md'>
             <input
               type='text'
@@ -491,7 +488,6 @@ export default function VehicleConfig() {
       </div>
 
       <main className='max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-8'>
-        {/* Mensaje - RESPONSIVE */}
         <AnimatePresence>
           {message && (
             <motion.div
@@ -513,7 +509,6 @@ export default function VehicleConfig() {
           getStatusText={getStatusText}
         />
 
-        {/* Paginación - RESPONSIVE */}
         {totalPages > 1 && (
           <div className='flex justify-center items-center gap-1 sm:gap-2 mt-4 sm:mt-6'>
             <button
@@ -524,7 +519,6 @@ export default function VehicleConfig() {
               ← Ant
             </button>
 
-            {/* Páginas - Mostrar menos en móviles */}
             <div className='flex gap-1'>
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                 let page
@@ -568,7 +562,6 @@ export default function VehicleConfig() {
           </div>
         )}
 
-        {/* Detalles - RESPONSIVE */}
         <AnimatePresence mode='wait'>
           {selectedVehicleData && (
             <VehicleDetails

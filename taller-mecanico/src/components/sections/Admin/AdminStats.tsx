@@ -61,7 +61,6 @@ export default function AdminStats({ turnos }: AdminStatsProps) {
 
   return (
     <div className='space-y-8'>
-      {/* Métricas principales */}
       <div className='grid grid-cols-2 md:grid-cols-4 gap-6'>
         <div className='bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl'>
           <div className='text-3xl font-bold text-white'>{stats.total}</div>
@@ -81,9 +80,7 @@ export default function AdminStats({ turnos }: AdminStatsProps) {
         </div>
       </div>
 
-      {/* Gráficos */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
-        {/* Servicios más populares */}
         <div className='bg-gray-800 p-6 rounded-xl'>
           <h3 className='text-xl font-bold text-white mb-4'>
             Servicios más populares
@@ -114,7 +111,6 @@ export default function AdminStats({ turnos }: AdminStatsProps) {
           </div>
         </div>
 
-        {/* Estadísticas por mes */}
         <div className='bg-gray-800 p-6 rounded-xl'>
           <h3 className='text-xl font-bold text-white mb-4'>Turnos por mes</h3>
           <div className='space-y-3'>
@@ -145,7 +141,6 @@ export default function AdminStats({ turnos }: AdminStatsProps) {
         </div>
       </div>
 
-      {/* Estado de los turnos */}
       <div className='bg-gray-800 p-6 rounded-xl'>
         <h3 className='text-xl font-bold text-white mb-4'>
           Estado de los turnos

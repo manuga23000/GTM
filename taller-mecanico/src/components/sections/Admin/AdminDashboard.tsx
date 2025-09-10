@@ -143,21 +143,18 @@ export default function AdminDashboard() {
       animate='visible'
       className='w-full max-w-7xl mx-auto p-2 sm:p-4 md:p-8 rounded-xl shadow-2xl bg-black/70 backdrop-blur-md'
     >
-      {/* Header - RESPONSIVE */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
         className='flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-8 gap-3 sm:gap-0'
       >
-        {/* Título - Responsive */}
         <h1 className='text-lg sm:text-2xl md:text-4xl font-extrabold text-white drop-shadow-lg text-center sm:text-left leading-tight'>
           <span className='block sm:hidden'>PANEL DE</span>
           <span className='block sm:hidden'>ADMINISTRACIÓN</span>
           <span className='hidden sm:block'>Panel de Administración</span>
         </h1>
 
-        {/* Botón logout - Siempre visible */}
         <motion.button
           whileHover={{
             scale: 1.1,
@@ -184,7 +181,6 @@ export default function AdminDashboard() {
         </motion.button>
       </motion.div>
 
-      {/* Message */}
       <AnimatePresence>
         {message && (
           <motion.div
@@ -199,7 +195,6 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Tabs - RESPONSIVE */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -237,7 +232,6 @@ export default function AdminDashboard() {
               damping: 25,
             }}
           >
-            {/* Efecto de brillo cuando está activo */}
             {activeTab === tab.id && (
               <motion.div
                 className='absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent'
@@ -252,7 +246,6 @@ export default function AdminDashboard() {
               />
             )}
 
-            {/* Indicador activo */}
             {activeTab === tab.id && (
               <motion.div
                 layoutId='activeTab'
@@ -282,7 +275,6 @@ export default function AdminDashboard() {
         ))}
       </motion.div>
 
-      {/* Content */}
       <div className='min-h-[300px] sm:min-h-[600px]'>
         <AnimatePresence mode='wait'>
           <motion.div

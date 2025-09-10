@@ -1,11 +1,9 @@
-// app/seguimiento/[patente]/page.tsx
 'use client'
 import { useParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import SeguimientoHeader from '@/components/sections/Seguimiento/SeguimientoHeader'
 import EstadoActual from '@/components/sections/Seguimiento/EstadoActual'
-//import TimelineProgreso from '@/components/sections/Seguimiento/TimelineProgreso'
 import Navbar from '@/components/layout/Navbar'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import { SeguimientoData } from '@/actions/seguimiento'
@@ -39,7 +37,6 @@ export default function SeguimientoPage() {
         const data = await getSeguimientoByPatente(patente)
 
         if (data) {
-          // Mapear el estado de Firebase a un estado más descriptivo
           const mapearEstado = (status: string) => {
             switch (status?.toLowerCase()) {
               case 'received':
@@ -59,11 +56,9 @@ export default function SeguimientoPage() {
 
           const estadoMapeado = mapearEstado(data.estadoActual || 'received')
 
-          // ACTUALIZADO: Usar los datos tal como vienen, ya incluyen archivos
           setSeguimientoData({
             ...data,
             estadoActual: estadoMapeado,
-            // Asegurar que trabajosRealizados tenga la estructura correcta
             trabajosRealizados:
               data.trabajosRealizados && data.trabajosRealizados.length > 0
                 ? data.trabajosRealizados
@@ -86,7 +81,6 @@ export default function SeguimientoPage() {
     cargarDatos()
   }, [patente])
 
-  // NUEVO: Cargar historial completo independientemente del servicio activo
   useEffect(() => {
     const cargarHistorial = async () => {
       try {
@@ -106,7 +100,6 @@ export default function SeguimientoPage() {
     cargarHistorial()
   }, [patente])
 
-  // Loading state con LoadingScreen de la home
   if (loading) {
     return (
       <>
@@ -118,8 +111,6 @@ export default function SeguimientoPage() {
     )
   }
 
-  // ACTUALIZADO: Lógica de error mejorada
-  // Solo mostrar "not_found" si no hay servicio activo Y no hay historial
   if (
     error === 'not_found' &&
     !seguimientoData &&
@@ -179,7 +170,6 @@ export default function SeguimientoPage() {
     )
   }
 
-  // Error general del sistema
   if (error === 'general_error') {
     return (
       <>
@@ -213,11 +203,9 @@ export default function SeguimientoPage() {
     )
   }
 
-  // ACTUALIZADO: Determinar qué mostrar basado en la nueva lógica
   const tieneServicioActivo = !!seguimientoData
   const tieneHistorial = historialCompleto.length > 0
 
-  // Si no tiene servicio activo Y no tiene historial, mostrar mensaje
   if (
     !tieneServicioActivo &&
     !tieneHistorial &&
@@ -278,7 +266,6 @@ export default function SeguimientoPage() {
     )
   }
 
-  // NUEVO: Usar datos del primer servicio histórico para el header si no hay servicio activo
   const datosParaHeader =
     seguimientoData ||
     (historialCompleto.length > 0 ? historialCompleto[0] : null)
@@ -307,7 +294,6 @@ export default function SeguimientoPage() {
           }}
         />
         <div className='max-w-5xl mx-auto px-4 pt-4 space-y-8'>
-          {/* CONDICIONAL: Solo mostrar EstadoActual si hay servicio activo */}
           {tieneServicioActivo && seguimientoData && (
             <EstadoActual
               data={{
@@ -322,7 +308,6 @@ export default function SeguimientoPage() {
             />
           )}
 
-          {/* NUEVO: Timeline Histórico Completo */}
           <div className='bg-white rounded-xl shadow-sm p-6'>
             <div className='flex items-center gap-3 mb-6'>
               <div className='p-2 bg-blue-50 rounded-lg'>
@@ -344,7 +329,8 @@ export default function SeguimientoPage() {
                 Historial de Servicios
                 {historialCompleto.length > 0 && (
                   <span className='ml-2 text-sm font-normal text-gray-500 whitespace-nowrap'>
-                    ({historialCompleto.length} servicio{historialCompleto.length !== 1 ? 's' : ''})
+                    ({historialCompleto.length} servicio
+                    {historialCompleto.length !== 1 ? 's' : ''})
                   </span>
                 )}
               </h3>
@@ -364,9 +350,7 @@ export default function SeguimientoPage() {
                     transition={{ delay: index * 0.1 }}
                     className='border border-gray-200 rounded-lg p-5 bg-gray-50'
                   >
-                    {/* Header del servicio MEJORADO */}
                     <div className='space-y-3'>
-                      {/* Primera fila: Título y estado */}
                       <div className='flex items-center gap-3'>
                         <div className='flex-shrink-0 w-3 h-3 rounded-full bg-green-500'></div>
                         <div className='flex-1'>
@@ -381,15 +365,12 @@ export default function SeguimientoPage() {
                               day: '2-digit',
                               month: '2-digit',
                               year: 'numeric',
-                              // REMOVIDO: hour y minute para quitar la hora
                             })}
                           </div>
                         </div>
                       </div>
 
-                      {/* Segunda fila: KM y botón Ver más */}
                       <div className='flex justify-between items-center'>
-                        {/* NUEVO: Kilometraje */}
                         {servicio.km ? (
                           <div className='text-left'>
                             <div className='text-xl md:text-2xl font-bold text-blue-600'>
@@ -400,7 +381,6 @@ export default function SeguimientoPage() {
                           <div></div>
                         )}
 
-                        {/* NUEVO: Botón Ver más */}
                         <button
                           onClick={() => {
                             setServicioExpandido(
@@ -418,7 +398,6 @@ export default function SeguimientoPage() {
                       </div>
                     </div>
 
-                    {/* NUEVO: Trabajos expandibles */}
                     {servicioExpandido === servicio.serviceNumber &&
                       servicio.trabajosRealizados &&
                       servicio.trabajosRealizados.length > 0 && (
@@ -457,11 +436,12 @@ export default function SeguimientoPage() {
                                     </p>
                                   )}
 
-                                  {/* Archivos del trabajo - usando FileViewer */}
                                   {trabajo.archivos &&
                                     trabajo.archivos.length > 0 && (
                                       <div className='ml-7'>
-                                        <FileViewer archivos={trabajo.archivos} />
+                                        <FileViewer
+                                          archivos={trabajo.archivos}
+                                        />
                                       </div>
                                     )}
                                 </motion.div>
@@ -488,12 +468,9 @@ export default function SeguimientoPage() {
             )}
           </div>
 
-          {/* Separador blanco visual entre timeline y footer */}
           <div className='h-8 md:h-12 w-full' />
         </div>
       </main>
-
-
     </>
   )
 }

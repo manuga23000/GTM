@@ -1,9 +1,6 @@
 import { updateTurnoStatus } from '@/actions/turnos'
 import { getAllTurnos } from '@/actions/turnos'
 
-
-
-// Página principal
 export default async function Page({
   params,
 }: {
@@ -11,7 +8,6 @@ export default async function Page({
 }) {
   const { token } = await params
 
-  // Buscar el turno por token
   const turnos = await getAllTurnos()
   const turno = turnos.find(t => t.cancelToken === token)
 
@@ -24,7 +20,6 @@ export default async function Page({
     )
   }
 
-  // Si ya está cancelado
   if (turno.status === 'cancelled') {
     return (
       <div className='flex flex-col items-center justify-center min-h-[70vh] text-center w-full'>
@@ -34,7 +29,6 @@ export default async function Page({
     )
   }
 
-  // Cancelar el turno
   await updateTurnoStatus(turno.id!, 'cancelled')
 
   return (

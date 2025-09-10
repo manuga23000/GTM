@@ -1,4 +1,3 @@
-// app/seguimiento/page.tsx
 'use client'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
@@ -22,24 +21,18 @@ export default function SeguimientoPage() {
 
     setLoading(true)
 
-    // Normalizar patente (remover espacios y convertir a mayúsculas)
     const patenteNormalizada = patente.trim().toUpperCase().replace(/\s+/g, '')
 
-    // Simular un pequeño delay para mostrar el loading
     await new Promise(resolve => setTimeout(resolve, 500))
 
-    // Redirigir a la página específica del vehículo
     router.push(`/seguimiento/${patenteNormalizada}`)
   }
 
   const formatearPatente = (valor: string) => {
-    // Remover caracteres no alfanuméricos y convertir a mayúsculas
     const limpio = valor.replace(/[^A-Za-z0-9]/g, '').toUpperCase()
 
-    // Limitar a 7 caracteres (formato argentino)
     const limitado = limpio.slice(0, 7)
 
-    // Formatear según patrón argentino (ABC123 o AB123CD)
     if (limitado.length <= 3) {
       return limitado
     } else if (limitado.length <= 6) {
@@ -61,7 +54,6 @@ export default function SeguimientoPage() {
     <>
       <Navbar />
       <main className='min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 pt-16 lg:pt-24'>
-        {/* Header */}
         <motion.section
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -74,7 +66,6 @@ export default function SeguimientoPage() {
             backgroundRepeat: 'no-repeat',
           }}
         >
-          {/* Capa oscura para mejorar legibilidad */}
           <div className='absolute inset-0 bg-black/60' />
 
           <div className='relative max-w-7xl mx-auto px-4 py-16 pt-8 text-center'>
@@ -112,7 +103,6 @@ export default function SeguimientoPage() {
               tu servicio
             </motion.p>
 
-            {/* Formulario de búsqueda */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -128,7 +118,7 @@ export default function SeguimientoPage() {
                     onChange={handlePatenteChange}
                     placeholder='Ej: ABC 123 o AB 123 CD'
                     className='w-full pl-12 pr-4 py-4 text-xl font-bold text-center text-gray-800 bg-white rounded-xl border-2 border-transparent focus:border-red-500 focus:outline-none transition-colors tracking-wider'
-                    maxLength={9} // Para incluir espacios
+                    maxLength={9}
                   />
                 </div>
 
@@ -163,7 +153,6 @@ export default function SeguimientoPage() {
           </div>
         </motion.section>
 
-        {/* Características del servicio */}
         <motion.section
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -182,7 +171,6 @@ export default function SeguimientoPage() {
             </div>
 
             <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-              {/* Estado actual */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -201,7 +189,6 @@ export default function SeguimientoPage() {
                 </p>
               </motion.div>
 
-              {/* Timeline de progreso */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -220,7 +207,6 @@ export default function SeguimientoPage() {
                 </p>
               </motion.div>
 
-              {/* Trabajos realizados */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -242,7 +228,6 @@ export default function SeguimientoPage() {
           </div>
         </motion.section>
 
-        {/* Información adicional */}
         <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

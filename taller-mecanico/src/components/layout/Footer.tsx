@@ -21,7 +21,7 @@ export default function Footer() {
   const hideFooter =
     pathname.startsWith('/admin') || pathname.startsWith('/cancelar-turno')
 
-  if (hideFooter) return null // ⛔ No mostrar nada si es /admin o /cancelar-turno
+  if (hideFooter) return null
 
   return (
     <footer
@@ -34,7 +34,6 @@ export default function Footer() {
     >
       <div className='absolute inset-0 bg-black/85 z-0'></div>
       <div className='relative z-10 max-w-7xl mx-auto px-4'>
-        {/* Logo y título principal */}
         <div className='flex items-center mb-8'>
           <Image
             src='/images/header/LOGO GTM.png'
@@ -49,9 +48,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Grid principal de 4 columnas */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8'>
-          {/* Columna 1: Sobre GTM */}
           <div className='space-y-4'>
             <h3 className='text-lg font-bold text-red-500 mb-4 flex items-center'>
               <FaWrench className='mr-2' />
@@ -75,7 +72,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Columna 2: Contacto & Ubicación */}
           <div className='space-y-4'>
             <h3 className='text-lg font-bold text-red-500 mb-4 flex items-center'>
               <FaMapMarkerAlt className='mr-2' />
@@ -114,7 +110,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Columna 3: Horarios & Servicios */}
           <div className='space-y-4'>
             <h3 className='text-lg font-bold text-red-500 mb-4 flex items-center'>
               <FaClock className='mr-2' />
@@ -136,7 +131,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Columna 4: Redes Sociales */}
           <div className='space-y-4'>
             <h3 className='text-lg font-bold text-red-500 mb-4'>SÍGUENOS</h3>
 
@@ -189,7 +183,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Enlaces de navegación */}
         <div className='border-t border-gray-700 pt-6 mb-6'>
           <div className='flex flex-wrap justify-center gap-6 text-sm'>
             <Link
@@ -216,18 +209,16 @@ export default function Footer() {
             >
               Contacto
             </Link>
-           
+
             <Link
               href='/seguimiento'
               className='text-gray-300 hover:text-red-500 transition font-medium'
             >
               Seguimiento
             </Link>
-             
           </div>
         </div>
 
-        {/* Copyright */}
         <div className='border-t border-gray-700 pt-4 text-center'>
           <p className='text-gray-400 text-xs'>
             © {new Date().getFullYear()} GTM - Tu aliado automotriz. Todos los

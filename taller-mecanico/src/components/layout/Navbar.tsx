@@ -1,4 +1,3 @@
-// components/layout/Navbar.tsx
 'use client'
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
@@ -11,7 +10,6 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
 
-  // Detectar si estamos en páginas de seguimiento
   const isSeguimientoPage = pathname.startsWith('/seguimiento')
 
   useEffect(() => {
@@ -26,7 +24,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // CORREGIDO: Solo cerrar menú al hacer scroll si está abierto, con debounce
   useEffect(() => {
     let timeoutId: NodeJS.Timeout
 
@@ -48,7 +45,6 @@ export default function Navbar() {
     }
   }, [isMenuOpen])
 
-  // Prevenir scroll del body cuando el menú está abierto
   useEffect(() => {
     const originalOverflow = document.body.style.overflow
 
@@ -63,7 +59,6 @@ export default function Navbar() {
     }
   }, [isMenuOpen])
 
-  // Animaciones para el menú móvil
   const menuVariants = {
     closed: {
       opacity: 0,
@@ -108,13 +103,10 @@ export default function Navbar() {
     open: { rotate: 180 },
   }
 
-  // Lógica de background del navbar
   const getNavbarBackground = () => {
-    // Si estamos en páginas de seguimiento, siempre negro
     if (isSeguimientoPage) {
       return 'bg-black border-b border-gray-800/50'
     }
-    // En otras páginas, comportamiento normal
     return scrolled ? 'bg-black border-b border-gray-800/50' : 'bg-transparent'
   }
 
@@ -124,7 +116,6 @@ export default function Navbar() {
     >
       <div className='max-w-7xl mx-auto px-6 lg:px-8'>
         <div className='flex items-center justify-between h-14 lg:h-24'>
-          {/* Logo */}
           <div className='flex items-center'>
             <Link href='/'>
               <Image
@@ -137,7 +128,6 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Navigation Menu - Desktop */}
           <div className='hidden lg:flex items-center space-x-8 h-full flex-1 justify-center'>
             <Link
               href='/servicios'
@@ -166,7 +156,7 @@ export default function Navbar() {
               CONTACTO
               <span className='absolute bottom-0 left-0 w-full h-0.5 bg-red-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300'></span>
             </Link>
-         
+
             <Link
               href='/seguimiento'
               className='relative text-white hover:text-red-500 px-4 h-full flex items-center text-sm font-semibold tracking-wide transition-all duration-300 group whitespace-nowrap'
@@ -174,10 +164,8 @@ export default function Navbar() {
               SEGUIMIENTO
               <span className='absolute bottom-0 left-0 w-full h-0.5 bg-red-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300'></span>
             </Link>
-
           </div>
 
-          {/* Mobile menu button */}
           <div className='lg:hidden'>
             <motion.button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -212,7 +200,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu - Corregido */}
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
@@ -223,7 +210,6 @@ export default function Navbar() {
               exit='closed'
             >
               <div className='px-4 pt-4 pb-6 space-y-3 bg-gradient-to-b from-black/98 to-black/95 backdrop-blur-xl border-t border-red-500/30 shadow-2xl rounded-b-2xl'>
-                {/* Opciones del menú */}
                 <motion.div variants={menuItemVariants}>
                   <Link
                     href='/servicios'
@@ -317,7 +303,6 @@ export default function Navbar() {
                 </motion.div>
 
                 <motion.div variants={menuItemVariants}>
-                 
                   <Link
                     href='/seguimiento'
                     className='flex items-center justify-between text-white hover:text-red-400 px-4 py-4 text-base font-semibold tracking-wide transition-all duration-300 rounded-xl hover:bg-white/10 active:bg-white/20 group'
@@ -338,7 +323,6 @@ export default function Navbar() {
                       />
                     </svg>
                   </Link>
-                  
                 </motion.div>
               </div>
             </motion.div>

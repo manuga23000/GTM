@@ -31,7 +31,6 @@ export default function ServiceConfig() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
 
-  // Servicios disponibles para configuración
   const availableServices = [
     'Diagnóstico',
     'Revisación técnica',
@@ -40,7 +39,6 @@ export default function ServiceConfig() {
     'Mecánica general',
   ]
 
-  // Sub-servicios de Caja automática
   const cajaAutomaticaSubServices = [
     'Service de mantenimiento',
     'Diagnóstico de caja',
@@ -64,7 +62,6 @@ export default function ServiceConfig() {
     'Otro / No estoy seguro',
   ]
 
-  // Cargar configuraciones desde Firebase
   const loadConfigs = useCallback(async () => {
     try {
       setLoading(true)
@@ -619,7 +616,6 @@ export default function ServiceConfig() {
               </div>
             </div>
           ) : (
-            // Mostrar configuración del servicio seleccionado
             (() => {
               const selectedConfig = configs.find(
                 config => config.serviceName === selectedService

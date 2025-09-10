@@ -13,14 +13,12 @@ export default function AdminStats({ turnos }: AdminStatsProps) {
     const completed = turnos.filter(t => t.status === 'completed').length
     const reprogrammed = turnos.filter(t => t.status === 'reprogrammed').length
 
-    // Estadísticas por servicio
     const serviceStats = turnos.reduce((acc, turno) => {
       const service = turno.subService || turno.service
       acc[service] = (acc[service] || 0) + 1
       return acc
     }, {} as Record<string, number>)
 
-    // Estadísticas por mes
     const monthlyStats = turnos.reduce((acc, turno) => {
       const month = new Date(turno.createdAt).toLocaleDateString('es-ES', {
         month: 'long',
@@ -30,7 +28,6 @@ export default function AdminStats({ turnos }: AdminStatsProps) {
       return acc
     }, {} as Record<string, number>)
 
-    // Turnos de esta semana
     const thisWeek = turnos.filter(turno => {
       const turnoDate = new Date(turno.createdAt)
       const now = new Date()
@@ -38,7 +35,6 @@ export default function AdminStats({ turnos }: AdminStatsProps) {
       return turnoDate >= weekAgo
     }).length
 
-    // Turnos de este mes
     const thisMonth = turnos.filter(turno => {
       const turnoDate = new Date(turno.createdAt)
       const now = new Date()

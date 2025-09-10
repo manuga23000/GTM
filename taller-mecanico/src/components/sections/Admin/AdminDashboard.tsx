@@ -73,7 +73,6 @@ export default function AdminDashboard() {
     loadTurnos()
   }, [])
 
-  // Configuración de animaciones
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {

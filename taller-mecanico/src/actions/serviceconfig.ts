@@ -1,4 +1,3 @@
-// actions/serviceConfig.ts
 import {
   collection,
   doc,
@@ -20,15 +19,13 @@ import {
 
 const COLLECTION_NAME = 'service_config'
 
-// Configuración inicial para servicios con configuración dinámica
 const INITIAL_CONFIGS: ServiceConfigInput[] = [
-  // SERVICIOS PRINCIPALES
   {
     serviceName: 'Diagnóstico',
     maxPerDay: 2,
     maxPerWeek: null,
     requiresDate: true,
-    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    allowedDays: [1, 2, 3, 4, 5],
     isActive: true,
   },
   {
@@ -36,7 +33,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: 1,
     maxPerWeek: null,
     requiresDate: true,
-    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    allowedDays: [1, 2, 3, 4, 5],
     isActive: true,
   },
   {
@@ -44,17 +41,16 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: 1,
     maxPerWeek: null,
     requiresDate: true,
-    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    allowedDays: [1, 2, 3, 4, 5],
     isActive: true,
   },
 
-  // SUB-SERVICIOS DE CAJA AUTOMÁTICA
   {
     serviceName: 'Service de mantenimiento',
     maxPerDay: 2,
     maxPerWeek: null,
     requiresDate: false,
-    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    allowedDays: [1, 2, 3, 4, 5],
     isActive: true,
   },
   {
@@ -62,7 +58,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: null,
     maxPerWeek: 1,
     requiresDate: false,
-    allowedDays: [1, 2, 3], // Lunes a miércoles
+    allowedDays: [1, 2, 3],
     isActive: true,
   },
   {
@@ -70,7 +66,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: null,
     maxPerWeek: 3,
     requiresDate: false,
-    allowedDays: [1, 2, 3], // Lunes a miércoles
+    allowedDays: [1, 2, 3],
     isActive: true,
   },
   {
@@ -78,7 +74,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: null,
     maxPerWeek: 3,
     requiresDate: false,
-    allowedDays: [1, 2, 3], // Lunes a miércoles
+    allowedDays: [1, 2, 3],
     isActive: true,
   },
   {
@@ -86,7 +82,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: null,
     maxPerWeek: 1,
     requiresDate: true,
-    allowedDays: [1, 2, 3], // Lunes a miércoles
+    allowedDays: [1, 2, 3],
     isActive: true,
   },
   {
@@ -94,17 +90,16 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: null,
     maxPerWeek: 2,
     requiresDate: true,
-    allowedDays: [1, 2, 3], // Lunes a miércoles
+    allowedDays: [1, 2, 3],
     isActive: true,
   },
 
-  // SUB-SERVICIOS DE MECÁNICA GENERAL
   {
     serviceName: 'Correa de distribución',
     maxPerDay: 2,
     maxPerWeek: null,
     requiresDate: false,
-    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    allowedDays: [1, 2, 3, 4, 5],
     isActive: true,
   },
   {
@@ -112,7 +107,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: 3,
     maxPerWeek: null,
     requiresDate: false,
-    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    allowedDays: [1, 2, 3, 4, 5],
     isActive: true,
   },
   {
@@ -120,7 +115,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: 1,
     maxPerWeek: null,
     requiresDate: true,
-    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    allowedDays: [1, 2, 3, 4, 5],
     isActive: true,
   },
   {
@@ -128,7 +123,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: 2,
     maxPerWeek: null,
     requiresDate: false,
-    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    allowedDays: [1, 2, 3, 4, 5],
     isActive: true,
   },
   {
@@ -136,7 +131,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: 1,
     maxPerWeek: null,
     requiresDate: true,
-    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    allowedDays: [1, 2, 3, 4, 5],
     isActive: true,
   },
   {
@@ -144,7 +139,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: 3,
     maxPerWeek: null,
     requiresDate: false,
-    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    allowedDays: [1, 2, 3, 4, 5],
     isActive: true,
   },
   {
@@ -152,7 +147,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: 4,
     maxPerWeek: null,
     requiresDate: false,
-    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    allowedDays: [1, 2, 3, 4, 5],
     isActive: true,
   },
   {
@@ -160,7 +155,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: 2,
     maxPerWeek: null,
     requiresDate: false,
-    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    allowedDays: [1, 2, 3, 4, 5],
     isActive: true,
   },
   {
@@ -168,7 +163,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: 3,
     maxPerWeek: null,
     requiresDate: false,
-    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    allowedDays: [1, 2, 3, 4, 5],
     isActive: true,
   },
   {
@@ -176,7 +171,7 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: 2,
     maxPerWeek: null,
     requiresDate: false,
-    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    allowedDays: [1, 2, 3, 4, 5],
     isActive: true,
   },
   {
@@ -184,18 +179,14 @@ const INITIAL_CONFIGS: ServiceConfigInput[] = [
     maxPerDay: 2,
     maxPerWeek: null,
     requiresDate: false,
-    allowedDays: [1, 2, 3, 4, 5], // Lunes a viernes
+    allowedDays: [1, 2, 3, 4, 5],
     isActive: true,
   },
 ]
 
-/**
- * Inicializar configuraciones por defecto si no existen
- */
 export async function initializeServiceConfigs(): Promise<ServiceConfigResponse> {
   try {
     for (const configData of INITIAL_CONFIGS) {
-      // Verificar si ya existe la configuración
       const q = query(
         collection(db, COLLECTION_NAME),
         where('serviceName', '==', configData.serviceName)
@@ -203,7 +194,6 @@ export async function initializeServiceConfigs(): Promise<ServiceConfigResponse>
       const querySnapshot = await getDocs(q)
 
       if (querySnapshot.empty) {
-        // No existe, crear configuración inicial
         const now = new Date()
         const config: Omit<ServiceConfig, 'id'> = {
           ...configData,
@@ -211,7 +201,6 @@ export async function initializeServiceConfigs(): Promise<ServiceConfigResponse>
           updatedAt: now,
         }
 
-        // Convertir fechas a Timestamp para Firestore
         const firestoreData = {
           ...config,
           createdAt: Timestamp.fromDate(config.createdAt),
@@ -237,9 +226,6 @@ export async function initializeServiceConfigs(): Promise<ServiceConfigResponse>
   }
 }
 
-/**
- * Obtener configuración de un servicio específico
- */
 export async function getServiceConfig(
   serviceName: string
 ): Promise<ServiceConfig | null> {
@@ -277,9 +263,6 @@ export async function getServiceConfig(
   }
 }
 
-/**
- * Obtener todas las configuraciones de servicios
- */
 export async function getAllServiceConfigs(): Promise<ServiceConfig[]> {
   try {
     const q = query(
@@ -311,15 +294,11 @@ export async function getAllServiceConfigs(): Promise<ServiceConfig[]> {
   }
 }
 
-/**
- * Actualizar configuración de un servicio
- */
 export async function updateServiceConfig(
   serviceName: string,
   configData: Partial<ServiceConfigInput>
 ): Promise<ServiceConfigResponse> {
   try {
-    // Buscar la configuración existente
     const q = query(
       collection(db, COLLECTION_NAME),
       where('serviceName', '==', serviceName)
@@ -336,14 +315,12 @@ export async function updateServiceConfig(
 
     const docRef = doc(db, COLLECTION_NAME, querySnapshot.docs[0].id)
 
-    // Preparar datos para actualización
     const updateData = {
       ...configData,
       updatedAt: Timestamp.fromDate(new Date()),
     }
 
     await updateDoc(docRef, updateData)
-
 
     return {
       success: true,
@@ -362,16 +339,11 @@ export async function updateServiceConfig(
   }
 }
 
-/**
- * Limpiar configuraciones duplicadas (mantener solo la más reciente)
- */
 export async function cleanDuplicateConfigs(): Promise<ServiceConfigResponse> {
   try {
-
     const allConfigs = await getAllServiceConfigs()
     const serviceGroups = new Map<string, ServiceConfig[]>()
 
-    // Agrupar por serviceName
     allConfigs.forEach(config => {
       if (!serviceGroups.has(config.serviceName)) {
         serviceGroups.set(config.serviceName, [])
@@ -379,21 +351,14 @@ export async function cleanDuplicateConfigs(): Promise<ServiceConfigResponse> {
       serviceGroups.get(config.serviceName)!.push(config)
     })
 
-    // Para cada grupo, mantener solo la más reciente
     for (const [serviceName, configs] of serviceGroups) {
       if (configs.length > 1) {
-      
-
-        // Ordenar por fecha de actualización (más reciente primero)
         configs.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
 
-        // Mantener solo la primera (más reciente) y eliminar las demás
         const toKeep = configs[0]
         const toDelete = configs.slice(1)
 
-
         for (const configToDelete of toDelete) {
-       
           await deleteDoc(doc(db, COLLECTION_NAME, configToDelete.id!))
         }
       }

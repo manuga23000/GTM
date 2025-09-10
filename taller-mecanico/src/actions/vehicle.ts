@@ -69,14 +69,10 @@ export async function getVehicleByPlate(
   }
 }
 
-/**
- * Crear un nuevo vehículo
- */
 export async function createVehicle(
   vehicleData: VehicleInput
 ): Promise<AdminResponse> {
   try {
-    // Validaciones básicas
     if (!vehicleData.plateNumber || !vehicleData.clientName) {
       return {
         success: false,
@@ -90,7 +86,6 @@ export async function createVehicle(
       .toUpperCase()
     const docRef = doc(db, COLLECTION_NAME, normalizedPlate)
 
-    // Verificar si ya existe
     const existingVehicle = await getDoc(docRef)
     if (existingVehicle.exists()) {
       return {
@@ -100,20 +95,17 @@ export async function createVehicle(
       }
     }
 
-    // Preparar datos
     const dataToSave = {
       ...vehicleData,
       plateNumber: normalizedPlate,
       createdAt: vehicleData.createdAt || new Date(),
-      updatedAt: vehicleData.createdAt || new Date(), // ← NUEVO: inicializar updatedAt
+      updatedAt: vehicleData.createdAt || new Date(),
       km: vehicleData.km || 0,
       steps: vehicleData.steps || [],
     }
 
-    // MEJORADO: Aplicar filtro recursivo
     const filteredData = filterUndefinedValues(dataToSave)
 
-    // VALIDACIÓN: Verificar que no queden undefined
     const validationErrors = validateFirestoreData(filteredData)
     if (validationErrors.length > 0) {
       console.error(
@@ -125,7 +117,6 @@ export async function createVehicle(
         JSON.stringify(filteredData, null, 2)
       )
 
-      // Aplicar filtro doble
       const doubleFiltered = filterUndefinedValues(filteredData)
       await setDoc(docRef, doubleFiltered)
     } else {
@@ -164,7 +155,6 @@ export async function updateVehicle(
 
     const docRef = doc(db, COLLECTION_NAME, plateNumber)
 
-    // MEJORADO: Si se están actualizando los steps, usar funciones de limpieza
     if (updateData.steps) {
       updateData.steps = updateData.steps.map(step =>
         cleanStepForFirestore(step)
@@ -175,17 +165,15 @@ export async function updateVehicle(
     const dataToUpdate = {
       ...updateData,
       plateNumber,
-      updatedAt: currentTime, // CRÍTICO: SIEMPRE actualizar la fecha
+      updatedAt: currentTime,
     }
 
     if (updateData.km !== undefined) {
       dataToUpdate.km = Number(updateData.km) || 0
     }
 
-    // CRÍTICO: Aplicar filtro recursivo para eliminar todos los undefined
     const filteredData = filterUndefinedValues(dataToUpdate)
 
-    // VALIDACIÓN ADICIONAL: Verificar que no queden undefined
     const validationErrors = validateFirestoreData(filteredData)
     if (validationErrors.length > 0) {
       console.error('❌ Datos con undefined detectados:', validationErrors)
@@ -194,7 +182,6 @@ export async function updateVehicle(
         JSON.stringify(filteredData, null, 2)
       )
 
-      // Aplicar filtro una vez más para asegurar limpieza
       const doubleFiltered = filterUndefinedValues(filteredData)
 
       await setDoc(docRef, doubleFiltered, { merge: true })
@@ -231,11 +218,9 @@ export async function deleteVehicle(
       }
     }
 
-    // Obtener el vehículo para limpiar archivos
     const vehicle = await getVehicleByPlate(plateNumber)
 
     if (vehicle && vehicle.steps) {
-      // Recopilar todas las URLs de archivos para eliminar de Storage
       const allFiles: StepFile[] = []
       vehicle.steps.forEach(step => {
         if (step.files) {
@@ -243,7 +228,6 @@ export async function deleteVehicle(
         }
       })
 
-      // Eliminar archivos de Storage de forma paralela
       if (allFiles.length > 0) {
         await Promise.allSettled(
           allFiles.map(file => deleteFileFromStorage(file.url))
@@ -251,7 +235,6 @@ export async function deleteVehicle(
       }
     }
 
-    // Eliminar documento de Firestore
     const docRef = doc(db, COLLECTION_NAME, plateNumber)
     await deleteDoc(docRef)
 
@@ -269,22 +252,16 @@ export async function deleteVehicle(
   }
 }
 
-/**
- * Buscar vehículos por múltiples criterios
- */
 export async function searchVehicles(criteria: {
   clientName?: string
   plateNumber?: string
   serviceType?: string
 }): Promise<VehicleInput[]> {
   try {
-    // Construir query paso a paso
     const queryRef = collection(db, COLLECTION_NAME)
 
-    // Crear array de constraints
     const constraints = []
 
-    // Agregar filtros según criterios
     if (criteria.clientName) {
       constraints.push(where('clientName', '>=', criteria.clientName))
     }
@@ -293,7 +270,6 @@ export async function searchVehicles(criteria: {
       constraints.push(where('serviceType', '==', criteria.serviceType))
     }
 
-    // Aplicar constraints solo si existen
     const finalQuery =
       constraints.length > 0 ? query(queryRef, ...constraints) : queryRef
 
@@ -304,7 +280,6 @@ export async function searchVehicles(criteria: {
       vehicles.push(normalizeVehicleData(doc.data()))
     })
 
-    // Filtrar por patente en el cliente si se especifica (Firestore no soporta LIKE)
     if (criteria.plateNumber) {
       return vehicles.filter(vehicle =>
         vehicle.plateNumber
@@ -320,9 +295,6 @@ export async function searchVehicles(criteria: {
   }
 }
 
-/**
- * NUEVO: Agregar paso/trabajo realizado a un vehículo
- */
 export async function addVehicleStep(
   plateNumber: string,
   step: Omit<VehicleStep, 'id'>
@@ -340,7 +312,7 @@ export async function addVehicleStep(
     const newStep: VehicleStep = {
       ...step,
       id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36),
-      files: step.files || [], // Asegurar que files esté presente
+      files: step.files || [],
     }
 
     const updatedSteps = [...(vehicle.steps || []), newStep]
@@ -356,9 +328,6 @@ export async function addVehicleStep(
   }
 }
 
-/**
- * NUEVO: Eliminar paso específico de un vehículo con limpieza de archivos
- */
 export async function removeVehicleStep(
   plateNumber: string,
   stepId: string
@@ -373,16 +342,13 @@ export async function removeVehicleStep(
       }
     }
 
-    // Encontrar el step a eliminar para limpiar sus archivos
     const stepToDelete = vehicle.steps?.find(s => s.id === stepId)
     if (stepToDelete?.files) {
-      // Eliminar archivos de Storage
       await Promise.allSettled(
         stepToDelete.files.map(file => deleteFileFromStorage(file.url))
       )
     }
 
-    // Filtrar steps
     const updatedSteps = (vehicle.steps || []).filter(
       step => step.id !== stepId
     )

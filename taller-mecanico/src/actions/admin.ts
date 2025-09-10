@@ -59,9 +59,6 @@ const DEFAULT_GENERAL_CONFIG: GeneralConfig = {
   updatedAt: new Date(),
 }
 
-/**
- * Cargar configuración general
- */
 export async function loadGeneralConfig(): Promise<GeneralConfig> {
   try {
     const docRef = doc(db, CONFIG_COLLECTION, GENERAL_CONFIG_DOC)
@@ -74,7 +71,6 @@ export async function loadGeneralConfig(): Promise<GeneralConfig> {
         updatedAt: data.updatedAt.toDate(),
       } as GeneralConfig
     } else {
-      // Crear configuración por defecto
       await saveGeneralConfig(DEFAULT_GENERAL_CONFIG)
       return DEFAULT_GENERAL_CONFIG
     }
@@ -84,9 +80,6 @@ export async function loadGeneralConfig(): Promise<GeneralConfig> {
   }
 }
 
-/**
- * Guardar configuración general
- */
 export async function saveGeneralConfig(
   config: GeneralConfig
 ): Promise<AdminResponse> {
@@ -113,16 +106,10 @@ export async function saveGeneralConfig(
   }
 }
 
-/**
- * Resetear configuración a valores por defecto
- */
 export async function resetGeneralConfig(): Promise<AdminResponse> {
   return await saveGeneralConfig(DEFAULT_GENERAL_CONFIG)
 }
 
-/**
- * Activar/desactivar modo mantenimiento
- */
 export async function toggleMaintenanceMode(
   enabled: boolean
 ): Promise<AdminResponse> {

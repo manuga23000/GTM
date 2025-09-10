@@ -22,26 +22,22 @@ import { getServiceConfig } from './serviceconfig'
 
 const COLLECTION_NAME = 'turnos'
 
-// Obtener configuración de un servicio (dinámico desde Firebase o estático)
 async function getServiceAvailabilityConfig(serviceName: string): Promise<{
   maxPerDay?: number | null
   maxPerWeek?: number | null
   requiresDate: boolean
   allowedDays?: number[]
 } | null> {
-  // Para servicios con configuración dinámica, intentar obtener desde Firebase
   const servicesWithDynamicConfig = [
     'Diagnóstico',
     'Revisación técnica',
     'Otro',
-    // Sub-servicios de Caja automática
     'Service de mantenimiento',
     'Diagnóstico de caja',
     'Reparación de fugas',
     'Cambio de solenoides',
     'Overhaul completo',
     'Reparaciones mayores',
-    // Sub-servicios de Mecánica general
     'Correa de distribución',
     'Frenos',
     'Embrague',
@@ -74,7 +70,6 @@ async function getServiceAvailabilityConfig(serviceName: string): Promise<{
     }
   }
 
-  // Fallback a configuración estática para servicios no configurados
   const staticConfigs: Record<
     string,
     {
@@ -97,14 +92,10 @@ async function getServiceAvailabilityConfig(serviceName: string): Promise<{
   return null
 }
 
-/**
- * Crear un nuevo turno
- */
 export async function createTurno(
   turnoData: TurnoInput
 ): Promise<TurnoResponse> {
   try {
-    // Validaciones básicas - Todos los campos obligatorios
     if (
       !turnoData.name ||
       !turnoData.phone ||
@@ -120,11 +111,9 @@ export async function createTurno(
       }
     }
 
-    // Verificar disponibilidad para servicios que requieren fecha
     if (turnoData.date) {
       let serviceToCheck = turnoData.service
 
-      // Para caja automática o mecánica general, usar el sub-servicio
       if (
         (turnoData.service === 'Caja automática' ||
           turnoData.service === 'Mecánica general') &&
@@ -133,7 +122,6 @@ export async function createTurno(
         serviceToCheck = turnoData.subService
       }
 
-      // Verificar disponibilidad usando la configuración dinámica
       const availability = await checkAvailability(
         turnoData.date.toISOString().split('T')[0],
         serviceToCheck
@@ -148,12 +136,10 @@ export async function createTurno(
       }
     }
 
-    // Generar un token único para cancelar el turno
     const cancelToken = crypto.randomUUID
       ? crypto.randomUUID()
       : Math.random().toString(36).substr(2, 16)
 
-    // Preparar datos del turno
     const now = new Date()
     const turno: Omit<Turno, 'id'> = {
       ...turnoData,
@@ -163,7 +149,6 @@ export async function createTurno(
       cancelToken,
     }
 
-    // Convertir fechas a Timestamp para Firestore
     const firestoreData = {
       ...turno,
       date: turno.date ? Timestamp.fromDate(turno.date) : null,
@@ -171,7 +156,6 @@ export async function createTurno(
       updatedAt: Timestamp.fromDate(turno.updatedAt),
     }
 
-    // Guardar en Firestore
     const docRef = await addDoc(collection(db, COLLECTION_NAME), firestoreData)
 
     const savedTurno: Turno = {
@@ -179,7 +163,6 @@ export async function createTurno(
       id: docRef.id,
     }
 
-    // Enviar email de confirmación solo al cliente (Bcc configurado en EmailJS)
     try {
       await sendTurnoConfirmationToClient({ ...turnoData, cancelToken })
     } catch (emailError) {
@@ -202,18 +185,13 @@ export async function createTurno(
   }
 }
 
-/**
- * Verificar disponibilidad para un servicio en una fecha específica
- */
 export async function checkAvailability(
-  date: string, // YYYY-MM-DD format
+  date: string,
   service: string
 ): Promise<AvailabilityCheck> {
   try {
-    // Obtener configuración del servicio (dinámico desde Firebase)
     const serviceConfig = await getServiceAvailabilityConfig(service)
 
-    // Si no hay configuración para el servicio, siempre está disponible
     if (!serviceConfig) {
       return {
         date,
@@ -224,7 +202,6 @@ export async function checkAvailability(
       }
     }
 
-    // Verificar si el día está permitido para este servicio
     if (serviceConfig.allowedDays) {
       const [year, month, day] = date.split('-').map(Number)
       const dateObj = new Date(year, month - 1, day)
@@ -242,7 +219,6 @@ export async function checkAvailability(
       }
     }
 
-    // Verificar límites diario y semanal independientemente
     let dailyAvailable = true
     let weeklyAvailable = true
     let dailyUsed = 0
@@ -253,11 +229,9 @@ export async function checkAvailability(
     const startDate = new Date(date + 'T00:00:00')
     const endDate = new Date(date + 'T23:59:59')
 
-    // 1. VERIFICAR LÍMITE DIARIO (si existe)
     if (serviceConfig.maxPerDay) {
       dailyTotal = serviceConfig.maxPerDay
 
-      // Para sub-servicios de caja automática y mecánica general, buscar por subService
       const cajaAutomaticaSubServices = [
         'Service de mantenimiento',
         'Diagnóstico de caja',
@@ -284,7 +258,6 @@ export async function checkAvailability(
       let dailyQuery
 
       if (cajaAutomaticaSubServices.includes(service)) {
-        // Para sub-servicios de caja automática, buscar por subService
         dailyQuery = query(
           collection(db, 'turnos'),
           where('subService', '==', service),
@@ -293,7 +266,6 @@ export async function checkAvailability(
           where('status', 'in', ['pending', 'confirmed'])
         )
       } else if (mecanicaGeneralSubServices.includes(service)) {
-        // Para sub-servicios de mecánica general, cada uno tiene su propio límite
         dailyQuery = query(
           collection(db, 'turnos'),
           where('subService', '==', service),
@@ -302,7 +274,6 @@ export async function checkAvailability(
           where('status', 'in', ['pending', 'confirmed'])
         )
       } else {
-        // Para servicios principales, buscar por service
         dailyQuery = query(
           collection(db, 'turnos'),
           where('service', '==', service),
@@ -317,11 +288,9 @@ export async function checkAvailability(
       dailyAvailable = dailyUsed < dailyTotal
     }
 
-    // 2. VERIFICAR LÍMITE SEMANAL (si existe)
     if (serviceConfig.maxPerWeek) {
       weeklyTotal = serviceConfig.maxPerWeek
 
-      // Calcular inicio y fin de semana laboral (lunes a viernes)
       const [yearWeek, monthWeek, dayWeek] = date.split('-').map(Number)
       const dateObjWeek = new Date(yearWeek, monthWeek - 1, dayWeek)
       const dayOfWeek = dateObjWeek.getDay()
@@ -334,7 +303,6 @@ export async function checkAvailability(
       friday.setDate(monday.getDate() + 4)
       friday.setHours(23, 59, 59, 999)
 
-      // Cada servicio tiene su propio límite semanal, NO lo compartimos
       let weeklyQuery
 
       const cajaAutomaticaSubServices = [
@@ -361,25 +329,22 @@ export async function checkAvailability(
       ]
 
       if (cajaAutomaticaSubServices.includes(service)) {
-        // Para sub-servicios de caja automática, buscar SOLO ese servicio específico
         weeklyQuery = query(
           collection(db, 'turnos'),
-          where('subService', '==', service), // SOLO el servicio específico
+          where('subService', '==', service),
           where('date', '>=', Timestamp.fromDate(monday)),
           where('date', '<=', Timestamp.fromDate(friday)),
           where('status', 'in', ['pending', 'confirmed'])
         )
       } else if (mecanicaGeneralSubServices.includes(service)) {
-        // Para sub-servicios de mecánica general, buscar SOLO ese servicio específico
         weeklyQuery = query(
           collection(db, 'turnos'),
-          where('subService', '==', service), // SOLO el servicio específico
+          where('subService', '==', service),
           where('date', '>=', Timestamp.fromDate(monday)),
           where('date', '<=', Timestamp.fromDate(friday)),
           where('status', 'in', ['pending', 'confirmed'])
         )
       } else {
-        // Para servicios principales, buscar por service
         weeklyQuery = query(
           collection(db, 'turnos'),
           where('service', '==', service),
@@ -394,15 +359,12 @@ export async function checkAvailability(
       weeklyAvailable = weeklyUsed < weeklyTotal
     }
 
-    // 3. RESULTADO FINAL: Ambos límites deben cumplirse
     const finalAvailable = dailyAvailable && weeklyAvailable
 
-    // Devolver información del límite más restrictivo
     let totalSlots = 0
     let usedSlots = 0
 
     if (serviceConfig.maxPerDay && serviceConfig.maxPerWeek) {
-      // Si hay ambos límites, usar el más restrictivo
       const dailyRemaining = dailyTotal - dailyUsed
       const weeklyRemaining = weeklyTotal - weeklyUsed
 
@@ -443,9 +405,6 @@ export async function checkAvailability(
   }
 }
 
-/**
- * Obtener todos los turnos ordenados por fecha de creación
- */
 export async function getAllTurnos(): Promise<Turno[]> {
   try {
     const q = query(
@@ -482,9 +441,6 @@ export async function getAllTurnos(): Promise<Turno[]> {
   }
 }
 
-/**
- * Actualizar el estado de un turno
- */
 export async function updateTurnoStatus(
   turnoId: string,
   status: 'pending' | 'cancelled' | 'completed' | 'reprogrammed'
@@ -518,9 +474,6 @@ export async function updateTurnoStatus(
   }
 }
 
-/**
- * Eliminar un turno
- */
 export async function deleteTurno(turnoId: string): Promise<TurnoResponse> {
   try {
     await deleteDoc(doc(db, COLLECTION_NAME, turnoId))
@@ -539,9 +492,6 @@ export async function deleteTurno(turnoId: string): Promise<TurnoResponse> {
   }
 }
 
-/**
- * Obtener turnos por rango de fechas
- */
 export async function getTurnosByDateRange(
   startDate: Date,
   endDate: Date
@@ -585,9 +535,6 @@ export async function getTurnosByDateRange(
   }
 }
 
-/**
- * Obtener disponibilidad para múltiples fechas
- */
 export async function getAvailabilityForWeek(
   startDate: Date,
   service: string
@@ -595,11 +542,9 @@ export async function getAvailabilityForWeek(
   const availability: AvailabilityCheck[] = []
 
   for (let i = 0; i < 5; i++) {
-    // Solo días laborables (lunes a viernes)
     const date = new Date(startDate)
     date.setDate(startDate.getDate() + i)
 
-    // Solo agregar si es día laborable (1-5, lunes a viernes)
     if (date.getDay() >= 1 && date.getDay() <= 5) {
       const dateString = date.toISOString().split('T')[0]
       const dayAvailability = await checkAvailability(dateString, service)

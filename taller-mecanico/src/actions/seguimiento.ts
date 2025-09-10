@@ -1,4 +1,3 @@
-// src/actions/seguimiento.ts
 import {
   doc,
   getDoc,
@@ -12,7 +11,6 @@ import {
 } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 
-// Tipos para archivos de trabajos
 export interface StepFile {
   id: string
   fileName: string
@@ -28,7 +26,6 @@ export interface StepFile {
   }
 }
 
-// Trabajo realizado con archivos
 export interface TrabajoRealizado {
   id: string
   titulo: string
@@ -37,7 +34,6 @@ export interface TrabajoRealizado {
   archivos: StepFile[]
 }
 
-// NUEVOS: Interfaces para datos de Firebase
 interface FirestoreFile {
   id?: string
   fileName?: string
@@ -67,7 +63,6 @@ interface FirestoreTimestamp {
   toDate(): Date
 }
 
-// Tipo para datos de seguimiento que coincide con la estructura de Firebase
 export interface TimelineItem {
   id: number
   fecha: string
@@ -85,7 +80,6 @@ export interface ImagenItem {
   tipo: 'antes' | 'proceso' | 'despues'
 }
 
-// ACTUALIZADO: Agregamos campos adicionales para el historial
 export interface SeguimientoData {
   patente: string
   modelo: string
@@ -96,13 +90,12 @@ export interface SeguimientoData {
   estadoActual?: string
   telefono?: string
   tipoServicio?: string
-  trabajosRealizados?: TrabajoRealizado[] // CAMBIADO: ahora incluye archivos
+  trabajosRealizados?: TrabajoRealizado[]
   proximoPaso?: string
   fechaEstimadaEntrega?: string
   timeline?: TimelineItem[]
   imagenes?: ImagenItem[]
   updatedAt?: string
-  // NUEVOS: Para servicios históricos
   serviceNumber?: number
   fechaFinalizado?: string
   km?: number
@@ -117,10 +110,8 @@ export async function getSeguimientoByPatente(
   patente: string
 ): Promise<SeguimientoData | null> {
   try {
-    // Normalizar la patente para búsqueda
     const patenteNormalizada = patente.toUpperCase().trim()
 
-    // Buscar por ID del documento (que debería ser la patente)
     const docRef = doc(db, 'vehicles', patenteNormalizada)
     const docSnap = await getDoc(docRef)
 
@@ -144,26 +135,21 @@ export async function getSeguimientoByPatente(
     const formatearFecha = (timestamp: unknown): string => {
       if (!timestamp) return new Date().toISOString()
 
-      // Si es un Timestamp de Firestore
       if (isFirestoreTimestamp(timestamp)) {
         return timestamp.toDate().toISOString()
       }
 
-      // Si es un string de fecha
       if (typeof timestamp === 'string') {
         return new Date(timestamp).toISOString()
       }
 
-      // Si es un objeto Date
       if (timestamp instanceof Date) {
         return timestamp.toISOString()
       }
 
-      // Fallback
       return new Date().toISOString()
     }
 
-    // ACTUALIZADO: Función con tipos específicos
     const mapearTrabajosRealizados = (
       steps: FirestoreStep[]
     ): TrabajoRealizado[] => {
@@ -172,7 +158,7 @@ export async function getSeguimientoByPatente(
       }
 
       return steps
-        .filter(step => step && step.title) // Solo steps válidos
+        .filter(step => step && step.title)
         .map((step, index) => ({
           id: step.id || `step-${index}`,
           titulo: step.title || 'Trabajo sin título',
@@ -215,7 +201,6 @@ export async function getSeguimientoByPatente(
         }))
     }
 
-    // Mapear los datos de Firebase a nuestro formato
     const seguimientoData: SeguimientoData = {
       patente: data.plateNumber || patenteNormalizada,
       modelo: data.model || 'No especificado',
@@ -236,31 +221,25 @@ export async function getSeguimientoByPatente(
         ? formatearFecha(data.fechaEstimadaEntrega)
         : '',
 
-      // CORRECCIÓN: Manejar updatedAt correctamente
       updatedAt: (() => {
-        // Prioridad: 1) updatedAt, 2) createdAt
         const updateField = data.updatedAt || data.createdAt
 
         if (!updateField) {
           return new Date().toISOString()
         }
 
-        // Si es un Timestamp de Firestore
         if (isFirestoreTimestamp(updateField)) {
           return updateField.toDate().toISOString()
         }
 
-        // Si es un string de fecha
         if (typeof updateField === 'string') {
           return new Date(updateField).toISOString()
         }
 
-        // Si es un objeto Date
         if (updateField instanceof Date) {
           return updateField.toISOString()
         }
 
-        // Fallback
         return new Date().toISOString()
       })(),
 
@@ -310,8 +289,6 @@ export async function getSeguimientoByPatente(
   } catch (error) {
     console.error('Error obteniendo seguimiento de Firebase:', error)
 
-    // Si hay un error de conexión o autenticación, devolver null
-    // para que el sistema use datos mock en desarrollo
     return null
   }
 }
@@ -328,7 +305,6 @@ export async function buscarHistorialCompleto(
     const patenteNormalizada = patente.toUpperCase().trim()
     const patenteSinEspacios = patenteNormalizada.replace(/\s+/g, '')
 
-    // Buscar con ambos formatos: con espacios y sin espacios
     const queries = [
       query(
         collection(db, 'timeline'),
@@ -342,15 +318,12 @@ export async function buscarHistorialCompleto(
       ),
     ]
 
-    // Ejecutar ambas consultas
     const queryResults = await Promise.all(queries.map(q => getDocs(q)))
     const historial: SeguimientoData[] = []
 
-    // Procesar documentos de ambas consultas
     const allDocs: QueryDocumentSnapshot<DocumentData>[] = []
     for (const querySnapshot of queryResults) {
       querySnapshot.forEach(doc => {
-        // Evitar duplicados basándose en el ID del documento
         if (!allDocs.some(existingDoc => existingDoc.id === doc.id)) {
           allDocs.push(doc)
         }
@@ -440,7 +413,6 @@ export async function buscarHistorialCompleto(
           }))
       }
 
-      // Convertir cada documento del historial al formato SeguimientoData
       const servicioHistorico: SeguimientoData = {
         patente: data.plateNumber || patenteNormalizada,
         modelo: data.model || 'No especificado',
@@ -457,7 +429,6 @@ export async function buscarHistorialCompleto(
         proximoPaso: 'Servicio finalizado',
         fechaEstimadaEntrega: formatearFecha(data.finalizedAt),
         updatedAt: formatearFecha(data.finalizedAt),
-        // Datos adicionales del historial
         serviceNumber: data.serviceNumber || 1,
         fechaFinalizado: formatearFecha(data.finalizedAt),
         km: data.km,
@@ -473,16 +444,10 @@ export async function buscarHistorialCompleto(
   }
 }
 
-/**
- * Función auxiliar para buscar vehículos por patente parcial
- * (útil para implementar búsqueda con autocompletado en el futuro)
- */
 export async function buscarVehiculosPorPatente(
   _patenteParc: string
 ): Promise<SeguimientoData[]> {
   try {
-    // Esta función se puede implementar usando queries de Firestore
-    // Por ahora devuelve un array vacío
     return []
   } catch (error) {
     console.error('Error en búsqueda parcial:', error)
@@ -490,9 +455,6 @@ export async function buscarVehiculosPorPatente(
   }
 }
 
-/**
- * Función para actualizar el estado de un vehículo
- */
 export async function actualizarEstadoVehiculo(
   patente: string,
   _nuevoEstado: string,
@@ -501,15 +463,6 @@ export async function actualizarEstadoVehiculo(
   try {
     const patenteNormalizada = patente.toUpperCase().trim()
     const _docRef = doc(db, 'vehicles', patenteNormalizada)
-
-    // Esta función se implementaría cuando necesites actualizar estados
-
-    // Aquí iría la lógica de actualización con updateDoc
-    // await updateDoc(docRef, {
-    //   status: nuevoEstado,
-    //   lastUpdated: new Date(),
-    //   ...(notas && { notes: notas })
-    // })
 
     return true
   } catch (error) {

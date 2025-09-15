@@ -9,13 +9,16 @@ import TurnosTable from './TurnosTable'
 import AdminStats from './AdminStats'
 import ServiceConfig from './ServiceConfig'
 import VehicleConfig from './VehicleConfig'
+import ExpenseManager from './ExpenseManager'
 
 export default function AdminDashboard() {
   const [turnos, setTurnos] = useState<Turno[]>([])
   const [loading, setLoading] = useState(true)
+
   const [activeTab, setActiveTab] = useState<
-    'turnos' | 'stats' | 'config' | 'vehicles'
+    'turnos' | 'stats' | 'config' | 'vehicles' | 'expenses'
   >('turnos')
+
   const [message, setMessage] = useState('')
 
   const handleLogout = async () => {
@@ -206,11 +209,19 @@ export default function AdminDashboard() {
           { id: 'stats', label: 'Stats', emoji: '📊' },
           { id: 'config', label: 'Config', emoji: '⚙️' },
           { id: 'vehicles', label: 'Autos', emoji: '🚗' },
+          { id: 'expenses', label: 'Gastos', emoji: '💰' },
         ].map((tab, index) => (
           <motion.button
             key={tab.id}
             onClick={() =>
-              setActiveTab(tab.id as 'turnos' | 'stats' | 'config' | 'vehicles')
+              setActiveTab(
+                tab.id as
+                  | 'turnos'
+                  | 'stats'
+                  | 'config'
+                  | 'vehicles'
+                  | 'expenses'
+              )
             }
             className={`flex-1 py-2 sm:py-4 px-2 sm:px-6 rounded-lg font-semibold text-center transition-all duration-300 relative overflow-hidden text-xs sm:text-base ${
               activeTab === tab.id
@@ -296,6 +307,7 @@ export default function AdminDashboard() {
             {activeTab === 'stats' && <AdminStats turnos={turnos} />}
             {activeTab === 'config' && <ServiceConfig />}
             {activeTab === 'vehicles' && <VehicleConfig />}
+            {activeTab === 'expenses' && <ExpenseManager />}
           </motion.div>
         </AnimatePresence>
       </div>

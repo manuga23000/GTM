@@ -10,6 +10,44 @@ export interface BaseEntity {
   updatedAt: Date
 }
 
+export type TransactionType = 'income' | 'expense'
+
+export interface Transaction extends BaseEntity {
+  type: TransactionType
+  category: string
+  amount: number
+  date: string
+  description?: string
+  createdBy?: string
+}
+
+export interface TransactionInput {
+  type: TransactionType
+  category: string
+  amount: number
+  date: string
+  description?: string
+  createdBy?: string
+}
+
+export interface TransactionResponse extends AdminResponse {
+  transaction?: Transaction
+  transactions?: Transaction[]
+}
+
+export interface TransactionStats {
+  totalIncome: number
+  totalExpenses: number
+  balance: number
+  incomeByCategory: Array<{ category: string; amount: number }>
+  expensesByCategory: Array<{ category: string; amount: number }>
+}
+
+export interface DateRange {
+  start: Date
+  end: Date
+}
+
 export interface Turno extends BaseEntity {
   name: string
   email: string

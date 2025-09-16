@@ -556,13 +556,9 @@ export default function ExpenseManager() {
                         outerRadius={100}
                         fill='#8884d8'
                         dataKey='value'
-                        label={({
-                          name,
-                          percent,
-                        }: {
-                          name: string
-                          percent: number
-                        }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        label={(entry: any) =>
+                          `${entry.name} ${(entry.percent * 100).toFixed(0)}%`
+                        }
                       >
                         {expensePieData.map((entry, index) => (
                           <Cell
@@ -594,13 +590,9 @@ export default function ExpenseManager() {
                         outerRadius={100}
                         fill='#8884d8'
                         dataKey='value'
-                        label={({
-                          name,
-                          percent,
-                        }: {
-                          name: string
-                          percent: number
-                        }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        label={(entry: any) =>
+                          `${entry.name} ${(entry.percent * 100).toFixed(0)}%`
+                        }
                       >
                         {incomePieData.map((entry, index) => (
                           <Cell

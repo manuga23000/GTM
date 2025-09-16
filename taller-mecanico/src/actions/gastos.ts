@@ -30,8 +30,8 @@ interface FirestoreTransactionData extends DocumentData {
   amount: number
   date: string
   description: string
-  createdAt?: any // Firestore Timestamp
-  updatedAt?: any // Firestore Timestamp
+  createdAt?: Timestamp // Firestore Timestamp
+  updatedAt?: Timestamp // Firestore Timestamp
   createdBy: string
 }
 

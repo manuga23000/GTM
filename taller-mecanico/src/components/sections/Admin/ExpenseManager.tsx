@@ -26,17 +26,14 @@ import {
   YAxis,
   CartesianGrid,
 } from 'recharts'
-import { formatCurrency } from '@/lib/utils'
 import {
   TransactionInput,
   TransactionStats,
-  DateRange as DateRangeType,
   Transaction,
 } from '@/actions/types/types'
 import {
   getTransactions,
   createTransaction as createTransactionApi,
-  deleteTransaction as deleteTransactionApi,
   getTransactionStats,
 } from '@/actions/gastos'
 
@@ -83,7 +80,6 @@ export default function ExpenseManager() {
   const [customEndDate, setCustomEndDate] = useState<string>('')
   const [showCustomDateRange, setShowCustomDateRange] = useState(false)
   const [expenses, setExpenses] = useState<Transaction[]>([])
-  const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<TransactionStats>({
     totalIncome: 0,
     totalExpenses: 0,
@@ -130,8 +126,6 @@ export default function ExpenseManager() {
   // Cargar transacciones
   const loadTransactions = async () => {
     try {
-      setLoading(true)
-
       // Calcular fechas según el rango seleccionado
       let startDate: Date | undefined
       let endDate: Date | undefined
@@ -174,16 +168,12 @@ export default function ExpenseManager() {
       setStats(stats)
     } catch (err) {
       console.error('Error loading transactions:', err)
-    } finally {
-      setLoading(false)
     }
   }
 
   // Cargar transacciones al montar el componente o cambiar el rango de fechas
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true)
-
       try {
         // Calcular fechas según el rango seleccionado
         let start: Date
@@ -225,8 +215,6 @@ export default function ExpenseManager() {
         setStats(stats)
       } catch (error) {
         console.error('Error loading transactions:', error)
-      } finally {
-        setLoading(false)
       }
     }
 
@@ -556,6 +544,7 @@ export default function ExpenseManager() {
                         outerRadius={100}
                         fill='#8884d8'
                         dataKey='value'
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         label={(entry: any) =>
                           `${entry.name} ${(entry.percent * 100).toFixed(0)}%`
                         }
@@ -590,6 +579,7 @@ export default function ExpenseManager() {
                         outerRadius={100}
                         fill='#8884d8'
                         dataKey='value'
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         label={(entry: any) =>
                           `${entry.name} ${(entry.percent * 100).toFixed(0)}%`
                         }

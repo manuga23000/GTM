@@ -40,15 +40,26 @@ import {
   getTransactionStats,
 } from '@/actions/gastos'
 
-type TransactionFormData = Omit<
-  Transaction,
-  'id' | 'createdAt' | 'updatedAt' | 'description'
->
+// Interfaces para tipado
+interface MonthlyDataItem {
+  month: string
+  income: number
+  expenses: number
+}
 
-// Using Transaction type from types.ts instead of redefining it here
-// This ensures consistency across the application
+interface ChartDataItem {
+  month: string
+  income: number
+  expenses: number
+}
+
+interface PieDataItem {
+  name: string
+  value: number
+}
 
 type DateRange = 'hoy' | 'mes' | 'año' | 'personalizado'
+type CategoryType = 'expense' | 'income'
 
 const COLORS = [
   '#0088FE',
@@ -73,7 +84,6 @@ export default function ExpenseManager() {
   const [showCustomDateRange, setShowCustomDateRange] = useState(false)
   const [expenses, setExpenses] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
   const [stats, setStats] = useState<TransactionStats>({
     totalIncome: 0,
     totalExpenses: 0,
@@ -83,9 +93,7 @@ export default function ExpenseManager() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  type CategoryType = 'expense' | 'income'
-
-  const [categories, setCategories] = useState<Record<CategoryType, string[]>>({
+  const [categories] = useState<Record<CategoryType, string[]>>({
     expense: [
       'Alquiler',
       'Sueldos',
@@ -116,13 +124,13 @@ export default function ExpenseManager() {
     amount: 0,
     date: new Date().toISOString().split('T')[0],
     description: '',
+    createdBy: '',
   })
 
   // Cargar transacciones
   const loadTransactions = async () => {
     try {
       setLoading(true)
-      setError('')
 
       // Calcular fechas según el rango seleccionado
       let startDate: Date | undefined
@@ -166,9 +174,6 @@ export default function ExpenseManager() {
       setStats(stats)
     } catch (err) {
       console.error('Error loading transactions:', err)
-      setError(
-        'Error al cargar las transacciones. Por favor, intente nuevamente.'
-      )
     } finally {
       setLoading(false)
     }
@@ -178,7 +183,6 @@ export default function ExpenseManager() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
-      setError('')
 
       try {
         // Calcular fechas según el rango seleccionado
@@ -221,9 +225,6 @@ export default function ExpenseManager() {
         setStats(stats)
       } catch (error) {
         console.error('Error loading transactions:', error)
-        setError(
-          'Error al cargar las transacciones. Por favor, intente nuevamente.'
-        )
       } finally {
         setLoading(false)
       }
@@ -273,7 +274,7 @@ export default function ExpenseManager() {
     }
   })
 
-  const expensePieData = Object.entries(
+  const expensePieData: PieDataItem[] = Object.entries(
     filteredExpenses
       .filter(e => e.amount < 0)
       .reduce<Record<string, number>>((acc, { category, amount }) => {
@@ -282,7 +283,7 @@ export default function ExpenseManager() {
       }, {})
   ).map(([name, value]) => ({ name, value }))
 
-  const incomePieData = Object.entries(
+  const incomePieData: PieDataItem[] = Object.entries(
     filteredExpenses
       .filter(e => e.amount > 0)
       .reduce<Record<string, number>>((acc, { category, amount }) => {
@@ -292,93 +293,29 @@ export default function ExpenseManager() {
   ).map(([name, value]) => ({ name, value }))
 
   // Formatear datos para el gráfico de barras mensual
-  const monthlyData = expenses.reduce((acc: any, expense) => {
-    const month = expense.date.substring(0, 7)
-    if (!acc[month]) {
-      acc[month] = { month, income: 0, expenses: 0 }
-    }
-    if (expense.type === 'income') {
-      acc[month].income += expense.amount
-    } else {
-      acc[month].expenses += Math.abs(expense.amount)
-    }
-    return acc
-  }, {})
-
-  const lineData = Object.values(monthlyData).map((item: any) => ({
-    month: format(new Date(item.month + '-01'), 'MMM yyyy', { locale: es }),
-    income: item.income,
-    expenses: item.expenses,
-  }))
-
-  const COLORS = [
-    '#3B82F6',
-    '#EF4444',
-    '#10B981',
-    '#F59E0B',
-    '#8B5CF6',
-    '#F97316',
-    '#06B6D4',
-    '#84CC16',
-  ]
-
-  const handleTypeChange = (type: CategoryType) => {
-    setNewTransaction(prev => ({
-      ...prev,
-      type,
-      category: '', // Reset category when type changes
-    }))
-
-    // Actualizar las categorías disponibles
-    if (!categories[type].includes(newTransaction.category)) {
-      setNewTransaction(prev => ({
-        ...prev,
-        category: '',
-      }))
-    }
-  }
-
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-
-    // Permitir solo números y un punto decimal opcional
-    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-      // Convertir a número y limitar a 2 decimales
-      const numericValue = value === '' ? 0 : parseFloat(value)
-      const formattedValue = parseFloat(numericValue.toFixed(2))
-
-      setNewTransaction(prev => ({
-        ...prev,
-        amount: formattedValue,
-      }))
-    }
-  }
-
-  const handleDeleteTransaction = async (id: string) => {
-    if (!confirm('¿Está seguro de que desea eliminar esta transacción?')) {
-      return
-    }
-
-    try {
-      const result = await deleteTransactionApi(id)
-      if (result.success) {
-        // Filtrar transacciones por categoría y tipo con tipo seguro
-        const filteredTransactions =
-          activeTab === 'all'
-            ? filteredExpenses
-            : filteredExpenses.filter(
-                t => t.type === (activeTab as CategoryType)
-              )
-        // Recargar transacciones
-        await loadTransactions()
-      } else {
-        alert(result.message || 'Error al eliminar la transacción')
+  const monthlyData = expenses.reduce<Record<string, MonthlyDataItem>>(
+    (acc, expense) => {
+      const month = expense.date.substring(0, 7)
+      if (!acc[month]) {
+        acc[month] = { month, income: 0, expenses: 0 }
       }
-    } catch (error) {
-      console.error('Error deleting transaction:', error)
-      alert('Error al eliminar la transacción. Por favor, intente nuevamente.')
-    }
-  }
+      if (expense.type === 'income') {
+        acc[month].income += expense.amount
+      } else {
+        acc[month].expenses += Math.abs(expense.amount)
+      }
+      return acc
+    },
+    {}
+  )
+
+  const lineData: ChartDataItem[] = Object.values(monthlyData).map(
+    (item: MonthlyDataItem) => ({
+      month: format(new Date(item.month + '-01'), 'MMM yyyy', { locale: es }),
+      income: item.income,
+      expenses: item.expenses,
+    })
+  )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -431,10 +368,11 @@ export default function ExpenseManager() {
         amount: 0,
         date: new Date().toISOString().split('T')[0],
         description: '',
+        createdBy: '',
       })
 
       setActiveTab('transactions')
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating transaction:', error)
       alert('Error al crear la transacción. Por favor, intente nuevamente.')
     } finally {
@@ -442,7 +380,7 @@ export default function ExpenseManager() {
     }
   }
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrencyLocal = (amount: number) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS',
@@ -554,7 +492,7 @@ export default function ExpenseManager() {
                     <div>
                       <p className='text-green-100'>Ingresos</p>
                       <p className='text-2xl font-bold text-white'>
-                        {formatCurrency(totalIncome)}
+                        {formatCurrencyLocal(totalIncome)}
                       </p>
                     </div>
                     <div className='text-4xl'>💰</div>
@@ -569,7 +507,7 @@ export default function ExpenseManager() {
                     <div>
                       <p className='text-red-100'>Gastos</p>
                       <p className='text-2xl font-bold text-white'>
-                        {formatCurrency(totalExpenses)}
+                        {formatCurrencyLocal(totalExpenses)}
                       </p>
                     </div>
                     <div className='text-4xl'>💸</div>
@@ -594,7 +532,7 @@ export default function ExpenseManager() {
                         Balance
                       </p>
                       <p className='text-2xl font-bold text-white'>
-                        {formatCurrency(balance)}
+                        {formatCurrencyLocal(balance)}
                       </p>
                     </div>
                     <div className='text-4xl'>{balance >= 0 ? '📈' : '📉'}</div>
@@ -618,9 +556,13 @@ export default function ExpenseManager() {
                         outerRadius={100}
                         fill='#8884d8'
                         dataKey='value'
-                        label={({ name, percent }: any) =>
-                          `${name} ${(percent * 100).toFixed(0)}%`
-                        }
+                        label={({
+                          name,
+                          percent,
+                        }: {
+                          name: string
+                          percent: number
+                        }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       >
                         {expensePieData.map((entry, index) => (
                           <Cell
@@ -630,7 +572,9 @@ export default function ExpenseManager() {
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(value: any) => formatCurrency(value)}
+                        formatter={(value: number) =>
+                          formatCurrencyLocal(value)
+                        }
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -650,9 +594,13 @@ export default function ExpenseManager() {
                         outerRadius={100}
                         fill='#8884d8'
                         dataKey='value'
-                        label={({ name, percent }: any) =>
-                          `${name} ${(percent * 100).toFixed(0)}%`
-                        }
+                        label={({
+                          name,
+                          percent,
+                        }: {
+                          name: string
+                          percent: number
+                        }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       >
                         {incomePieData.map((entry, index) => (
                           <Cell
@@ -662,7 +610,9 @@ export default function ExpenseManager() {
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(value: any) => formatCurrency(value)}
+                        formatter={(value: number) =>
+                          formatCurrencyLocal(value)
+                        }
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -716,7 +666,7 @@ export default function ExpenseManager() {
                               : 'text-red-400'
                           }`}
                         >
-                          {formatCurrency(expense.amount)}
+                          {formatCurrencyLocal(expense.amount)}
                         </td>
                         <td className='px-6 py-4 text-center'>
                           <span
@@ -1002,13 +952,17 @@ export default function ExpenseManager() {
                   <div className='bg-gray-700 p-4 rounded-lg text-center'>
                     <p className='text-gray-400'>Promedio Ingresos/Mes</p>
                     <p className='text-2xl font-bold text-green-400'>
-                      {formatCurrency(totalIncome / (lineData.length || 1))}
+                      {formatCurrencyLocal(
+                        totalIncome / (lineData.length || 1)
+                      )}
                     </p>
                   </div>
                   <div className='bg-gray-700 p-4 rounded-lg text-center'>
                     <p className='text-gray-400'>Promedio Gastos/Mes</p>
                     <p className='text-2xl font-bold text-red-400'>
-                      {formatCurrency(totalExpenses / (lineData.length || 1))}
+                      {formatCurrencyLocal(
+                        totalExpenses / (lineData.length || 1)
+                      )}
                     </p>
                   </div>
                   <div className='bg-gray-700 p-4 rounded-lg text-center'>
@@ -1037,7 +991,7 @@ export default function ExpenseManager() {
                     <XAxis dataKey='month' stroke='#9CA3AF' />
                     <YAxis stroke='#9CA3AF' />
                     <Tooltip
-                      formatter={(value: any) => formatCurrency(value)}
+                      formatter={(value: number) => formatCurrencyLocal(value)}
                       contentStyle={{
                         backgroundColor: '#1F2937',
                         border: 'none',

@@ -12,6 +12,15 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { Transaction } from '@/actions/types/types'
 
+// Custom label renderer for pie charts
+const renderCustomizedLabel = ({
+  name = '',
+  percent = 0,
+}: {
+  name?: string
+  percent?: number
+}) => `${name} ${(percent * 100).toFixed(0)}%`
+
 interface PieDataItem {
   name: string
   value: number
@@ -171,9 +180,7 @@ export default function ExpenseDashboard({
                 outerRadius={100}
                 fill='#8884d8'
                 dataKey='value'
-                label={((props: any) => 
-                  `${props.name} ${((props.percent || 0) * 100).toFixed(0)}%`
-                ) as any}
+                label={renderCustomizedLabel}
               >
                 {expensePieData.map((entry, index) => (
                   <Cell
@@ -203,9 +210,7 @@ export default function ExpenseDashboard({
                 outerRadius={100}
                 fill='#8884d8'
                 dataKey='value'
-                label={((props: any) => 
-                  `${props.name} ${((props.percent || 0) * 100).toFixed(0)}%`
-                ) as any}
+                label={renderCustomizedLabel}
               >
                 {incomePieData.map((entry, index) => (
                   <Cell

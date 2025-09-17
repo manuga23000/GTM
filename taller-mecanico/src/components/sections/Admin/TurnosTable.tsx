@@ -76,11 +76,14 @@ export default function TurnosTable({
   }
 
   const handleDeleteClick = (turnoId: string) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este turno? Esta acción no se puede deshacer.')) {
+    if (
+      window.confirm(
+        '¿Estás seguro de que quieres eliminar este turno? Esta acción no se puede deshacer.'
+      )
+    ) {
       onDelete(turnoId)
     }
   }
-
 
   if (loading) {
     return (
@@ -187,7 +190,16 @@ export default function TurnosTable({
             <div className='flex gap-2 mt-2'>
               <select
                 value={turno.status}
-                onChange={e => onStatusUpdate(turno.id!, e.target.value as 'pending' | 'cancelled' | 'completed' | 'reprogrammed')}
+                onChange={e =>
+                  onStatusUpdate(
+                    turno.id!,
+                    e.target.value as
+                      | 'pending'
+                      | 'cancelled'
+                      | 'completed'
+                      | 'reprogrammed'
+                  )
+                }
                 className='px-2 py-1 rounded bg-gray-700 border border-gray-600 text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer flex-1'
               >
                 <option value='pending'>Pendiente</option>
@@ -282,7 +294,14 @@ export default function TurnosTable({
                     <select
                       value={turno.status}
                       onChange={e =>
-                        onStatusUpdate(turno.id!, e.target.value as 'pending' | 'cancelled' | 'completed' | 'reprogrammed')
+                        onStatusUpdate(
+                          turno.id!,
+                          e.target.value as
+                            | 'pending'
+                            | 'cancelled'
+                            | 'completed'
+                            | 'reprogrammed'
+                        )
                       }
                       className='px-2 py-1 rounded bg-gray-700 border border-gray-600 text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer'
                     >
@@ -310,8 +329,6 @@ export default function TurnosTable({
           No se encontraron turnos que coincidan con los filtros.
         </div>
       )}
-
-
     </div>
   )
 }

@@ -7,11 +7,6 @@ import {
   Cell,
   ResponsiveContainer,
   Tooltip,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
 } from 'recharts'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -96,7 +91,9 @@ export default function ExpenseDashboard({
     {}
   )
 
-  const lineData = Object.values(monthlyData).map((item: MonthlyDataItem) => ({
+  // Monthly data is processed but not currently used in the UI
+  // Keeping the processing in case it's needed later
+  Object.values(monthlyData).map((item: MonthlyDataItem) => ({
     month: format(new Date(item.month + '-01'), 'MMM yyyy', { locale: es }),
     income: item.income,
     expenses: item.expenses,
@@ -174,9 +171,9 @@ export default function ExpenseDashboard({
                 outerRadius={100}
                 fill='#8884d8'
                 dataKey='value'
-                label={(entry: any) =>
-                  `${entry.name} ${(entry.percent * 100).toFixed(0)}%`
-                }
+                label={((props: any) => 
+                  `${props.name} ${((props.percent || 0) * 100).toFixed(0)}%`
+                ) as any}
               >
                 {expensePieData.map((entry, index) => (
                   <Cell
@@ -206,9 +203,9 @@ export default function ExpenseDashboard({
                 outerRadius={100}
                 fill='#8884d8'
                 dataKey='value'
-                label={(entry: any) =>
-                  `${entry.name} ${(entry.percent * 100).toFixed(0)}%`
-                }
+                label={((props: any) => 
+                  `${props.name} ${((props.percent || 0) * 100).toFixed(0)}%`
+                ) as any}
               >
                 {incomePieData.map((entry, index) => (
                   <Cell

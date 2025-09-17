@@ -2,8 +2,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
 import { Transaction } from '@/actions/types/types'
 
 // Custom label renderer for pie charts - Mobile optimized
@@ -25,7 +23,13 @@ const renderCustomizedLabel = ({
 }
 
 // Custom tooltip for mobile
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({
+  active,
+  payload,
+}: {
+  active?: boolean
+  payload?: Array<{ name: string; value: number }>
+}) => {
   if (active && payload && payload.length) {
     return (
       <div className='bg-gray-900 p-3 rounded-lg shadow-lg border border-gray-600 max-w-xs'>
@@ -45,12 +49,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 interface PieDataItem {
   name: string
   value: number
-}
-
-interface MonthlyDataItem {
-  month: string
-  income: number
-  expenses: number
 }
 
 interface ExpenseDashboardProps {
@@ -210,8 +208,8 @@ export default function ExpenseDashboard({
                     fill='#8884d8'
                     dataKey='value'
                     labelLine={false}
-                    label={(props: any) => {
-                      const { percent } = props
+                    label={props => {
+                      const { percent } = props as { percent: number }
                       return percent > 0.05
                         ? `${(percent * 100).toFixed(0)}%`
                         : ''
@@ -291,8 +289,8 @@ export default function ExpenseDashboard({
                     fill='#8884d8'
                     dataKey='value'
                     labelLine={false}
-                    label={(props: any) => {
-                      const { percent } = props
+                    label={props => {
+                      const { percent } = props as { percent: number }
                       return percent > 0.05
                         ? `${(percent * 100).toFixed(0)}%`
                         : ''

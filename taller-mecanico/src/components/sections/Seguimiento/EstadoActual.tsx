@@ -70,7 +70,6 @@ export default function EstadoActual({ data }: EstadoActualProps) {
     }
   }
 
-
   const hasFiles =
     data.trabajosRealizados &&
     data.trabajosRealizados.some(
@@ -84,9 +83,7 @@ export default function EstadoActual({ data }: EstadoActualProps) {
       transition={{ duration: 0.6 }}
       className='bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden'
     >
-
       <div className='bg-gradient-to-r from-red-600 to-red-700 text-white p-4 sm:p-6'>
-
         <div className='block md:hidden'>
           <motion.div
             initial={{ scale: 0 }}
@@ -94,14 +91,12 @@ export default function EstadoActual({ data }: EstadoActualProps) {
             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
             className='text-center space-y-2'
           >
-
             <div className='flex items-center justify-center'>
               <FaWrench className='mr-2 text-lg' />
               <h2 className='text-lg font-bold'>
                 {data.tipoServicio || 'Servicio General'}
               </h2>
             </div>
-
 
             <motion.div
               initial={{ opacity: 0 }}
@@ -117,7 +112,6 @@ export default function EstadoActual({ data }: EstadoActualProps) {
             </motion.div>
           </motion.div>
         </div>
-
 
         <div className='hidden md:flex items-center justify-between'>
           <motion.div
@@ -150,7 +144,6 @@ export default function EstadoActual({ data }: EstadoActualProps) {
 
       <div className='p-4 sm:p-6'>
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8'>
-
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -170,11 +163,9 @@ export default function EstadoActual({ data }: EstadoActualProps) {
                     transition={{ delay: 0.5 + index * 0.1 }}
                     className='bg-green-50 p-4 rounded-lg border-l-4 border-green-500'
                   >
-
                     <div className='flex items-start'>
                       <FaCheckCircle className='text-green-500 mt-1 mr-3 flex-shrink-0' />
                       <div className='flex-1'>
-
                         {trabajo.archivos && trabajo.archivos.length > 0 ? (
                           <div>
                             <h4 className='text-gray-800 font-medium text-sm sm:text-base mb-1'>
@@ -187,7 +178,7 @@ export default function EstadoActual({ data }: EstadoActualProps) {
                             )}
                           </div>
                         ) : (
-                          <div className='text-center'>
+                          <div className=''>
                             <h4 className='text-gray-800 font-medium text-sm sm:text-base mb-1'>
                               {trabajo.titulo}
                             </h4>
@@ -200,7 +191,6 @@ export default function EstadoActual({ data }: EstadoActualProps) {
                         )}
                       </div>
                     </div>
-
 
                     {trabajo.archivos && trabajo.archivos.length > 0 && (
                       <FileViewer archivos={trabajo.archivos} />
@@ -220,14 +210,12 @@ export default function EstadoActual({ data }: EstadoActualProps) {
             </div>
           </motion.div>
 
-
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
             className='space-y-6'
           >
-
             <div>
               <h3 className='text-lg font-semibold text-gray-800 mb-4 flex items-center'>
                 <FaArrowRight className='text-blue-500 mr-2' />
@@ -242,7 +230,6 @@ export default function EstadoActual({ data }: EstadoActualProps) {
                 </div>
               </div>
             </div>
-
 
             <div>
               <h3 className='text-lg font-semibold text-gray-800 mb-4 flex items-center'>
@@ -266,7 +253,6 @@ export default function EstadoActual({ data }: EstadoActualProps) {
             </div>
           </motion.div>
         </div>
-
 
         <motion.div
           initial={{ opacity: 0 }}

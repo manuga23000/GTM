@@ -4,7 +4,6 @@ import { motion } from 'framer-motion'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { Transaction } from '@/actions/types/types'
 
-// Custom label renderer for pie charts - Mobile optimized
 const renderCustomizedLabel = ({
   name = '',
   percent = 0,
@@ -12,17 +11,14 @@ const renderCustomizedLabel = ({
   name?: string
   percent?: number
 }) => {
-  // En mobile, solo mostrar porcentaje si es mayor al 10%
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
   if (isMobile && percent < 0.1) return ''
 
-  // Truncar nombres largos en mobile
   const displayName =
     isMobile && name.length > 8 ? name.substring(0, 6) + '...' : name
   return `${displayName} ${(percent * 100).toFixed(0)}%`
 }
 
-// Custom tooltip for mobile
 const CustomTooltip = ({
   active,
   payload,
@@ -85,7 +81,6 @@ export default function ExpenseDashboard({
 }: ExpenseDashboardProps) {
   const [isMobile, setIsMobile] = useState(false)
 
-  // Detectar mobile
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
@@ -96,7 +91,6 @@ export default function ExpenseDashboard({
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Preparar datos para gráficos de torta
   const expensePieData: PieDataItem[] = Object.entries(
     filteredExpenses
       .filter(e => e.amount < 0)
@@ -106,8 +100,8 @@ export default function ExpenseDashboard({
       }, {})
   )
     .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value) // Ordenar por valor descendente
-    .slice(0, isMobile ? 6 : 10) // Limitar elementos en mobile
+    .sort((a, b) => b.value - a.value)
+    .slice(0, isMobile ? 6 : 10)
 
   const incomePieData: PieDataItem[] = Object.entries(
     filteredExpenses
@@ -118,15 +112,14 @@ export default function ExpenseDashboard({
       }, {})
   )
     .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value) // Ordenar por valor descendente
-    .slice(0, isMobile ? 6 : 10) // Limitar elementos en mobile
+    .sort((a, b) => b.value - a.value)
+    .slice(0, isMobile ? 6 : 10)
 
-  // Configuración dinámica según el dispositivo
   const chartConfig = {
     height: isMobile ? 250 : 300,
     outerRadius: isMobile ? 70 : 100,
     labelLine: false,
-    label: isMobile ? false : renderCustomizedLabel, // Desactivar labels en mobile
+    label: isMobile ? false : renderCustomizedLabel,
   }
 
   return (

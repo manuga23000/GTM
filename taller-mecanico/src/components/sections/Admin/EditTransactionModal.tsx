@@ -26,7 +26,6 @@ export default function EditTransactionModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
-    // Reset form when transaction changes
     setFormData({
       type: transaction.type,
       category: transaction.category,
@@ -36,7 +35,6 @@ export default function EditTransactionModal({
     })
   }, [transaction])
 
-  // Bloquear scroll del body cuando el modal está abierto
   useEffect(() => {
     document.body.style.overflow = 'hidden'
 
@@ -89,7 +87,7 @@ export default function EditTransactionModal({
     setFormData({
       ...formData,
       type: newType,
-      category: '', // Reset category when type changes
+      category: '',
     })
   }
 

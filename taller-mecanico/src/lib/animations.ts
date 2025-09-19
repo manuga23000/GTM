@@ -1,5 +1,4 @@
 export const animations = {
-
   fadeIn: {
     hidden: { opacity: 0 },
     visible: {
@@ -44,7 +43,6 @@ export const animations = {
     },
   },
 
-  // Animaciones de escala
   scaleIn: {
     hidden: { opacity: 0, scale: 0.8 },
     visible: {
@@ -53,7 +51,6 @@ export const animations = {
       transition: { duration: 0.8, ease: 'easeOut' as const },
     },
   },
-
 
   staggerContainer: {
     hidden: { opacity: 0 },
@@ -66,7 +63,6 @@ export const animations = {
     },
   },
 
-
   hoverScale: {
     scale: 1.05,
     transition: { duration: 0.4, ease: 'easeOut' as const },
@@ -76,7 +72,6 @@ export const animations = {
     y: -8,
     transition: { duration: 0.4, ease: 'easeOut' as const },
   },
-
 
   buttonHover: {
     scale: 1.02,
@@ -88,12 +83,10 @@ export const animations = {
     transition: { duration: 0.1 },
   },
 
-
   textGlow: {
     textShadow: '0px 0px 12px rgb(239, 68, 68)',
     transition: { duration: 0.5, ease: 'easeOut' as const },
   },
-
 
   float: {
     y: [-4, 4, -4],
@@ -104,7 +97,6 @@ export const animations = {
     },
   },
 
-  // Animación de rotación suave
   gentleRotate: {
     rotate: [-2, 2, -2],
     transition: {
@@ -114,7 +106,6 @@ export const animations = {
     },
   },
 
-  // Animaciones adicionales para ServiciosEmpresariales
   listItemVariants: {
     hidden: { opacity: 0, x: 20 },
     visible: {
@@ -133,14 +124,12 @@ export const animations = {
     },
   },
 
-  // Configuración de useInView más suave
   inViewOptions: {
     once: true,
     margin: '-100px',
     amount: 0.3,
   },
 }
-
 
 export const createStaggerAnimation = (
   staggerDelay = 0.3,

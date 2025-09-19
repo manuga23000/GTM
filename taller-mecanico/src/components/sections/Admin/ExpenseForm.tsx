@@ -118,7 +118,7 @@ export default function ExpenseForm({
               }
               onChange={e => {
                 const value = e.target.value
-                // Allow only numbers and one decimal point
+
                 if (value === '' || /^\d*\.?\d*$/.test(value)) {
                   const numericValue = value === '' ? 0 : parseFloat(value)
                   setNewTransaction({
@@ -128,7 +128,6 @@ export default function ExpenseForm({
                 }
               }}
               onBlur={e => {
-                // Format the number to 2 decimal places when input loses focus
                 const value = parseFloat(e.target.value) || 0
                 setNewTransaction({
                   ...newTransaction,

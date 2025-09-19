@@ -80,10 +80,8 @@ export default function ExpenseManager() {
     createdBy: '',
   })
 
-  // Cargar transacciones
   const loadTransactions = async () => {
     try {
-      // Calcular fechas según el rango seleccionado
       let startDate: Date | undefined
       let endDate: Date | undefined
       const today = new Date()
@@ -110,7 +108,6 @@ export default function ExpenseManager() {
           break
       }
 
-      // Cargar transacciones
       const transactions = await getTransactions({
         startDate: startDate?.toISOString().split('T')[0],
         endDate: endDate?.toISOString().split('T')[0],
@@ -118,7 +115,6 @@ export default function ExpenseManager() {
 
       setExpenses(transactions)
 
-      // Cargar estadísticas
       const stats = await getTransactionStats(
         startDate && endDate ? { start: startDate, end: endDate } : undefined
       )
@@ -128,11 +124,9 @@ export default function ExpenseManager() {
     }
   }
 
-  // Cargar transacciones al montar el componente o cambiar el rango de fechas
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Calcular fechas según el rango seleccionado
         let start: Date
         let end = new Date()
 
@@ -158,11 +152,9 @@ export default function ExpenseManager() {
             start = subDays(new Date(), 30)
         }
 
-        // Formatear fechas para la API
         const startDate = start.toISOString().split('T')[0]
         const endDate = end.toISOString().split('T')[0]
 
-        // Cargar transacciones y estadísticas
         const [transactions, stats] = await Promise.all([
           getTransactions({ startDate, endDate }),
           getTransactionStats({ start, end }),
@@ -178,10 +170,8 @@ export default function ExpenseManager() {
     fetchData()
   }, [dateRange, customStartDate, customEndDate])
 
-  // Usar estadísticas cargadas
   const { totalIncome, totalExpenses, balance } = stats
 
-  // Filtrar transacciones por rango de fechas con manejo seguro de fechas
   const filteredExpenses = expenses.filter((expense: Transaction) => {
     try {
       const expenseDate = parseISO(expense.date)
@@ -222,7 +212,6 @@ export default function ExpenseManager() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validaciones del formulario
     if (!newTransaction.category?.trim()) {
       alert('Por favor seleccione una categoría')
       return
@@ -250,8 +239,8 @@ export default function ExpenseManager() {
             ? -Math.abs(Number(newTransaction.amount))
             : Math.abs(Number(newTransaction.amount)),
         date: newTransaction.date,
-        description: newTransaction.category, // Usamos la categoría como descripción
-        createdBy: 'admin', // TODO: Replace with actual user ID from authentication
+        description: newTransaction.category,
+        createdBy: 'admin',
       }
 
       const result = await createTransactionApi(transactionData)
@@ -260,10 +249,8 @@ export default function ExpenseManager() {
         throw new Error(result.message || 'Error al crear la transacción')
       }
 
-      // Recargar transacciones
       await loadTransactions()
 
-      // Reset form
       setNewTransaction({
         type: 'expense',
         category: '',

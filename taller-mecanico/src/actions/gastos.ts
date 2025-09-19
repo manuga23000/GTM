@@ -23,19 +23,17 @@ import {
 
 const COLLECTION_NAME = 'transactions'
 
-// Interface for Firestore transaction data
 interface FirestoreTransactionData extends DocumentData {
   type: 'income' | 'expense'
   category: string
   amount: number
   date: string
   description: string
-  createdAt?: Timestamp // Firestore Timestamp
-  updatedAt?: Timestamp // Firestore Timestamp
+  createdAt?: Timestamp 
+  updatedAt?: Timestamp 
   createdBy: string
 }
 
-// Interface for transaction filters
 interface TransactionFilters {
   type?: 'income' | 'expense'
   category?: string
@@ -43,7 +41,6 @@ interface TransactionFilters {
   endDate?: string
 }
 
-// Helper to convert Firestore data to Transaction
 const toTransaction = (
   id: string,
   data: FirestoreTransactionData
@@ -59,9 +56,7 @@ const toTransaction = (
   createdBy: data.createdBy,
 })
 
-/**
- * Create a new transaction
- */
+
 export async function createTransaction(
   transactionData: TransactionInput,
   userId?: string
@@ -70,7 +65,7 @@ export async function createTransaction(
     const docRef = doc(collection(db, COLLECTION_NAME))
     const transaction = {
       ...transactionData,
-      ...(userId && { createdBy: userId }), // Only include createdBy if userId is provided
+      ...(userId && { createdBy: userId }), 
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     }
@@ -114,16 +109,13 @@ export async function getTransaction(id: string): Promise<Transaction | null> {
   }
 }
 
-/**
- * Get all transactions with optional filtering
- */
+
 export async function getTransactions(
   filters: TransactionFilters = {}
 ): Promise<Transaction[]> {
   try {
     let q = query(collection(db, COLLECTION_NAME), orderBy('date', 'desc'))
 
-    // Apply filters
     const conditions = []
     if (filters.type) conditions.push(where('type', '==', filters.type))
     if (filters.category)
@@ -132,7 +124,6 @@ export async function getTransactions(
       conditions.push(where('date', '>=', filters.startDate))
     if (filters.endDate) conditions.push(where('date', '<=', filters.endDate))
 
-    // Add all conditions to the query
     if (conditions.length > 0) {
       q = query(q, ...conditions)
     }
@@ -147,9 +138,6 @@ export async function getTransactions(
   }
 }
 
-/**
- * Update a transaction
- */
 export async function updateTransaction(
   id: string,
   updateData: Partial<TransactionInput>
@@ -190,9 +178,6 @@ export async function updateTransaction(
   }
 }
 
-/**
- * Delete a transaction
- */
 export async function deleteTransaction(
   id: string
 ): Promise<TransactionResponse> {
@@ -223,9 +208,7 @@ export async function deleteTransaction(
   }
 }
 
-/**
- * Get transaction statistics
- */
+
 export async function getTransactionStats(
   dateRange?: DateRange
 ): Promise<TransactionStats> {
@@ -248,7 +231,6 @@ export async function getTransactionStats(
       0
     )
 
-    // Group by category
     const incomeByCategory = incomeTransactions.reduce<Record<string, number>>(
       (acc, t) => {
         acc[t.category] = (acc[t.category] || 0) + t.amount

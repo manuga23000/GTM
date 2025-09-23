@@ -216,6 +216,12 @@ export default function Footer() {
             >
               Seguimiento
             </Link>
+            <Link
+              href='/desarrollo'
+              className='text-gray-300 hover:text-red-500 transition font-medium'
+            >
+              Desarrollo
+            </Link>
           </div>
         </div>
 

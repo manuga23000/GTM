@@ -2,10 +2,6 @@
 import Navbar from '@/components/layout/Navbar'
 import WhatsAppButton from '@/components/layout/WhatsAppButton'
 import HeroDesarrollo from '@/components/sections/Desarrollo/HeroDesarrollo'
-import {
-  ContactanosHoyMismo,
-  BookingSection,
-} from '@/components/sections/Shared'
 import React from 'react'
 
 export default function DesarrolloPage() {

@@ -227,7 +227,7 @@ export async function getTransactionStats(
 
     const totalIncome = incomeTransactions.reduce((sum, t) => sum + t.amount, 0)
     const totalExpenses = expenseTransactions.reduce(
-      (sum, t) => sum + t.amount,
+      (sum, t) => sum + Math.abs(t.amount),
       0
     )
 

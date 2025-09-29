@@ -14,7 +14,7 @@ export default function Hero() {
     <section
       className='relative pt-36 pb-24 sm:pt-28 lg:pt-48 sm:min-h-screen flex items-start sm:items-center overflow-hidden'
       style={{
-        backgroundImage: "url('/images/sobrenosotros/combinadoflex.png')",
+        backgroundImage: "url('/images/home/combinadomarcas.png')",
         backgroundSize: 'cover',
         backgroundPosition: 'center right',
         backgroundRepeat: 'no-repeat',
@@ -89,30 +89,28 @@ export default function Hero() {
       <style jsx>{`
         @media (max-width: 640px) {
           section {
-            background-image: url('/images/sobrenosotros/combinadoflexmobile.png') !important;
+            background-image: url('/images/home/combinadomarcasmobile.png') !important;
             background-position: center !important;
             background-size: cover !important;
             background-repeat: no-repeat !important;
           }
-          
 
           .mobile-overlay {
             background: linear-gradient(
-              to right, 
-              rgba(0, 0, 0, 0.6), 
-              rgba(0, 0, 0, 0.4), 
+              to right,
+              rgba(0, 0, 0, 0.6),
+              rgba(0, 0, 0, 0.4),
               rgba(0, 0, 0, 0.3)
             ) !important;
           }
         }
 
         @media (min-width: 641px) {
-
           .mobile-overlay {
             background: linear-gradient(
-              to right, 
-              rgba(0, 0, 0, 0.9), 
-              rgba(0, 0, 0, 0.7), 
+              to right,
+              rgba(0, 0, 0, 0.9),
+              rgba(0, 0, 0, 0.7),
               rgba(0, 0, 0, 0.5)
             ) !important;
           }

@@ -177,8 +177,19 @@ export function filterUndefinedValues(
       filtered[key] = value
       continue
     }
-    if (value === undefined || value === null) {
+    // Permitir null explícito para campos de fecha que deben poder borrarse en Firestore
+    if (value === undefined) {
       continue
+    }
+    // Para estimatedCompletionDate y otros campos de fecha, dejar pasar null
+    if (value === null &&
+      (key === 'estimatedCompletionDate' || key === 'createdAt' || key === 'updatedAt')
+    ) {
+      filtered[key] = null;
+      continue;
+    }
+    if (value === null) {
+      continue;
     }
 
     if (Array.isArray(value)) {

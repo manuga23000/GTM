@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import VehicleList, { VehicleInTracking, VehicleStep } from './VehicleList'
 import VehicleDetails from './VehicleDetails'
 import VehicleModal from './VehicleModal'
+import WeeklyReportButton from './WeeklyReportButton'
 import { deleteFileFromStorage } from '@/lib/storageUtils'
 import { buscarHistorialCompleto } from '@/actions/seguimiento'
 
@@ -454,17 +455,34 @@ export default function VehicleConfig() {
               </p>
             </div>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                setAddVehicleError('')
-                setShowAddForm(true)
-              }}
-              className='w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors text-sm sm:text-base'
-            >
-              Nuevo Vehículo
-            </motion.button>
+            {/* BOTONES - Nuevo Vehículo y Generar Reporte PDF */}
+            <div className='flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto'>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setAddVehicleError('')
+                  setShowAddForm(true)
+                }}
+                className='w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors text-sm sm:text-base flex items-center justify-center gap-2'
+              >
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-5 w-5'
+                  viewBox='0 0 20 20'
+                  fill='currentColor'
+                >
+                  <path
+                    fillRule='evenodd'
+                    d='M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z'
+                    clipRule='evenodd'
+                  />
+                </svg>
+                Nuevo Vehículo
+              </motion.button>
+
+              <WeeklyReportButton onMessage={showMessage} />
+            </div>
           </div>
 
           <div className='relative w-full sm:max-w-md'>

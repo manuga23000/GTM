@@ -26,6 +26,11 @@ export default function AdminDashboard() {
     await signOut(auth)
   }
 
+  const showMessage = (msg: string) => {
+    setMessage(msg)
+    setTimeout(() => setMessage(''), 3000)
+  }
+
   const loadTurnos = async () => {
     try {
       setLoading(true)
@@ -33,7 +38,7 @@ export default function AdminDashboard() {
       setTurnos(turnosData)
     } catch (error) {
       console.error('Error loading turnos:', error)
-      setMessage('Error al cargar los turnos')
+      showMessage('Error al cargar los turnos')
     } finally {
       setLoading(false)
     }
@@ -46,14 +51,13 @@ export default function AdminDashboard() {
     try {
       const result = await updateTurnoStatus(turnoId, status)
       if (result.success) {
-        setMessage(result.message)
+        showMessage(result.message)
         await loadTurnos()
-        setTimeout(() => setMessage(''), 3000)
       } else {
-        setMessage(result.message)
+        showMessage(result.message)
       }
     } catch (error) {
-      setMessage('Error al actualizar el turno')
+      showMessage('Error al actualizar el turno')
     }
   }
 
@@ -61,14 +65,13 @@ export default function AdminDashboard() {
     try {
       const result = await deleteTurno(turnoId)
       if (result.success) {
-        setMessage(result.message)
+        showMessage(result.message)
         await loadTurnos()
-        setTimeout(() => setMessage(''), 3000)
       } else {
-        setMessage(result.message)
+        showMessage(result.message)
       }
     } catch (error) {
-      setMessage('Error al eliminar el turno')
+      showMessage('Error al eliminar el turno')
     }
   }
 
@@ -150,7 +153,7 @@ export default function AdminDashboard() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className='flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-8 gap-3 sm:gap-0'
+        className='flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-8 gap-3'
       >
         <h1 className='text-lg sm:text-2xl md:text-4xl font-extrabold text-white drop-shadow-lg text-center sm:text-left leading-tight'>
           <span className='block sm:hidden'>PANEL DE</span>
@@ -158,6 +161,7 @@ export default function AdminDashboard() {
           <span className='hidden sm:block'>Panel de Administración</span>
         </h1>
 
+        {/* Solo botón de logout */}
         <motion.button
           whileHover={{
             scale: 1.1,

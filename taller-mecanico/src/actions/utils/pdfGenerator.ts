@@ -43,7 +43,7 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
     // O reemplaza con la ruta correcta de tu logo
     const logoPath = '/logo.png'
     doc.addImage(logoPath, 'PNG', 15, 10, 30, 30)
-  } catch (error) {
+  } catch {
     // Si el logo no está disponible, continuar sin él
     console.log('Logo no encontrado en /public/logo.png')
   }
@@ -184,6 +184,7 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
       margin: { left: 14, right: 14 },
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     yPosition = (doc as any).lastAutoTable.finalY + 15
   }
 
@@ -245,6 +246,7 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
       margin: { left: 14, right: 14 },
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     yPosition = (doc as any).lastAutoTable.finalY + 10
   }
 

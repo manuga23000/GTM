@@ -5,6 +5,7 @@ import {
   getAllVehicles,
   updateVehicle,
   deleteVehicle,
+  getVehicleByPlate,
 } from '@/actions/vehicle'
 import { motion, AnimatePresence } from 'framer-motion'
 import VehicleList, { VehicleInTracking, VehicleStep } from './VehicleList'
@@ -45,6 +46,9 @@ export default function VehicleConfig() {
 
   const [isLoadingHistorial, setIsLoadingHistorial] = useState(false)
   const [datosHistorialCargados, setDatosHistorialCargados] = useState(false)
+
+  // ✅ NUEVO: Guardar la patente original antes de editar
+  const [originalPlateNumber, setOriginalPlateNumber] = useState<string>('')
 
   const filteredVehicles = useMemo(() => {
     return vehiclesInTracking.filter(vehicle =>
@@ -243,43 +247,127 @@ export default function VehicleConfig() {
     }
   }
 
+  // ✅ MODIFICADO: Guardar la patente original al abrir el modal de edición
   const handleOpenEditVehicle = () => {
     if (selectedVehicleData) {
+      // Guardar la patente ORIGINAL normalizada (sin espacios)
+      const normalizedPlate = selectedVehicleData.plateNumber
+        .replace(/\s+/g, '')
+        .toUpperCase()
+      setOriginalPlateNumber(normalizedPlate)
+
       setEditVehicle({ ...selectedVehicleData })
       setShowEditVehicleModal(true)
     }
   }
 
+  // ✅ REEMPLAZADO: Nueva lógica para detectar cambio de patente
   const handleSaveVehicleEdit = async () => {
     if (!editVehicle || isEditingVehicle) return
     setIsEditingVehicle(true)
     showMessage('Guardando cambios...')
-    try {
-      const response = await updateVehicle(editVehicle.plateNumber, {
-        plateNumber: editVehicle.plateNumber,
-        brand: editVehicle.brand,
-        model: editVehicle.model,
-        year: editVehicle.year,
-        clientName: editVehicle.clientName,
-        clientPhone: editVehicle.clientPhone,
-        serviceType: editVehicle.serviceType,
-        chassisNumber: editVehicle.chassisNumber,
-        km: editVehicle.km,
-        createdAt: editVehicle.entryDate,
-        estimatedCompletionDate: editVehicle.estimatedCompletionDate,
-      })
-      if (response.success) {
-        await fetchVehicles()
-        const currentSelected = selectedVehicle
-        setSelectedVehicle('')
-        setTimeout(() => setSelectedVehicle(currentSelected), 50)
 
-        setShowEditVehicleModal(false)
-        showMessage('Vehículo actualizado')
+    try {
+      // Normalizar la nueva patente (sin espacios)
+      const newPlateNormalized = editVehicle.plateNumber
+        .replace(/\s+/g, '')
+        .toUpperCase()
+
+      // ✅ Detectar si cambió la patente
+      const plateChanged = originalPlateNumber !== newPlateNormalized
+
+      if (plateChanged) {
+        // 🔄 Si cambió la patente: ELIMINAR viejo documento y CREAR uno nuevo
+        console.log(
+          `🔄 Cambiando patente de ${originalPlateNumber} a ${newPlateNormalized}`
+        )
+
+        // 1. Obtener todos los datos del vehículo actual (incluyendo steps con archivos)
+        const vehicleData = await getVehicleByPlate(originalPlateNumber)
+
+        if (!vehicleData) {
+          showMessage('Error: No se encontró el vehículo original')
+          setIsEditingVehicle(false)
+          return
+        }
+
+        // 2. Crear el nuevo documento con la nueva patente y TODOS los datos
+        const createResponse = await createVehicle({
+          ...vehicleData,
+          plateNumber: newPlateNormalized,
+          brand: editVehicle.brand,
+          model: editVehicle.model,
+          year: editVehicle.year,
+          clientName: editVehicle.clientName,
+          clientPhone: editVehicle.clientPhone,
+          serviceType: editVehicle.serviceType,
+          chassisNumber: editVehicle.chassisNumber,
+          km: editVehicle.km,
+          estimatedCompletionDate: editVehicle.estimatedCompletionDate,
+          steps: vehicleData.steps || [], // Mantener los steps con archivos
+        })
+
+        if (!createResponse.success) {
+          showMessage(
+            createResponse.message ||
+              'Error al crear vehículo con nueva patente'
+          )
+          setIsEditingVehicle(false)
+          return
+        }
+
+        // 3. Eliminar el documento viejo
+        const deleteResponse = await deleteVehicle(originalPlateNumber)
+
+        if (!deleteResponse.success) {
+          showMessage(
+            '⚠️ Vehículo actualizado pero no se pudo eliminar el registro anterior'
+          )
+        }
+
+        showMessage(
+          `✅ Patente actualizada: ${originalPlateNumber} → ${newPlateNormalized}`
+        )
       } else {
-        showMessage(response.message || 'Error al actualizar vehículo')
+        // ✏️ Si NO cambió la patente: solo actualizar normalmente
+        console.log(`✏️ Actualizando datos del vehículo ${newPlateNormalized}`)
+
+        const response = await updateVehicle(originalPlateNumber, {
+          plateNumber: newPlateNormalized,
+          brand: editVehicle.brand,
+          model: editVehicle.model,
+          year: editVehicle.year,
+          clientName: editVehicle.clientName,
+          clientPhone: editVehicle.clientPhone,
+          serviceType: editVehicle.serviceType,
+          chassisNumber: editVehicle.chassisNumber,
+          km: editVehicle.km,
+          createdAt: editVehicle.entryDate,
+          estimatedCompletionDate: editVehicle.estimatedCompletionDate,
+        })
+
+        if (!response.success) {
+          showMessage(response.message || 'Error al actualizar vehículo')
+          setIsEditingVehicle(false)
+          return
+        }
+
+        showMessage('Vehículo actualizado')
       }
+
+      // Recargar la lista y cerrar modal
+      await fetchVehicles()
+
+      // Seleccionar el vehículo con la nueva patente
+      const vehicleToSelect = plateChanged
+        ? newPlateNormalized
+        : originalPlateNumber
+      setSelectedVehicle('')
+      setTimeout(() => setSelectedVehicle(vehicleToSelect), 50)
+
+      setShowEditVehicleModal(false)
     } catch (error) {
+      console.error('Error al guardar cambios:', error)
       showMessage('Error al guardar cambios')
     } finally {
       setIsEditingVehicle(false)

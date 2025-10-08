@@ -138,7 +138,7 @@ export async function createVehicle(
 }
 
 /**
- * ACTUALIZADO: Actualizar vehículo existente con manejo de archivos
+ * CORREGIDO: Actualizar vehículo existente con normalización de patente
  */
 export async function updateVehicle(
   plateNumber: string,
@@ -153,7 +153,9 @@ export async function updateVehicle(
       }
     }
 
-    const docRef = doc(db, COLLECTION_NAME, plateNumber)
+    // ✅ NORMALIZAR la patente (quitar espacios)
+    const normalizedPlate = plateNumber.replace(/\s+/g, '').toUpperCase()
+    const docRef = doc(db, COLLECTION_NAME, normalizedPlate)
 
     if (updateData.steps) {
       updateData.steps = updateData.steps.map(step =>
@@ -164,7 +166,7 @@ export async function updateVehicle(
     const currentTime = new Date()
     const dataToUpdate = {
       ...updateData,
-      plateNumber,
+      plateNumber: normalizedPlate, // ✅ Guardar la patente normalizada
       updatedAt: currentTime,
     }
 
@@ -218,7 +220,9 @@ export async function deleteVehicle(
       }
     }
 
-    const vehicle = await getVehicleByPlate(plateNumber)
+    // ✅ Normalizar la patente antes de eliminar
+    const normalizedPlate = plateNumber.replace(/\s+/g, '').toUpperCase()
+    const vehicle = await getVehicleByPlate(normalizedPlate)
 
     if (vehicle && vehicle.steps) {
       const allFiles: StepFile[] = []
@@ -235,7 +239,7 @@ export async function deleteVehicle(
       }
     }
 
-    const docRef = doc(db, COLLECTION_NAME, plateNumber)
+    const docRef = doc(db, COLLECTION_NAME, normalizedPlate)
     await deleteDoc(docRef)
 
     return {

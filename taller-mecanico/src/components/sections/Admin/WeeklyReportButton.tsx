@@ -83,27 +83,30 @@ export default function WeeklyReportButton({
       })
 
       // Obtener vehículos finalizados/entregados
-      const historialRef = collection(db, 'historial')
+      const historialRef = collection(db, 'timeline') // Cambiar 'historial' → 'timeline'
       const vehiclesOutQuery = query(
         historialRef,
-        where('fechaFinalizado', '>=', startTimestamp.toISOString()),
-        where('fechaFinalizado', '<=', endTimestamp.toISOString()),
-        orderBy('fechaFinalizado', 'desc')
+        where('finalizedAt', '>=', startTimestamp), // Cambiar a Date en vez de ISO string
+        where('finalizedAt', '<=', endTimestamp),
+        orderBy('finalizedAt', 'desc')
       )
 
       const vehiclesOutSnapshot = await getDocs(vehiclesOutQuery)
       const vehiclesOut = vehiclesOutSnapshot.docs.map(doc => {
         const data = doc.data()
         return {
-          plateNumber: data.patente || 'Sin patente',
-          brand: data.marca || 'Sin marca',
-          model: data.modelo || 'Sin modelo',
-          year: parseInt(data.año) || new Date().getFullYear(),
-          clientName: data.cliente || 'Cliente',
-          clientPhone: data.telefono,
-          serviceType: data.tipoServicio,
-          entryDate: new Date(data.fechaIngreso),
-          finalizedAt: new Date(data.fechaFinalizado),
+          plateNumber: data.plateNumber || 'Sin patente', // Cambiar 'patente' → 'plateNumber'
+          brand: data.brand || 'Sin marca', // Cambiar 'marca' → 'brand'
+          model: data.model || 'Sin modelo', // Cambiar 'modelo' → 'model'
+          year: data.year || new Date().getFullYear(), // Ya es number, no hace falta parseInt
+          clientName: data.clientName || 'Cliente', // Cambiar 'cliente' → 'clientName'
+          clientPhone: data.clientPhone, // Cambiar 'telefono' → 'clientPhone'
+          serviceType: data.serviceType, // Cambiar 'tipoServicio' → 'serviceType'
+          entryDate:
+            data.entryDate?.toDate?.() ||
+            data.createdAt?.toDate?.() ||
+            new Date(),
+          finalizedAt: data.finalizedAt?.toDate?.() || new Date(),
           status: 'Finalizado',
           km: data.km,
         }

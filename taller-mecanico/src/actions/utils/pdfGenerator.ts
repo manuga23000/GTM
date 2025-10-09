@@ -20,6 +20,7 @@ interface VehicleReportData {
 interface WeeklyReportData {
   vehiclesIn: VehicleReportData[]
   vehiclesOut: VehicleReportData[]
+  vehiclesInWorkshop: VehicleReportData[]
   startDate: Date
   endDate: Date
 }
@@ -30,21 +31,18 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
 
   // Configuración de colores - Negro, Rojo y Blanco
   const blackColor: [number, number, number] = [0, 0, 0]
-  const redColor: [number, number, number] = [220, 38, 38] // Rojo intenso
+  const redColor: [number, number, number] = [220, 38, 38]
+  const blueColor: [number, number, number] = [37, 99, 235]
   const lightGray: [number, number, number] = [245, 245, 245]
 
   // HEADER CON LOGO
   doc.setFillColor(...blackColor)
   doc.rect(0, 0, pageWidth, 50, 'F')
 
-  // Intentar cargar logo desde /public/logo.png
   try {
-    // Coloca tu logo en /public/logo.png
-    // O reemplaza con la ruta correcta de tu logo
     const logoPath = '/logo.png'
     doc.addImage(logoPath, 'PNG', 15, 10, 30, 30)
   } catch {
-    // Si el logo no está disponible, continuar sin él
     console.log('Logo no encontrado en /public/logo.png')
   }
 
@@ -53,7 +51,6 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
   doc.setFont('helvetica', 'bold')
   doc.text('REPORTE SEMANAL GTM', pageWidth / 2, 22, { align: 'center' })
 
-  // Línea roja decorativa
   doc.setDrawColor(...redColor)
   doc.setLineWidth(2)
   doc.line(pageWidth / 2 - 50, 28, pageWidth / 2 + 50, 28)
@@ -66,25 +63,24 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
   )}`
   doc.text(dateRange, pageWidth / 2, 38, { align: 'center' })
 
-  // RESUMEN (sin "EJECUTIVO")
+  // RESUMEN
   let yPosition = 60
   doc.setTextColor(...blackColor)
   doc.setFontSize(18)
   doc.setFont('helvetica', 'bold')
   doc.text('RESUMEN', 14, yPosition)
 
-  // Línea roja bajo el título
   doc.setDrawColor(...redColor)
   doc.setLineWidth(1)
   doc.line(14, yPosition + 2, 50, yPosition + 2)
 
   yPosition += 12
 
-  // Estadísticas en cajas
+  // 📦 ESTADÍSTICAS EN 3 CAJAS VERTICALES
   const boxHeight = 28
-  const boxWidth = (pageWidth - 38) / 2
+  const boxWidth = pageWidth - 28 // Ancho completo menos márgenes
 
-  // Caja de Ingresos - Fondo negro con borde rojo
+  // 1️⃣ CAJA: VEHÍCULOS INGRESADOS (Negro con borde rojo)
   doc.setFillColor(...blackColor)
   doc.roundedRect(14, yPosition, boxWidth, boxHeight, 3, 3, 'F')
   doc.setDrawColor(...redColor)
@@ -106,40 +102,61 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
     { align: 'center' }
   )
 
-  // Caja de Salidas - Fondo rojo con borde negro
+  yPosition += boxHeight + 8
+
+  // 2️⃣ CAJA: VEHÍCULOS ENTREGADOS (Rojo con borde negro)
   doc.setFillColor(...redColor)
-  doc.roundedRect(14 + boxWidth + 10, yPosition, boxWidth, boxHeight, 3, 3, 'F')
+  doc.roundedRect(14, yPosition, boxWidth, boxHeight, 3, 3, 'F')
   doc.setDrawColor(...blackColor)
   doc.setLineWidth(2)
-  doc.roundedRect(14 + boxWidth + 10, yPosition, boxWidth, boxHeight, 3, 3, 'S')
+  doc.roundedRect(14, yPosition, boxWidth, boxHeight, 3, 3, 'S')
 
   doc.setTextColor(255, 255, 255)
   doc.setFontSize(10)
   doc.setFont('helvetica', 'bold')
-  doc.text(
-    'VEHICULOS ENTREGADOS',
-    14 + boxWidth + 10 + boxWidth / 2,
-    yPosition + 10,
-    { align: 'center' }
-  )
+  doc.text('VEHICULOS ENTREGADOS', 14 + boxWidth / 2, yPosition + 10, {
+    align: 'center',
+  })
   doc.setFontSize(22)
   doc.text(
     data.vehiclesOut.length.toString(),
-    14 + boxWidth + 10 + boxWidth / 2,
+    14 + boxWidth / 2,
+    yPosition + 22,
+    { align: 'center' }
+  )
+
+  yPosition += boxHeight + 8
+
+  // 3️⃣ CAJA: VEHÍCULOS EN TALLER (Azul con borde negro)
+  doc.setFillColor(...blueColor)
+  doc.roundedRect(14, yPosition, boxWidth, boxHeight, 3, 3, 'F')
+  doc.setDrawColor(...blackColor)
+  doc.setLineWidth(2)
+  doc.roundedRect(14, yPosition, boxWidth, boxHeight, 3, 3, 'S')
+
+  doc.setTextColor(255, 255, 255)
+  doc.setFontSize(10)
+  doc.setFont('helvetica', 'bold')
+  doc.text('VEHICULOS EN TALLER', 14 + boxWidth / 2, yPosition + 10, {
+    align: 'center',
+  })
+  doc.setFontSize(22)
+  doc.text(
+    data.vehiclesInWorkshop.length.toString(),
+    14 + boxWidth / 2,
     yPosition + 22,
     { align: 'center' }
   )
 
   yPosition += boxHeight + 18
 
-  // VEHÍCULOS INGRESADOS (SIN EMOJI)
+  // 📋 TABLA 1: VEHÍCULOS INGRESADOS
   if (data.vehiclesIn.length > 0) {
     doc.setTextColor(...blackColor)
     doc.setFontSize(15)
     doc.setFont('helvetica', 'bold')
     doc.text('VEHICULOS INGRESADOS', 14, yPosition)
 
-    // Línea roja decorativa
     doc.setDrawColor(...redColor)
     doc.setLineWidth(1)
     doc.line(14, yPosition + 2, 85, yPosition + 2)
@@ -188,9 +205,8 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
     yPosition = (doc as any).lastAutoTable.finalY + 15
   }
 
-  // VEHÍCULOS ENTREGADOS (SIN EMOJI)
+  // 📋 TABLA 2: VEHÍCULOS ENTREGADOS
   if (data.vehiclesOut.length > 0) {
-    // Verificar si necesitamos nueva página
     if (yPosition > 220) {
       doc.addPage()
       yPosition = 20
@@ -201,7 +217,6 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
     doc.setFont('helvetica', 'bold')
     doc.text('VEHICULOS ENTREGADOS', 14, yPosition)
 
-    // Línea roja decorativa
     doc.setDrawColor(...redColor)
     doc.setLineWidth(1)
     doc.line(14, yPosition + 2, 85, yPosition + 2)
@@ -247,15 +262,74 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
     })
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    yPosition = (doc as any).lastAutoTable.finalY + 15
+  }
+
+  // 📋 TABLA 3: VEHÍCULOS EN TALLER
+  if (data.vehiclesInWorkshop.length > 0) {
+    if (yPosition > 220) {
+      doc.addPage()
+      yPosition = 20
+    }
+
+    doc.setTextColor(...blackColor)
+    doc.setFontSize(15)
+    doc.setFont('helvetica', 'bold')
+    doc.text('VEHICULOS EN TALLER', 14, yPosition)
+
+    doc.setDrawColor(...blueColor)
+    doc.setLineWidth(1)
+    doc.line(14, yPosition + 2, 85, yPosition + 2)
+
+    yPosition += 8
+
+    const tableData = data.vehiclesInWorkshop.map(v => [
+      v.plateNumber,
+      `${v.brand} ${v.model} (${v.year})`,
+      v.clientName,
+      v.serviceType || 'No especificado',
+      formatDate(v.entryDate),
+      v.km ? `${v.km.toLocaleString()} km` : '-',
+    ])
+
+    autoTable(doc, {
+      startY: yPosition,
+      head: [['Patente', 'Vehiculo', 'Cliente', 'Servicio', 'Ingreso', 'KM']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: blueColor,
+        textColor: [255, 255, 255],
+        fontSize: 9,
+        fontStyle: 'bold',
+        halign: 'center',
+        lineColor: blackColor,
+        lineWidth: 0.5,
+      },
+      bodyStyles: {
+        fontSize: 8,
+        halign: 'center',
+        textColor: blackColor,
+      },
+      alternateRowStyles: {
+        fillColor: lightGray,
+      },
+      styles: {
+        lineColor: [200, 200, 200],
+        lineWidth: 0.1,
+      },
+      margin: { left: 14, right: 14 },
+    })
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     yPosition = (doc as any).lastAutoTable.finalY + 10
   }
 
-  // FOOTER con diseño
+  // FOOTER
   const pageCount = doc.getNumberOfPages()
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i)
 
-    // Línea decorativa superior del footer
     const footerY = doc.internal.pageSize.height - 20
     doc.setDrawColor(...redColor)
     doc.setLineWidth(0.5)
@@ -275,7 +349,7 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
 
     doc.setTextColor(...redColor)
     doc.setFont('helvetica', 'bold')
-    doc.text(`Pagina ${i} de ${pageCount}`, pageWidth - 14, footerY + 8, {
+    doc.text(`Página ${i} de ${pageCount}`, pageWidth - 14, footerY + 8, {
       align: 'right',
     })
   }

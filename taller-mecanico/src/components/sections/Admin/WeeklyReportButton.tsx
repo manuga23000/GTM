@@ -21,19 +21,14 @@ export default function WeeklyReportButton({
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
     if (option === 'last-week') {
-      // Semana pasada (lunes a domingo)
       const lastMonday = new Date(today)
-      lastMonday.setDate(today.getDate() - today.getDay() - 6) // Lunes de la semana pasada
-
+      lastMonday.setDate(today.getDate() - today.getDay() - 6)
       const lastSunday = new Date(lastMonday)
-      lastSunday.setDate(lastMonday.getDate() + 6) // Domingo de la semana pasada
-
+      lastSunday.setDate(lastMonday.getDate() + 6)
       return { startDate: lastMonday, endDate: lastSunday }
     } else if (option === 'this-week') {
-      // Esta semana (lunes a hoy)
       const thisMonday = new Date(today)
-      thisMonday.setDate(today.getDate() - today.getDay() + 1) // Lunes de esta semana
-
+      thisMonday.setDate(today.getDate() - today.getDay() + 1)
       return { startDate: thisMonday, endDate: today }
     }
 
@@ -48,14 +43,13 @@ export default function WeeklyReportButton({
     try {
       const { startDate, endDate } = getDateRange(option)
 
-      // Ajustar fechas para incluir todo el día
       const startTimestamp = new Date(startDate)
       startTimestamp.setHours(0, 0, 0, 0)
 
       const endTimestamp = new Date(endDate)
       endTimestamp.setHours(23, 59, 59, 999)
 
-      // Obtener vehículos ingresados
+      // 1️⃣ VEHÍCULOS INGRESADOS EN LA SEMANA (de la colección 'vehicles')
       const vehiclesInRef = collection(db, 'vehicles')
       const vehiclesInQuery = query(
         vehiclesInRef,
@@ -65,7 +59,7 @@ export default function WeeklyReportButton({
       )
 
       const vehiclesInSnapshot = await getDocs(vehiclesInQuery)
-      const vehiclesIn = vehiclesInSnapshot.docs.map(doc => {
+      const vehiclesInFromVehicles = vehiclesInSnapshot.docs.map(doc => {
         const data = doc.data()
         return {
           plateNumber: data.plateNumber || doc.id,
@@ -82,11 +76,46 @@ export default function WeeklyReportButton({
         }
       })
 
-      // Obtener vehículos finalizados/entregados
-      const historialRef = collection(db, 'timeline') // Cambiar 'historial' → 'timeline'
+      // 1️⃣B VEHÍCULOS QUE INGRESARON Y YA FUERON ENTREGADOS EN LA SEMANA (de 'timeline')
+      // Filtrar por entryDate para capturar los que ingresaron en la semana aunque ya fueron entregados
+      const historialIngresosSemanaRef = collection(db, 'timeline')
+      const historialIngresosSemanaQuery = query(
+        historialIngresosSemanaRef,
+        where('entryDate', '>=', startTimestamp),
+        where('entryDate', '<=', endTimestamp),
+        orderBy('entryDate', 'desc')
+      )
+
+      const historialIngresosSnapshot = await getDocs(
+        historialIngresosSemanaQuery
+      )
+      const vehiclesInFromTimeline = historialIngresosSnapshot.docs.map(doc => {
+        const data = doc.data()
+        return {
+          plateNumber: data.plateNumber || 'Sin patente',
+          brand: data.brand || 'Sin marca',
+          model: data.model || 'Sin modelo',
+          year: data.year || new Date().getFullYear(),
+          clientName: data.clientName || 'Cliente',
+          clientPhone: data.clientPhone,
+          serviceType: data.serviceType,
+          entryDate:
+            data.entryDate?.toDate?.() ||
+            data.createdAt?.toDate?.() ||
+            new Date(),
+          estimatedCompletionDate: data.estimatedCompletionDate?.toDate(),
+          status: 'Finalizado',
+          km: data.km,
+        }
+      })
+
+      // COMBINAR ambos arrays para tener TODOS los ingresos de la semana
+      const vehiclesIn = [...vehiclesInFromVehicles, ...vehiclesInFromTimeline]
+
+      // 2️⃣ VEHÍCULOS ENTREGADOS EN LA SEMANA (de 'timeline')
       const vehiclesOutQuery = query(
-        historialRef,
-        where('finalizedAt', '>=', startTimestamp), // Cambiar a Date en vez de ISO string
+        collection(db, 'timeline'),
+        where('finalizedAt', '>=', startTimestamp),
         where('finalizedAt', '<=', endTimestamp),
         orderBy('finalizedAt', 'desc')
       )
@@ -95,13 +124,13 @@ export default function WeeklyReportButton({
       const vehiclesOut = vehiclesOutSnapshot.docs.map(doc => {
         const data = doc.data()
         return {
-          plateNumber: data.plateNumber || 'Sin patente', // Cambiar 'patente' → 'plateNumber'
-          brand: data.brand || 'Sin marca', // Cambiar 'marca' → 'brand'
-          model: data.model || 'Sin modelo', // Cambiar 'modelo' → 'model'
-          year: data.year || new Date().getFullYear(), // Ya es number, no hace falta parseInt
-          clientName: data.clientName || 'Cliente', // Cambiar 'cliente' → 'clientName'
-          clientPhone: data.clientPhone, // Cambiar 'telefono' → 'clientPhone'
-          serviceType: data.serviceType, // Cambiar 'tipoServicio' → 'serviceType'
+          plateNumber: data.plateNumber || 'Sin patente',
+          brand: data.brand || 'Sin marca',
+          model: data.model || 'Sin modelo',
+          year: data.year || new Date().getFullYear(),
+          clientName: data.clientName || 'Cliente',
+          clientPhone: data.clientPhone,
+          serviceType: data.serviceType,
           entryDate:
             data.entryDate?.toDate?.() ||
             data.createdAt?.toDate?.() ||
@@ -112,16 +141,43 @@ export default function WeeklyReportButton({
         }
       })
 
-      // Generar PDF
+      // 3️⃣ VEHÍCULOS ACTUALMENTE EN EL TALLER (todos de 'vehicles' sin filtro de fecha)
+      const allVehiclesInWorkshopQuery = query(
+        collection(db, 'vehicles'),
+        orderBy('createdAt', 'desc')
+      )
+
+      const allVehiclesInWorkshopSnapshot = await getDocs(
+        allVehiclesInWorkshopQuery
+      )
+      const vehiclesInWorkshop = allVehiclesInWorkshopSnapshot.docs.map(doc => {
+        const data = doc.data()
+        return {
+          plateNumber: data.plateNumber || doc.id,
+          brand: data.brand || 'Sin marca',
+          model: data.model || 'Sin modelo',
+          year: data.year || new Date().getFullYear(),
+          clientName: data.clientName || 'Cliente',
+          clientPhone: data.clientPhone,
+          serviceType: data.serviceType,
+          entryDate: data.createdAt?.toDate() || new Date(),
+          estimatedCompletionDate: data.estimatedCompletionDate?.toDate(),
+          status: 'En proceso',
+          km: data.km,
+        }
+      })
+
+      // Generar PDF con los 3 conjuntos de datos
       generateWeeklyPDF({
         vehiclesIn,
         vehiclesOut,
+        vehiclesInWorkshop,
         startDate,
         endDate,
       })
 
       onMessage?.(
-        `✅ Reporte generado: ${vehiclesIn.length} ingresos, ${vehiclesOut.length} entregas`
+        `✅ Reporte generado: ${vehiclesIn.length} ingresos, ${vehiclesOut.length} entregas, ${vehiclesInWorkshop.length} en taller`
       )
     } catch (error) {
       console.error('Error generando reporte:', error)

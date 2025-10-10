@@ -73,60 +73,181 @@ export default function VehicleConfig() {
 
   const fetchVehicles = async () => {
     try {
+      console.log('🔍 fetchVehicles: Obteniendo vehículos de Firebase...')
       const backendVehicles = await getAllVehicles()
-      const mapped = backendVehicles.map(v => ({
-        id: v.plateNumber,
-        plateNumber: v.plateNumber,
-        brand: v.brand || '',
-        model: v.model || '',
-        year: v.year || new Date().getFullYear(),
-        clientName: v.clientName,
-        clientPhone: v.clientPhone || '',
-        serviceType: v.serviceType || '',
-        chassisNumber: v.chassisNumber || '',
-        entryDate: v.createdAt ? new Date(v.createdAt) : new Date(),
-        estimatedCompletionDate: v.estimatedCompletionDate
-          ? new Date(v.estimatedCompletionDate)
-          : null,
-        status: 'received' as const,
-        km: v.km || 0,
-        steps: (v.steps || []).map(step => {
-          let stepDate: Date
-          const dateValue = step.date
+      console.log(
+        '📦 fetchVehicles: Datos recibidos de Firebase:',
+        backendVehicles.length,
+        'vehículos'
+      )
 
-          if (dateValue instanceof Date) {
-            stepDate = dateValue
-          } else if (
-            dateValue &&
-            typeof dateValue === 'object' &&
-            'seconds' in dateValue
-          ) {
-            const timestamp = dateValue as FirestoreTimestamp
-            stepDate = new Date(timestamp.seconds * 1000)
-          } else {
-            stepDate = new Date()
-          }
+      const mapped = backendVehicles.map(v => {
+        console.log(`🚗 Procesando vehículo ${v.plateNumber}:`, {
+          fluidLevels: v.fluidLevels,
+        })
 
-          return {
-            ...step,
-            status: 'completed' as const,
-            date: stepDate,
-            files: (step.files || []).map(file => ({
-              ...file,
-              uploadedAt:
-                file.uploadedAt instanceof Date
-                  ? file.uploadedAt
-                  : new Date(file.uploadedAt),
-            })),
-          }
-        }),
-        notes: v.notes || '',
-        nextStep: v.nextStep || '',
-      }))
+        return {
+          id: v.plateNumber,
+          plateNumber: v.plateNumber,
+          brand: v.brand || '',
+          model: v.model || '',
+          year: v.year || new Date().getFullYear(),
+          clientName: v.clientName,
+          clientPhone: v.clientPhone || '',
+          serviceType: v.serviceType || '',
+          chassisNumber: v.chassisNumber || '',
+          entryDate: v.createdAt ? new Date(v.createdAt) : new Date(),
+          estimatedCompletionDate: v.estimatedCompletionDate
+            ? new Date(v.estimatedCompletionDate)
+            : null,
+          status: 'received' as const,
+          km: v.km || 0,
+          steps: (v.steps || []).map(step => {
+            let stepDate: Date
+            const dateValue = step.date
+
+            if (dateValue instanceof Date) {
+              stepDate = dateValue
+            } else if (
+              dateValue &&
+              typeof dateValue === 'object' &&
+              'seconds' in dateValue
+            ) {
+              const timestamp = dateValue as FirestoreTimestamp
+              stepDate = new Date(timestamp.seconds * 1000)
+            } else {
+              stepDate = new Date()
+            }
+
+            return {
+              ...step,
+              status: 'completed' as const,
+              date: stepDate,
+              files: (step.files || []).map(file => ({
+                ...file,
+                uploadedAt:
+                  file.uploadedAt instanceof Date
+                    ? file.uploadedAt
+                    : new Date(file.uploadedAt),
+              })),
+            }
+          }),
+          notes: v.notes || '',
+          nextStep: v.nextStep || '',
+          fluidLevels: v.fluidLevels || undefined,
+        }
+      })
+
+      console.log('✅ fetchVehicles: Vehículos mapeados correctamente')
+      console.log('📊 Primer vehículo mapeado:', {
+        plateNumber: mapped[0]?.plateNumber,
+        fluidLevels: mapped[0]?.fluidLevels,
+      })
+
       setVehiclesInTracking(mapped)
     } catch (error) {
-      console.error('Error fetching vehicles:', error)
+      console.error('❌ fetchVehicles: Error:', error)
       showMessage('Error al cargar vehículos')
+    }
+  }
+
+  const refreshSelectedVehicle = async () => {
+    if (!selectedVehicle) {
+      console.log('⚠️ refreshSelectedVehicle: No hay vehículo seleccionado')
+      return
+    }
+
+    console.log(
+      '🔄 refreshSelectedVehicle: Refrescando vehículo:',
+      selectedVehicle
+    )
+
+    try {
+      // Solo obtener el vehículo seleccionado de Firebase
+      const vehicleData = await getVehicleByPlate(selectedVehicle)
+
+      console.log('📦 refreshSelectedVehicle: Datos recibidos de Firebase:', {
+        plateNumber: vehicleData?.plateNumber,
+        fluidLevels: vehicleData?.fluidLevels,
+      })
+
+      if (vehicleData) {
+        // Actualizar solo ese vehículo en el estado
+        setVehiclesInTracking(prev => {
+          const updated = prev.map(v => {
+            if (v.plateNumber === selectedVehicle) {
+              console.log(
+                '✅ refreshSelectedVehicle: Actualizando vehículo en lista'
+              )
+              console.log('📊 Nuevos fluidLevels:', vehicleData.fluidLevels)
+
+              // Asegurarse de que fluidLevels tenga valores por defecto si no están presentes
+              const updatedFluidLevels = vehicleData.fluidLevels || {
+                aceite: 0,
+                agua: 0,
+                frenos: 0
+              };
+
+              console.log('🔄 Actualizando vehículo con fluidLevels:', updatedFluidLevels);
+
+              return {
+                ...v,
+                ...(vehicleData.fluidLevels && { fluidLevels: updatedFluidLevels }), // Solo actualizar si existe
+                // Mantener otros datos actualizados también
+                steps: (vehicleData.steps || []).map(step => {
+                  let stepDate: Date
+                  const dateValue = step.date
+
+                  if (dateValue instanceof Date) {
+                    stepDate = dateValue
+                  } else if (
+                    dateValue &&
+                    typeof dateValue === 'object' &&
+                    'seconds' in dateValue
+                  ) {
+                    const timestamp = dateValue as FirestoreTimestamp
+                    stepDate = new Date(timestamp.seconds * 1000)
+                  } else {
+                    stepDate = new Date()
+                  }
+
+                  return {
+                    ...step,
+                    status: 'completed' as const,
+                    date: stepDate,
+                    files: (step.files || []).map(file => ({
+                      ...file,
+                      uploadedAt:
+                        file.uploadedAt instanceof Date
+                          ? file.uploadedAt
+                          : new Date(file.uploadedAt),
+                    })),
+                  }
+                }),
+                notes: vehicleData.notes || v.notes,
+                nextStep: vehicleData.nextStep || v.nextStep,
+              }
+            }
+            return v
+          })
+
+          console.log(
+            '📊 Estado actualizado, vehículo seleccionado ahora tiene:',
+            {
+              fluidLevels: updated.find(v => v.plateNumber === selectedVehicle)
+                ?.fluidLevels,
+            }
+          )
+
+          return updated
+        })
+      } else {
+        console.log(
+          '⚠️ refreshSelectedVehicle: No se encontró el vehículo en Firebase'
+        )
+      }
+    } catch (error) {
+      console.error('❌ refreshSelectedVehicle: Error:', error)
     }
   }
 
@@ -684,6 +805,7 @@ export default function VehicleConfig() {
                   'Servicio finalizado. Vehículo movido al historial.'
                 )
               }}
+              onVehicleUpdated={refreshSelectedVehicle}
             />
           )}
         </AnimatePresence>

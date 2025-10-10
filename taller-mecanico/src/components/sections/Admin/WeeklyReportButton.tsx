@@ -109,8 +109,10 @@ export default function WeeklyReportButton({
         }
       })
 
-      // COMBINAR ambos arrays para tener TODOS los ingresos de la semana
-      const vehiclesIn = [...vehiclesInFromVehicles, ...vehiclesInFromTimeline]
+      // COMBINAR ambos arrays para tener TODOS los ingresos de la semana y ordenar por fecha de ingreso (más antiguo primero)
+      const vehiclesIn = [...vehiclesInFromVehicles, ...vehiclesInFromTimeline].sort((a, b) => 
+        a.entryDate.getTime() - b.entryDate.getTime()
+      )
 
       // 2️⃣ VEHÍCULOS ENTREGADOS EN LA SEMANA (de 'timeline')
       const vehiclesOutQuery = query(
@@ -121,7 +123,9 @@ export default function WeeklyReportButton({
       )
 
       const vehiclesOutSnapshot = await getDocs(vehiclesOutQuery)
-      const vehiclesOut = vehiclesOutSnapshot.docs.map(doc => {
+      // Ordenar vehículos entregados por fecha de finalización (más antiguo primero)
+      const vehiclesOut = vehiclesOutSnapshot.docs
+        .map(doc => {
         const data = doc.data()
         return {
           plateNumber: data.plateNumber || 'Sin patente',
@@ -140,8 +144,10 @@ export default function WeeklyReportButton({
           km: data.km,
         }
       })
+        .sort((a, b) => a.finalizedAt.getTime() - b.finalizedAt.getTime())
 
       // 3️⃣ VEHÍCULOS ACTUALMENTE EN EL TALLER (todos de 'vehicles' sin filtro de fecha)
+      // Ordenar por fecha de ingreso (más antiguo primero)
       const allVehiclesInWorkshopQuery = query(
         collection(db, 'vehicles'),
         orderBy('createdAt', 'desc')

@@ -145,10 +145,10 @@ export interface VehicleStep {
 
 export interface VehicleInput {
   plateNumber: string
-  clientName: string
   brand?: string
   model?: string
   year?: number
+  clientName: string
   clientPhone?: string
   serviceType?: string
   chassisNumber?: string
@@ -158,6 +158,20 @@ export interface VehicleInput {
   notes?: string
   nextStep?: string
   steps?: VehicleStep[]
+  status?:
+    | 'received'
+    | 'in-diagnosis'
+    | 'in-repair'
+    | 'completed'
+    | 'delivered'
+    | 'finalized'
+  updatedAt?: Date
+  // NUEVO: Niveles de fluidos
+  fluidLevels?: {
+    aceite: number
+    agua: number
+    frenos: number
+  }
 }
 export interface TimelineItem {
   id: number

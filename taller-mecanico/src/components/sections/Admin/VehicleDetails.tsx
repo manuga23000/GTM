@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
+import { useState, useEffect } from 'react'
 import {
   doc,
   getFirestore,
@@ -14,6 +15,7 @@ import {
   DocumentData,
 } from 'firebase/firestore'
 import { app } from '@/lib/firebase'
+import FluidConfig from './FluidConfig'
 
 interface StepFile {
   id: string
@@ -65,6 +67,11 @@ interface VehicleInTracking {
   finalizedAt?: Date
   serviceNumber?: number
   originalEntryDate?: Date
+  fluidLevels?: {
+    aceite: number
+    agua: number
+    frenos: number
+  }
 }
 
 interface VehicleDetailsProps {
@@ -74,6 +81,7 @@ interface VehicleDetailsProps {
   onEditTracking: () => void
   onDeleteVehicle: () => void
   onVehicleFinalized: () => Promise<void>
+  onVehicleUpdated?: () => Promise<void>
 }
 
 const StepFileDisplay = ({ files }: { files: StepFile[] }) => {
@@ -231,20 +239,71 @@ export default function VehicleDetails({
   onEditTracking,
   onDeleteVehicle,
   onVehicleFinalized,
+  onVehicleUpdated,
 }: VehicleDetailsProps) {
-  const totalSteps = vehicle.steps.length
+  const [showFluidConfig, setShowFluidConfig] = useState(false)
+  const [localVehicle, setLocalVehicle] = useState(vehicle)
 
-  const totalFiles = vehicle.steps.reduce((acc, step) => {
+  // Actualizar el estado local cuando cambia el prop vehicle
+  useEffect(() => {
+    setLocalVehicle(vehicle)
+  }, [vehicle])
+
+  const totalSteps = localVehicle.steps.length
+
+  const totalFiles = localVehicle.steps.reduce((acc, step) => {
     return acc + (step.files?.length || 0)
   }, 0)
 
-  const totalImages = vehicle.steps.reduce((acc, step) => {
+  const totalImages = localVehicle.steps.reduce((acc, step) => {
     return acc + (step.files?.filter(f => f.type === 'image').length || 0)
   }, 0)
 
-  const totalVideos = vehicle.steps.reduce((acc, step) => {
+  const totalVideos = localVehicle.steps.reduce((acc, step) => {
     return acc + (step.files?.filter(f => f.type === 'video').length || 0)
   }, 0)
+
+  const handleSaveFluidLevels = async (levels: {
+    aceite: number
+    agua: number
+    frenos: number
+  }) => {
+    try {
+      console.log('🔵 Guardando niveles de fluidos:', levels)
+
+      // Guardar en Firebase usando updateVehicle
+      const { updateVehicle } = await import('@/actions/vehicle')
+      const result = await updateVehicle(vehicle.plateNumber, {
+        fluidLevels: levels,
+      })
+
+      if (result.success) {
+        console.log('🟢 Guardado exitoso en Firebase')
+
+        // Actualizar el estado local inmediatamente
+        setLocalVehicle(prev => ({
+          ...prev,
+          fluidLevels: levels,
+        }))
+
+        alert(
+          `Niveles guardados exitosamente:\nAceite: ${levels.aceite}%\nAgua: ${levels.agua}%\nFreno: ${levels.frenos}%`
+        )
+        setShowFluidConfig(false)
+
+        // Llamar al callback para actualizar solo este vehículo
+        if (onVehicleUpdated) {
+          console.log('🟡 Actualizando vehículo en lista...')
+          await onVehicleUpdated()
+        }
+      } else {
+        throw new Error(result.message || 'Error al guardar')
+      }
+    } catch (error) {
+      console.error('🔴 Error guardando niveles:', error)
+      alert('Error al guardar los niveles de fluidos')
+    }
+  }
 
   return (
     <motion.div
@@ -257,7 +316,8 @@ export default function VehicleDetails({
         <div className='flex-1 w-full sm:w-auto'>
           <div className='flex justify-between items-start sm:block'>
             <h3 className='text-lg sm:text-2xl font-bold text-white mb-1 sm:mb-3'>
-              {vehicle.plateNumber} - {vehicle.brand} {vehicle.model}
+              {localVehicle.plateNumber} - {localVehicle.brand}{' '}
+              {localVehicle.model}
             </h3>
             <button
               onClick={onClose}
@@ -272,35 +332,37 @@ export default function VehicleDetails({
             <div className='bg-gray-700 p-2 sm:p-3 rounded-lg'>
               <span className='text-gray-400 block'>Cliente:</span>
               <span className='text-white font-medium'>
-                {vehicle.clientName}
+                {localVehicle.clientName}
               </span>
             </div>
             <div className='bg-gray-700 p-2 sm:p-3 rounded-lg'>
               <span className='text-gray-400 block'>Teléfono:</span>
               <span className='text-white font-medium'>
-                {vehicle.clientPhone || 'No registrado'}
+                {localVehicle.clientPhone || 'No registrado'}
               </span>
             </div>
             <div className='bg-gray-700 p-2 sm:p-3 rounded-lg'>
               <span className='text-gray-400 block'>Servicio:</span>
               <span className='text-white font-medium'>
-                {vehicle.serviceType || 'No especificado'}
+                {localVehicle.serviceType || 'No especificado'}
               </span>
             </div>
             <div className='bg-gray-700 p-2 sm:p-3 rounded-lg'>
               <span className='text-gray-400 block'>Año:</span>
-              <span className='text-white font-medium'>{vehicle.year}</span>
+              <span className='text-white font-medium'>
+                {localVehicle.year}
+              </span>
             </div>
             <div className='bg-gray-700 p-2 sm:p-3 rounded-lg'>
               <span className='text-gray-400 block'>Chasis:</span>
               <span className='text-white font-medium'>
-                {vehicle.chassisNumber || 'No registrado'}
+                {localVehicle.chassisNumber || 'No registrado'}
               </span>
             </div>
             <div className='bg-gray-700 p-2 sm:p-3 rounded-lg'>
               <span className='text-gray-400 block'>KM:</span>
               <span className='text-white font-medium'>
-                {vehicle.km?.toLocaleString() || '0'}KM
+                {localVehicle.km?.toLocaleString() || '0'}KM
               </span>
             </div>
           </div>
@@ -309,14 +371,16 @@ export default function VehicleDetails({
             <div className='bg-blue-900/30 p-2 sm:p-3 rounded-lg border border-blue-500/30'>
               <span className='text-blue-300 block'>Fecha de Ingreso:</span>
               <span className='text-white font-medium'>
-                {vehicle.entryDate.toLocaleDateString('es-AR')}
+                {localVehicle.entryDate.toLocaleDateString('es-AR')}
               </span>
             </div>
             <div className='bg-purple-900/30 p-2 sm:p-3 rounded-lg border border-purple-500/30'>
               <span className='text-purple-300 block'>Entrega Estimada:</span>
               <span className='text-white font-medium'>
-                {vehicle.estimatedCompletionDate
-                  ? vehicle.estimatedCompletionDate.toLocaleDateString('es-AR')
+                {localVehicle.estimatedCompletionDate
+                  ? localVehicle.estimatedCompletionDate.toLocaleDateString(
+                      'es-AR'
+                    )
                   : 'No definida'}
               </span>
             </div>
@@ -373,6 +437,12 @@ export default function VehicleDetails({
               className='px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap'
             >
               📋 Seguimiento
+            </button>
+            <button
+              onClick={() => setShowFluidConfig(!showFluidConfig)}
+              className='px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap'
+            >
+              🛢️ Configurar Fluidos
             </button>
             <button
               onClick={onDeleteVehicle}
@@ -469,13 +539,34 @@ export default function VehicleDetails({
                   }
                 }
               }}
-              className='px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors'
+              className='px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs sm:text-sm font-medium transition-colors'
             >
               ✅ Finalizar Servicio
             </button>
           </div>
         </div>
       </div>
+
+      {/* Componente FluidConfig */}
+      <AnimatePresence>
+        {showFluidConfig && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className='mb-6'
+          >
+            <FluidConfig
+              initialLevels={{
+                aceite: localVehicle.fluidLevels?.aceite || 100,
+                agua: localVehicle.fluidLevels?.agua || 100,
+                frenos: localVehicle.fluidLevels?.frenos || 100,
+              }}
+              onSave={handleSaveFluidLevels}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className='border-t border-gray-700 pt-4 sm:pt-6'>
         <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 sm:mb-4 gap-2'>
@@ -496,7 +587,7 @@ export default function VehicleDetails({
               🔧 Lista de Trabajos
             </h5>
 
-            {vehicle.steps.length === 0 ? (
+            {localVehicle.steps.length === 0 ? (
               <div className='text-center py-6 sm:py-8 bg-gray-800 rounded border-2 border-dashed border-gray-600'>
                 <p className='text-gray-400 mb-2'>📋</p>
                 <p className='text-gray-400 text-xs sm:text-sm'>
@@ -508,7 +599,7 @@ export default function VehicleDetails({
               </div>
             ) : (
               <div className='space-y-2 sm:space-y-3 max-h-64 sm:max-h-80 overflow-y-auto'>
-                {vehicle.steps
+                {localVehicle.steps
                   .sort((a, b) => {
                     const dateA = a.date instanceof Date ? a.date : new Date()
                     const dateB = b.date instanceof Date ? b.date : new Date()
@@ -575,8 +666,8 @@ export default function VehicleDetails({
                 🕒 Fecha Estimada de Finalización
               </h5>
               <div className='text-white font-medium text-xs sm:text-base'>
-                {vehicle.estimatedCompletionDate
-                  ? vehicle.estimatedCompletionDate.toLocaleDateString(
+                {localVehicle.estimatedCompletionDate
+                  ? localVehicle.estimatedCompletionDate.toLocaleDateString(
                       'es-AR',
                       {
                         weekday: 'long',
@@ -594,8 +685,8 @@ export default function VehicleDetails({
                 <span>🔜</span> Próximo paso
               </h5>
               <div className='text-blue-900 font-medium text-xs sm:text-base min-h-[1.5em]'>
-                {vehicle.nextStep && vehicle.nextStep.trim() ? (
-                  vehicle.nextStep
+                {localVehicle.nextStep && localVehicle.nextStep.trim() ? (
+                  localVehicle.nextStep
                 ) : (
                   <span className='text-blue-400 italic'>No definido</span>
                 )}
@@ -614,13 +705,13 @@ export default function VehicleDetails({
           </div>
         </div>
 
-        {vehicle.notes && vehicle.notes.trim() && (
+        {localVehicle.notes && localVehicle.notes.trim() && (
           <div className='mt-4 sm:mt-6 p-3 sm:p-4 bg-blue-900/20 rounded-lg border border-blue-500/30'>
             <h5 className='text-blue-300 font-medium mb-2 text-xs sm:text-sm'>
               📄 Notas Adicionales
             </h5>
             <div className='text-blue-100 text-xs sm:text-sm whitespace-pre-wrap'>
-              {vehicle.notes}
+              {localVehicle.notes}
             </div>
           </div>
         )}

@@ -67,6 +67,12 @@ interface RawFirestoreVehicle {
   notes?: string
   nextStep?: string
   steps?: RawFirestoreStep[] | Record<string, RawFirestoreStep>
+  // ✅ AGREGAR ESTA LÍNEA:
+  fluidLevels?: {
+    aceite: number
+    agua: number
+    frenos: number
+  }
 }
 
 type ValidationObject = Record<string, unknown> | unknown[] | unknown
@@ -182,14 +188,17 @@ export function filterUndefinedValues(
       continue
     }
     // Para estimatedCompletionDate y otros campos de fecha, dejar pasar null
-    if (value === null &&
-      (key === 'estimatedCompletionDate' || key === 'createdAt' || key === 'updatedAt')
+    if (
+      value === null &&
+      (key === 'estimatedCompletionDate' ||
+        key === 'createdAt' ||
+        key === 'updatedAt')
     ) {
-      filtered[key] = null;
-      continue;
+      filtered[key] = null
+      continue
     }
     if (value === null) {
-      continue;
+      continue
     }
 
     if (Array.isArray(value)) {
@@ -382,6 +391,7 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
                     : undefined,
               }))
             : [],
+          fluidLevels: (data as any).fluidLevels || undefined,
         }))
       : [],
   }

@@ -9,6 +9,7 @@ import {
 } from 'react-icons/fa'
 import { TrabajoRealizado } from '@/actions/seguimiento'
 import FileViewer from './FileViewer'
+import FluidLevels from './FluidLevels'
 
 interface EstadoActualProps {
   data: {
@@ -18,6 +19,12 @@ interface EstadoActualProps {
     trabajosRealizados: TrabajoRealizado[]
     updatedAt?: string
     tipoServicio?: string
+    // Niveles de fluidos
+    fluidLevels?: {
+      aceite: number
+      agua: number
+      frenos: number
+    }
   }
 }
 
@@ -250,6 +257,42 @@ export default function EstadoActual({ data }: EstadoActualProps) {
                   Fecha estimada de finalización
                 </div>
               </motion.div>
+
+              {/* Botón para ir a Control de Fluidos */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  const element = document.getElementById('control-fluidos')
+                  if (element) {
+                    const offset = 80 // offset para header si lo hay
+                    const elementPosition = element.getBoundingClientRect().top
+                    const offsetPosition =
+                      elementPosition + window.pageYOffset - offset
+
+                    window.scrollTo({
+                      top: offsetPosition,
+                      behavior: 'smooth',
+                    })
+                  }
+                }}
+                className='w-full mt-4 bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold text-sm sm:text-base shadow-md transition-colors duration-200 flex items-center justify-center gap-2'
+              >
+                <svg
+                  className='w-5 h-5'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth='2'
+                    d='M19 14l-7 7m0 0l-7-7m7 7V3'
+                  />
+                </svg>
+                Ver Control de Fluidos
+              </motion.button>
             </div>
           </motion.div>
         </div>
@@ -269,6 +312,17 @@ export default function EstadoActual({ data }: EstadoActualProps) {
           </p>
         </motion.div>
       </div>
+
+      {/* Componente FluidLevels como sección separada */}
+      {data.fluidLevels && (
+        <div id='control-fluidos' className='px-4 sm:px-6 pb-4 sm:pb-6'>
+          <FluidLevels
+            aceite={data.fluidLevels.aceite}
+            agua={data.fluidLevels.agua}
+            frenos={data.fluidLevels.frenos}
+          />
+        </div>
+      )}
     </motion.section>
   )
 }

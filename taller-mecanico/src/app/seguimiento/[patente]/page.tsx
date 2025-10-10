@@ -304,6 +304,8 @@ export default function SeguimientoPage() {
                 trabajosRealizados: seguimientoData.trabajosRealizados || [],
                 updatedAt: seguimientoData.updatedAt,
                 tipoServicio: seguimientoData.tipoServicio,
+                // NUEVO: Agregar fluidLevels
+                fluidLevels: seguimientoData.fluidLevels,
               }}
             />
           )}

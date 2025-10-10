@@ -87,7 +87,7 @@ export interface SeguimientoData {
   año: string
   cliente: string
   fechaIngreso: string
-  estadoActual?: string
+  estadoActual: string
   telefono?: string
   tipoServicio?: string
   trabajosRealizados?: TrabajoRealizado[]
@@ -99,6 +99,12 @@ export interface SeguimientoData {
   serviceNumber?: number
   fechaFinalizado?: string
   km?: number
+  // NUEVO: Niveles de fluidos
+  fluidLevels?: {
+    aceite: number
+    agua: number
+    frenos: number
+  }
 }
 
 /**
@@ -205,44 +211,20 @@ export async function getSeguimientoByPatente(
       patente: data.plateNumber || patenteNormalizada,
       modelo: data.model || 'No especificado',
       marca: data.brand || 'No especificada',
-      año: data.year ? String(data.year) : 'No especificado',
+      año: data.year?.toString() || 'No especificado',
       cliente: data.clientName || 'Cliente',
-      fechaIngreso: formatearFecha(data.createdAt),
-      estadoActual: data.status || 'received',
-      telefono: data.clientPhone || '',
-      tipoServicio: data.serviceType || 'Reparación general',
+      fechaIngreso: formatearFecha(data.entryDate || data.createdAt),
+      estadoActual: data.status || 'En proceso',
+      telefono: data.clientPhone,
+      tipoServicio: data.serviceType || 'Servicio general',
       trabajosRealizados: Array.isArray(data.steps)
         ? mapearTrabajosRealizados(data.steps as FirestoreStep[])
-        : data.trabajosRealizados || [],
-      proximoPaso: data.nextStep || data.proximoPaso || '',
+        : [],
+      proximoPaso: data.nextStep || 'Sin definir',
       fechaEstimadaEntrega: data.estimatedCompletionDate
         ? formatearFecha(data.estimatedCompletionDate)
-        : data.fechaEstimadaEntrega
-        ? formatearFecha(data.fechaEstimadaEntrega)
         : '',
-
-      updatedAt: (() => {
-        const updateField = data.updatedAt || data.createdAt
-
-        if (!updateField) {
-          return new Date().toISOString()
-        }
-
-        if (isFirestoreTimestamp(updateField)) {
-          return updateField.toDate().toISOString()
-        }
-
-        if (typeof updateField === 'string') {
-          return new Date(updateField).toISOString()
-        }
-
-        if (updateField instanceof Date) {
-          return updateField.toISOString()
-        }
-
-        return new Date().toISOString()
-      })(),
-
+      updatedAt: formatearFecha(data.updatedAt || data.createdAt),
       timeline: Array.isArray(data.steps)
         ? (data.steps as FirestoreStep[]).map(
             (step: FirestoreStep, idx: number) => ({
@@ -283,6 +265,8 @@ export async function getSeguimientoByPatente(
         : data.timeline || [],
       imagenes: data.imagenes || [],
       km: data.km,
+      // NUEVO: Agregar niveles de fluidos si existen
+      fluidLevels: data.fluidLevels || undefined,
     }
 
     return seguimientoData
@@ -432,6 +416,8 @@ export async function buscarHistorialCompleto(
         serviceNumber: data.serviceNumber || 1,
         fechaFinalizado: formatearFecha(data.finalizedAt),
         km: data.km,
+        // NUEVO: Agregar niveles de fluidos si existen
+        fluidLevels: data.fluidLevels || undefined,
       }
 
       historial.push(servicioHistorico)

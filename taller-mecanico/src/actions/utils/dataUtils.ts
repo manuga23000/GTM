@@ -272,6 +272,11 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
       : null,
     notes: data.notes || '',
     nextStep: data.nextStep || '',
+    fluidLevels: data.fluidLevels ? {
+      aceite: Number(data.fluidLevels.aceite) || 0,
+      agua: Number(data.fluidLevels.agua) || 0,
+      frenos: Number(data.fluidLevels.frenos) || 0
+    } : undefined,
     steps: Array.isArray(data.steps)
       ? data.steps.map((step: RawFirestoreStep) => ({
           id: typeof step.id === 'string' ? step.id : '',

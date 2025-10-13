@@ -42,8 +42,8 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
   try {
     const logoPath = '/logo.png'
     doc.addImage(logoPath, 'PNG', 15, 10, 30, 30)
-  } catch {
-    console.log('Logo no encontrado en /public/logo.png')
+  } catch (error) {
+    // Logo no encontrado, continuar sin él
   }
 
   doc.setTextColor(255, 255, 255)

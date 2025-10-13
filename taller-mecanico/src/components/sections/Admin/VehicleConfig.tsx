@@ -73,19 +73,11 @@ export default function VehicleConfig() {
 
   const fetchVehicles = async () => {
     try {
-      console.log('🔍 fetchVehicles: Obteniendo vehículos de Firebase...')
       const backendVehicles = await getAllVehicles()
-      console.log(
-        '📦 fetchVehicles: Datos recibidos de Firebase:',
-        backendVehicles.length,
-        'vehículos'
-      )
+      
+
 
       const mapped = backendVehicles.map(v => {
-        console.log(`🚗 Procesando vehículo ${v.plateNumber}:`, {
-          fluidLevels: v.fluidLevels,
-        })
-
         return {
           id: v.plateNumber,
           plateNumber: v.plateNumber,
@@ -138,12 +130,6 @@ export default function VehicleConfig() {
         }
       })
 
-      console.log('✅ fetchVehicles: Vehículos mapeados correctamente')
-      console.log('📊 Primer vehículo mapeado:', {
-        plateNumber: mapped[0]?.plateNumber,
-        fluidLevels: mapped[0]?.fluidLevels,
-      })
-
       setVehiclesInTracking(mapped)
     } catch (error) {
       console.error('❌ fetchVehicles: Error:', error)
@@ -153,46 +139,23 @@ export default function VehicleConfig() {
 
   const refreshSelectedVehicle = async () => {
     if (!selectedVehicle) {
-      console.log('⚠️ refreshSelectedVehicle: No hay vehículo seleccionado')
       return
     }
 
-    console.log(
-      '🔄 refreshSelectedVehicle: Refrescando vehículo:',
-      selectedVehicle
-    )
-
     try {
-      // Solo obtener el vehículo seleccionado de Firebase
       const vehicleData = await getVehicleByPlate(selectedVehicle)
-
-      console.log('📦 refreshSelectedVehicle: Datos recibidos de Firebase:', {
-        plateNumber: vehicleData?.plateNumber,
-        fluidLevels: vehicleData?.fluidLevels,
-      })
 
       if (vehicleData) {
         // Actualizar solo ese vehículo en el estado
         setVehiclesInTracking(prev => {
           const updated = prev.map(v => {
             if (v.plateNumber === selectedVehicle) {
-              console.log(
-                '✅ refreshSelectedVehicle: Actualizando vehículo en lista'
-              )
-              console.log('📊 Nuevos fluidLevels:', vehicleData.fluidLevels)
 
-              // Asegurarse de que fluidLevels tenga valores por defecto si no están presentes
-              const updatedFluidLevels = vehicleData.fluidLevels || {
-                aceite: 0,
-                agua: 0,
-                frenos: 0
-              };
-
-              console.log('🔄 Actualizando vehículo con fluidLevels:', updatedFluidLevels);
 
               return {
                 ...v,
-                ...(vehicleData.fluidLevels && { fluidLevels: updatedFluidLevels }), // Solo actualizar si existe
+                // Preservar fluidLevels existentes si no vienen en vehicleData
+                fluidLevels: vehicleData.fluidLevels !== undefined ? vehicleData.fluidLevels : v.fluidLevels,
                 // Mantener otros datos actualizados también
                 steps: (vehicleData.steps || []).map(step => {
                   let stepDate: Date
@@ -231,23 +194,16 @@ export default function VehicleConfig() {
             return v
           })
 
-          console.log(
-            '📊 Estado actualizado, vehículo seleccionado ahora tiene:',
-            {
-              fluidLevels: updated.find(v => v.plateNumber === selectedVehicle)
-                ?.fluidLevels,
-            }
+          const updatedVehicle = updated.find(
+            v => v.plateNumber === selectedVehicle
           )
+
 
           return updated
         })
-      } else {
-        console.log(
-          '⚠️ refreshSelectedVehicle: No se encontró el vehículo en Firebase'
-        )
       }
     } catch (error) {
-      console.error('❌ refreshSelectedVehicle: Error:', error)
+      console.error('❌ Error refrescando vehículo:', error)
     }
   }
 
@@ -399,6 +355,7 @@ export default function VehicleConfig() {
 
       if (plateChanged) {
         // 🔄 Si cambió la patente: ELIMINAR viejo documento y CREAR uno nuevo
+        // ✅ LOG 2: Cambio de patente detectado
         console.log(
           `🔄 Cambiando patente de ${originalPlateNumber} a ${newPlateNormalized}`
         )
@@ -451,7 +408,6 @@ export default function VehicleConfig() {
         )
       } else {
         // ✏️ Si NO cambió la patente: solo actualizar normalmente
-        console.log(`✏️ Actualizando datos del vehículo ${newPlateNormalized}`)
 
         const response = await updateVehicle(originalPlateNumber, {
           plateNumber: newPlateNormalized,

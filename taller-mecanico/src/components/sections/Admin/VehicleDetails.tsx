@@ -269,7 +269,7 @@ export default function VehicleDetails({
     frenos: number
   }) => {
     try {
-      console.log('🔵 Guardando niveles de fluidos:', levels)
+
 
       // Guardar en Firebase usando updateVehicle
       const { updateVehicle } = await import('@/actions/vehicle')
@@ -278,29 +278,24 @@ export default function VehicleDetails({
       })
 
       if (result.success) {
-        console.log('🟢 Guardado exitoso en Firebase')
-
-        // Actualizar el estado local inmediatamente
         setLocalVehicle(prev => ({
           ...prev,
           fluidLevels: levels,
         }))
 
+        if (onVehicleUpdated) {
+          await onVehicleUpdated()
+        }
+
         alert(
           `Niveles guardados exitosamente:\nAceite: ${levels.aceite}%\nAgua: ${levels.agua}%\nFreno: ${levels.frenos}%`
         )
         setShowFluidConfig(false)
-
-        // Llamar al callback para actualizar solo este vehículo
-        if (onVehicleUpdated) {
-          console.log('🟡 Actualizando vehículo en lista...')
-          await onVehicleUpdated()
-        }
       } else {
         throw new Error(result.message || 'Error al guardar')
       }
     } catch (error) {
-      console.error('🔴 Error guardando niveles:', error)
+      console.error('Error guardando niveles:', error)
       alert('Error al guardar los niveles de fluidos')
     }
   }
@@ -556,14 +551,20 @@ export default function VehicleDetails({
             exit={{ opacity: 0, height: 0 }}
             className='mb-6'
           >
-            <FluidConfig
-              initialLevels={{
+            {(() => {
+              const levels = {
                 aceite: localVehicle.fluidLevels?.aceite || 100,
                 agua: localVehicle.fluidLevels?.agua || 100,
                 frenos: localVehicle.fluidLevels?.frenos || 100,
-              }}
-              onSave={handleSaveFluidLevels}
-            />
+              }
+
+              return (
+                <FluidConfig
+                  initialLevels={levels}
+                  onSave={handleSaveFluidLevels}
+                />
+              )
+            })()}
           </motion.div>
         )}
       </AnimatePresence>

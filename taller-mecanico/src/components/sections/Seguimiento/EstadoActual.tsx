@@ -312,17 +312,6 @@ export default function EstadoActual({ data }: EstadoActualProps) {
           </p>
         </motion.div>
       </div>
-
-      {/* Componente FluidLevels como sección separada */}
-      {data.fluidLevels && (
-        <div id='control-fluidos' className='px-4 sm:px-6 pb-4 sm:pb-6'>
-          <FluidLevels
-            aceite={data.fluidLevels.aceite}
-            agua={data.fluidLevels.agua}
-            frenos={data.fluidLevels.frenos}
-          />
-        </div>
-      )}
     </motion.section>
   )
 }

@@ -396,7 +396,11 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
                     : undefined,
               }))
             : [],
-          fluidLevels: (data as any).fluidLevels || undefined,
+          fluidLevels: data.fluidLevels ? {
+            aceite: Number(data.fluidLevels.aceite) || 0,
+            agua: Number(data.fluidLevels.agua) || 0,
+            frenos: Number(data.fluidLevels.frenos) || 0
+          } : undefined,
         }))
       : [],
   }

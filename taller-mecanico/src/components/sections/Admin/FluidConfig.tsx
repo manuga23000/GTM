@@ -2,6 +2,11 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import Image from 'next/image'
+import {
+  createFluidChangeStep,
+  createInitialFluidInspection,
+  hasFluidChanges,
+} from '@/actions/vehicle'
 
 interface FluidLevel {
   aceite: number
@@ -10,8 +15,10 @@ interface FluidLevel {
 }
 
 interface FluidConfigProps {
+  plateNumber: string // ✅ NUEVO: Necesario para crear steps
   initialLevels?: FluidLevel
-  onSave: (levels: FluidLevel) => void
+  isFirstTime?: boolean // ✅ NUEVO: Detectar si es primera configuración
+  onSave: (levels: FluidLevel) => Promise<void>
 }
 
 const FluidIndicatorEdit = ({
@@ -208,20 +215,40 @@ const FluidIndicatorEdit = ({
 }
 
 export default function FluidConfig({
+  plateNumber,
   initialLevels = { aceite: 100, agua: 100, frenos: 100 },
+  isFirstTime = false,
   onSave,
 }: FluidConfigProps) {
   const [levels, setLevels] = useState<FluidLevel>(initialLevels)
   const [isSaving, setIsSaving] = useState(false)
+  const [saveMessage, setSaveMessage] = useState<{
+    type: 'success' | 'error'
+    text: string
+  } | null>(null)
 
   const handleSave = async () => {
     setIsSaving(true)
+    setSaveMessage(null)
+
     try {
+      // 1. Solo guardar los niveles en el vehículo sin crear steps automáticos
       await onSave(levels)
-      // Aquí podrías mostrar un mensaje de éxito
+      
+      setSaveMessage({
+        type: 'success',
+        text: '✅ Niveles guardados correctamente',
+      })
+
+      // Limpiar mensaje después de 3 segundos
+      setTimeout(() => setSaveMessage(null), 3000)
     } catch (error) {
       console.error('Error al guardar niveles:', error)
-      // Aquí podrías mostrar un mensaje de error
+      setSaveMessage({
+        type: 'error',
+        text: '❌ Error al guardar los cambios',
+      })
+      setTimeout(() => setSaveMessage(null), 3000)
     } finally {
       setIsSaving(false)
     }
@@ -258,10 +285,14 @@ export default function FluidConfig({
           </div>
           <div>
             <h3 className='text-lg sm:text-xl font-semibold text-white'>
-              Configurar Niveles de Fluidos
+              {isFirstTime
+                ? '🔍 Inspección Inicial de Fluidos'
+                : '🔧 Actualizar Niveles de Fluidos'}
             </h3>
             <p className='text-xs text-gray-400 mt-1'>
-              Ajusta los niveles para este vehículo
+              {isFirstTime
+                ? 'Configura los niveles detectados al ingreso'
+                : 'Actualiza los niveles después del servicio'}
             </p>
           </div>
         </div>
@@ -296,6 +327,22 @@ export default function FluidConfig({
         />
       </div>
 
+      {/* Mensaje de guardado */}
+      {saveMessage && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          className={`mb-4 p-3 rounded-lg border ${
+            saveMessage.type === 'success'
+              ? 'bg-green-900/20 border-green-500/30 text-green-200'
+              : 'bg-red-900/20 border-red-500/30 text-red-200'
+          }`}
+        >
+          <p className='text-sm'>{saveMessage.text}</p>
+        </motion.div>
+      )}
+
       {/* Botones de acción */}
       <div className='flex flex-col sm:flex-row gap-3'>
         <motion.button
@@ -323,7 +370,7 @@ export default function FluidConfig({
           ) : (
             <>
               <span>💾</span>
-              <span>Guardar Cambios</span>
+              <span>Guardar y Registrar</span>
             </>
           )}
         </motion.button>
@@ -339,9 +386,9 @@ export default function FluidConfig({
         <p className='text-xs sm:text-sm text-yellow-200 flex items-start gap-2'>
           <span className='text-base'>💡</span>
           <span>
-            Los niveles configurados aquí se mostrarán al cliente en su panel de
-            seguimiento. Ajústalos según la inspección realizada durante el
-            servicio.
+            {isFirstTime
+              ? 'Al guardar, se creará automáticamente un registro de inspección inicial en el paso a paso del cliente.'
+              : 'Los cambios se registrarán automáticamente en el paso a paso, mostrando el antes y después de los niveles.'}
           </span>
         </p>
       </motion.div>

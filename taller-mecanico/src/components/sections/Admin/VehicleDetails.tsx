@@ -263,14 +263,13 @@ export default function VehicleDetails({
     return acc + (step.files?.filter(f => f.type === 'video').length || 0)
   }, 0)
 
+  // ✅ NUEVA: Función para guardar niveles de fluidos
   const handleSaveFluidLevels = async (levels: {
     aceite: number
     agua: number
     frenos: number
   }) => {
     try {
-
-
       // Guardar en Firebase usando updateVehicle
       const { updateVehicle } = await import('@/actions/vehicle')
       const result = await updateVehicle(vehicle.plateNumber, {
@@ -278,25 +277,24 @@ export default function VehicleDetails({
       })
 
       if (result.success) {
+        // Actualizar estado local
         setLocalVehicle(prev => ({
           ...prev,
           fluidLevels: levels,
         }))
 
+        // Refrescar la lista de vehículos si existe callback
         if (onVehicleUpdated) {
           await onVehicleUpdated()
         }
 
-        alert(
-          `Niveles guardados exitosamente:\nAceite: ${levels.aceite}%\nAgua: ${levels.agua}%\nFreno: ${levels.frenos}%`
-        )
-        setShowFluidConfig(false)
+        console.log('✅ Niveles guardados correctamente')
       } else {
         throw new Error(result.message || 'Error al guardar')
       }
     } catch (error) {
-      console.error('Error guardando niveles:', error)
-      alert('Error al guardar los niveles de fluidos')
+      console.error('❌ Error guardando niveles:', error)
+      throw error // Re-throw para que FluidConfig maneje el error
     }
   }
 
@@ -542,7 +540,7 @@ export default function VehicleDetails({
         </div>
       </div>
 
-      {/* Componente FluidConfig */}
+      {/* ✅ NUEVO: Componente FluidConfig con props actualizados */}
       <AnimatePresence>
         {showFluidConfig && (
           <motion.div
@@ -551,20 +549,18 @@ export default function VehicleDetails({
             exit={{ opacity: 0, height: 0 }}
             className='mb-6'
           >
-            {(() => {
-              const levels = {
-                aceite: localVehicle.fluidLevels?.aceite || 100,
-                agua: localVehicle.fluidLevels?.agua || 100,
-                frenos: localVehicle.fluidLevels?.frenos || 100,
+            <FluidConfig
+              plateNumber={localVehicle.plateNumber}
+              initialLevels={
+                localVehicle.fluidLevels || {
+                  aceite: 100,
+                  agua: 100,
+                  frenos: 100,
+                }
               }
-
-              return (
-                <FluidConfig
-                  initialLevels={levels}
-                  onSave={handleSaveFluidLevels}
-                />
-              )
-            })()}
+              isFirstTime={!localVehicle.fluidLevels}
+              onSave={handleSaveFluidLevels}
+            />
           </motion.div>
         )}
       </AnimatePresence>

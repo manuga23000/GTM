@@ -163,12 +163,14 @@ interface FluidLevelsProps {
   aceite?: number
   agua?: number
   frenos?: number
+  showInfoNote?: boolean // ✅ NUEVO: Prop para mostrar/ocultar el mensaje informativo
 }
 
 export default function FluidLevels({
   aceite = 100,
   agua = 100,
   frenos = 100,
+  showInfoNote = true, // ✅ Por defecto se muestra (para mantener compatibilidad)
 }: FluidLevelsProps) {
   return (
     <motion.div
@@ -221,21 +223,24 @@ export default function FluidLevels({
         />
       </div>
 
-      {/* Nota informativa */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2 }}
-        className='mt-6 bg-blue-50 p-3 rounded-lg border border-blue-200'
-      >
-        <p className='text-xs sm:text-sm text-blue-800 flex items-start gap-2'>
-          <span className='text-base'>ℹ️</span>
-          <span>
-            Los niveles de fluidos son verificados durante el servicio. Si algún
-            nivel está bajo, nuestro equipo lo completará o te notificará.
-          </span>
-        </p>
-      </motion.div>
+      {/* ✅ Nota informativa - Solo se muestra si showInfoNote es true */}
+      {showInfoNote && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2 }}
+          className='mt-6 bg-blue-50 p-3 rounded-lg border border-blue-200'
+        >
+          <p className='text-xs sm:text-sm text-blue-800 flex items-start gap-2'>
+            <span className='text-base'>ℹ️</span>
+            <span>
+              Los niveles de fluidos son verificados durante el servicio. Si
+              algún nivel está bajo, nuestro equipo lo completará o te
+              notificará.
+            </span>
+          </p>
+        </motion.div>
+      )}
     </motion.div>
   )
 }

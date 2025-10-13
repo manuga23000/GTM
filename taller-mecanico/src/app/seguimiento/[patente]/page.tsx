@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import SeguimientoHeader from '@/components/sections/Seguimiento/SeguimientoHeader'
 import EstadoActual from '@/components/sections/Seguimiento/EstadoActual'
+import FluidLevels from '@/components/sections/Seguimiento/FluidLevels' // ✅ IMPORT
 import Navbar from '@/components/layout/Navbar'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import { SeguimientoData } from '@/actions/seguimiento'
@@ -294,22 +295,36 @@ export default function SeguimientoPage() {
           }}
         />
         <div className='max-w-5xl mx-auto px-4 pt-4 space-y-8'>
+          {/* SERVICIO ACTIVO */}
           {tieneServicioActivo && seguimientoData && (
-            <EstadoActual
-              data={{
-                estadoActual: seguimientoData.estadoActual || 'Sin estado',
-                proximoPaso: seguimientoData.proximoPaso || 'Sin información',
-                fechaEstimadaEntrega:
-                  seguimientoData.fechaEstimadaEntrega || '',
-                trabajosRealizados: seguimientoData.trabajosRealizados || [],
-                updatedAt: seguimientoData.updatedAt,
-                tipoServicio: seguimientoData.tipoServicio,
-                // NUEVO: Agregar fluidLevels
-                fluidLevels: seguimientoData.fluidLevels,
-              }}
-            />
+            <>
+              <EstadoActual
+                data={{
+                  estadoActual: seguimientoData.estadoActual || 'Sin estado',
+                  proximoPaso: seguimientoData.proximoPaso || 'Sin información',
+                  fechaEstimadaEntrega:
+                    seguimientoData.fechaEstimadaEntrega || '',
+                  trabajosRealizados: seguimientoData.trabajosRealizados || [],
+                  updatedAt: seguimientoData.updatedAt,
+                  tipoServicio: seguimientoData.tipoServicio,
+                  fluidLevels: seguimientoData.fluidLevels,
+                }}
+              />
+
+              {/* Control de fluidos del servicio activo */}
+              {seguimientoData.fluidLevels && (
+                <div id='control-fluidos'>
+                  <FluidLevels
+                    aceite={seguimientoData.fluidLevels.aceite}
+                    agua={seguimientoData.fluidLevels.agua}
+                    frenos={seguimientoData.fluidLevels.frenos}
+                  />
+                </div>
+              )}
+            </>
           )}
 
+          {/* HISTORIAL DE SERVICIOS */}
           <div className='bg-white rounded-xl shadow-sm p-6'>
             <div className='flex items-center gap-3 mb-6'>
               <div className='p-2 bg-blue-50 rounded-lg'>
@@ -400,58 +415,78 @@ export default function SeguimientoPage() {
                       </div>
                     </div>
 
-                    {servicioExpandido === servicio.serviceNumber &&
-                      servicio.trabajosRealizados &&
-                      servicio.trabajosRealizados.length > 0 && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className='mt-4 border-t border-gray-200 pt-4'
-                        >
-                          <h5 className='font-medium text-gray-800 mb-4 flex items-center gap-2'>
-                            <span className='text-green-600'>🔧</span>
-                            Pasos realizados en este servicio
-                          </h5>
+                    {servicioExpandido === servicio.serviceNumber && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className='mt-4 border-t border-gray-200 pt-4 space-y-4'
+                      >
+                        {/* TRABAJOS REALIZADOS */}
+                        {servicio.trabajosRealizados &&
+                          servicio.trabajosRealizados.length > 0 && (
+                            <div>
+                              <h5 className='font-medium text-gray-800 mb-4 flex items-center gap-2'>
+                                <span className='text-green-600'>🔧</span>
+                                Pasos realizados en este servicio
+                              </h5>
 
-                          <div className='space-y-4'>
-                            {servicio.trabajosRealizados.map(
-                              (trabajo, trabajoIndex) => (
-                                <motion.div
-                                  key={trabajo.id}
-                                  initial={{ opacity: 0, x: -10 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: trabajoIndex * 0.1 }}
-                                  className='bg-white p-4 rounded-lg border border-gray-200 shadow-sm'
-                                >
-                                  <div className='flex items-center gap-2 mb-2'>
-                                    <span className='text-lg'>✅</span>
-                                    <h6 className='font-medium text-gray-900'>
-                                      {trabajo.titulo}
-                                    </h6>
-                                  </div>
-
-                                  {trabajo.descripcion && (
-                                    <p className='text-gray-600 text-sm mb-3 ml-7'>
-                                      {trabajo.descripcion}
-                                    </p>
-                                  )}
-
-                                  {trabajo.archivos &&
-                                    trabajo.archivos.length > 0 && (
-                                      <div className='ml-7'>
-                                        <FileViewer
-                                          archivos={trabajo.archivos}
-                                        />
+                              <div className='space-y-4'>
+                                {servicio.trabajosRealizados.map(
+                                  (trabajo, trabajoIndex) => (
+                                    <motion.div
+                                      key={trabajo.id}
+                                      initial={{ opacity: 0, x: -10 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                      transition={{ delay: trabajoIndex * 0.1 }}
+                                      className='bg-white p-4 rounded-lg border border-gray-200 shadow-sm'
+                                    >
+                                      <div className='flex items-center gap-2 mb-2'>
+                                        <span className='text-lg'>✅</span>
+                                        <h6 className='font-medium text-gray-900'>
+                                          {trabajo.titulo}
+                                        </h6>
                                       </div>
-                                    )}
-                                </motion.div>
-                              )
-                            )}
+
+                                      {trabajo.descripcion && (
+                                        <p className='text-gray-600 text-sm mb-3 ml-7 whitespace-pre-line'>
+                                          {trabajo.descripcion}
+                                        </p>
+                                      )}
+
+                                      {trabajo.archivos &&
+                                        trabajo.archivos.length > 0 && (
+                                          <div className='ml-7'>
+                                            <FileViewer
+                                              archivos={trabajo.archivos}
+                                            />
+                                          </div>
+                                        )}
+                                    </motion.div>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                        {/* ✅ NUEVO: CONTROL DE FLUIDOS DEL SERVICIO */}
+                        {servicio.fluidLevels && (
+                          <div className='mt-4'>
+                            <h5 className='font-medium text-gray-800 mb-4 flex items-center gap-2'>
+                              <span className='text-blue-600'>🧪</span>
+                              Estado de fluidos en este servicio
+                            </h5>
+                            <FluidLevels
+                              aceite={servicio.fluidLevels.aceite}
+                              agua={servicio.fluidLevels.agua}
+                              frenos={servicio.fluidLevels.frenos}
+                              showInfoNote={false}
+                            />
                           </div>
-                        </motion.div>
-                      )}
+                        )}
+                      </motion.div>
+                    )}
                   </motion.div>
                 ))}
               </div>

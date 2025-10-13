@@ -413,3 +413,197 @@ export async function getVehicleFileStats(plateNumber: string): Promise<{
     return null
   }
 }
+
+interface FluidLevel {
+  aceite: number
+  agua: number
+  frenos: number
+}
+
+/**
+ * Crea un step automático de inspección inicial de fluidos
+ * Se llama cuando configuras los fluidos por primera vez al recibir el vehículo
+ */
+export async function createInitialFluidInspection(
+  plateNumber: string,
+  fluidLevels: FluidLevel
+): Promise<AdminResponse> {
+  try {
+    // Detectar niveles bajos
+    const warnings: string[] = []
+    const aceiteStatus =
+      fluidLevels.aceite < 50
+        ? '(BAJO - Requiere atención)'
+        : fluidLevels.aceite < 80
+        ? '(MEDIO)'
+        : '(ÓPTIMO)'
+    const aguaStatus =
+      fluidLevels.agua < 50
+        ? '(BAJO - Requiere atención)'
+        : fluidLevels.agua < 80
+        ? '(MEDIO)'
+        : '(ÓPTIMO)'
+    const frenosStatus =
+      fluidLevels.frenos < 50
+        ? '(BAJO - Requiere atención)'
+        : fluidLevels.frenos < 80
+        ? '(MEDIO)'
+        : '(ÓPTIMO)'
+
+    if (fluidLevels.aceite < 50) warnings.push('Aceite')
+    if (fluidLevels.agua < 50) warnings.push('Refrigerante')
+    if (fluidLevels.frenos < 50) warnings.push('Líquido de frenos')
+
+    // Crear descripción del step
+    const description = `Inspección inicial de fluidos realizada al ingreso del vehículo.
+
+Estado detectado:
+🛢️ Aceite Motor: ${fluidLevels.aceite}% ${aceiteStatus}
+💧 Refrigerante: ${fluidLevels.agua}% ${aguaStatus}
+🔴 Líquido de Frenos: ${fluidLevels.frenos}% ${frenosStatus}
+
+${
+  warnings.length > 0
+    ? `⚠️ ATENCIÓN: Se detectaron niveles bajos en: ${warnings.join(
+        ', '
+      )}.\nSe recomienda completar o cambiar durante este servicio.`
+    : '✅ Todos los niveles de fluidos están en rangos aceptables.'
+}`
+
+    // Crear el step
+    return await addVehicleStep(plateNumber, {
+      title: '🔍 Inspección inicial de fluidos',
+      notes: description,
+      status: 'completed',
+      date: new Date(),
+    })
+  } catch (error) {
+    console.error('Error creando inspección inicial de fluidos:', error)
+    return {
+      success: false,
+      message: 'Error al crear inspección inicial',
+      error: 'INTERNAL_ERROR',
+    }
+  }
+}
+
+/**
+ * Crea un step automático cuando se actualizan los niveles de fluidos
+ * Documenta qué cambió y el estado anterior vs actual
+ */
+export async function createFluidChangeStep(
+  plateNumber: string,
+  previousLevels: FluidLevel,
+  newLevels: FluidLevel,
+  customNotes?: string
+): Promise<AdminResponse> {
+  try {
+    // Detectar qué fluidos cambiaron
+    const changes: string[] = []
+    const details: string[] = []
+
+    if (previousLevels.aceite !== newLevels.aceite) {
+      const diff = newLevels.aceite - previousLevels.aceite
+      if (diff > 0) {
+        changes.push('Aceite')
+        details.push(
+          `🛢️ Aceite: ${previousLevels.aceite}% → ${newLevels.aceite}% (+${diff}%)`
+        )
+      } else {
+        details.push(
+          `🛢️ Aceite: ${previousLevels.aceite}% → ${newLevels.aceite}% (${diff}%)`
+        )
+      }
+    }
+
+    if (previousLevels.agua !== newLevels.agua) {
+      const diff = newLevels.agua - previousLevels.agua
+      if (diff > 0) {
+        changes.push('Refrigerante')
+        details.push(
+          `💧 Refrigerante: ${previousLevels.agua}% → ${newLevels.agua}% (+${diff}%)`
+        )
+      } else {
+        details.push(
+          `💧 Refrigerante: ${previousLevels.agua}% → ${newLevels.agua}% (${diff}%)`
+        )
+      }
+    }
+
+    if (previousLevels.frenos !== newLevels.frenos) {
+      const diff = newLevels.frenos - previousLevels.frenos
+      if (diff > 0) {
+        changes.push('Líquido de frenos')
+        details.push(
+          `🔴 Líquido de Frenos: ${previousLevels.frenos}% → ${newLevels.frenos}% (+${diff}%)`
+        )
+      } else {
+        details.push(
+          `🔴 Líquido de Frenos: ${previousLevels.frenos}% → ${newLevels.frenos}% (${diff}%)`
+        )
+      }
+    }
+
+    // Si no hubo cambios, no crear step
+    if (changes.length === 0) {
+      return {
+        success: true,
+        message: 'No hay cambios en los niveles de fluidos',
+      }
+    }
+
+    // Crear título descriptivo
+    const title =
+      changes.length === 1
+        ? `✅ ${changes[0]} actualizado`
+        : `✅ Actualización de fluidos (${changes.length})`
+
+    // Crear descripción
+    const description = `${
+      customNotes || 'Se realizó actualización de niveles de fluidos.'
+    }
+
+Cambios realizados:
+${details.join('\n')}
+
+Estado final:
+🛢️ Aceite: ${newLevels.aceite}% ${
+      newLevels.aceite >= 80 ? '✅' : newLevels.aceite >= 50 ? '⚠️' : '❌'
+    }
+💧 Refrigerante: ${newLevels.agua}% ${
+      newLevels.agua >= 80 ? '✅' : newLevels.agua >= 50 ? '⚠️' : '❌'
+    }
+🔴 Líquido de Frenos: ${newLevels.frenos}% ${
+      newLevels.frenos >= 80 ? '✅' : newLevels.frenos >= 50 ? '⚠️' : '❌'
+    }`
+
+    // Crear el step
+    return await addVehicleStep(plateNumber, {
+      title,
+      notes: description,
+      status: 'completed',
+      date: new Date(),
+    })
+  } catch (error) {
+    console.error('Error creando step de cambio de fluidos:', error)
+    return {
+      success: false,
+      message: 'Error al crear registro de cambio de fluidos',
+      error: 'INTERNAL_ERROR',
+    }
+  }
+}
+
+/**
+ * Helper: Verifica si hubo cambios en los niveles
+ */
+export function hasFluidChanges(
+  previous: FluidLevel,
+  current: FluidLevel
+): boolean {
+  return (
+    previous.aceite !== current.aceite ||
+    previous.agua !== current.agua ||
+    previous.frenos !== current.frenos
+  )
+}

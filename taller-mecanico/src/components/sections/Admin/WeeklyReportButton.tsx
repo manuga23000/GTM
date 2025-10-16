@@ -110,9 +110,10 @@ export default function WeeklyReportButton({
       })
 
       // COMBINAR ambos arrays para tener TODOS los ingresos de la semana y ordenar por fecha de ingreso (más antiguo primero)
-      const vehiclesIn = [...vehiclesInFromVehicles, ...vehiclesInFromTimeline].sort((a, b) => 
-        a.entryDate.getTime() - b.entryDate.getTime()
-      )
+      const vehiclesIn = [
+        ...vehiclesInFromVehicles,
+        ...vehiclesInFromTimeline,
+      ].sort((a, b) => a.entryDate.getTime() - b.entryDate.getTime())
 
       // 2️⃣ VEHÍCULOS ENTREGADOS EN LA SEMANA (de 'timeline')
       const vehiclesOutQuery = query(
@@ -126,24 +127,24 @@ export default function WeeklyReportButton({
       // Ordenar vehículos entregados por fecha de finalización (más antiguo primero)
       const vehiclesOut = vehiclesOutSnapshot.docs
         .map(doc => {
-        const data = doc.data()
-        return {
-          plateNumber: data.plateNumber || 'Sin patente',
-          brand: data.brand || 'Sin marca',
-          model: data.model || 'Sin modelo',
-          year: data.year || new Date().getFullYear(),
-          clientName: data.clientName || 'Cliente',
-          clientPhone: data.clientPhone,
-          serviceType: data.serviceType,
-          entryDate:
-            data.entryDate?.toDate?.() ||
-            data.createdAt?.toDate?.() ||
-            new Date(),
-          finalizedAt: data.finalizedAt?.toDate?.() || new Date(),
-          status: 'Finalizado',
-          km: data.km,
-        }
-      })
+          const data = doc.data()
+          return {
+            plateNumber: data.plateNumber || 'Sin patente',
+            brand: data.brand || 'Sin marca',
+            model: data.model || 'Sin modelo',
+            year: data.year || new Date().getFullYear(),
+            clientName: data.clientName || 'Cliente',
+            clientPhone: data.clientPhone,
+            serviceType: data.serviceType,
+            entryDate:
+              data.entryDate?.toDate?.() ||
+              data.createdAt?.toDate?.() ||
+              new Date(),
+            finalizedAt: data.finalizedAt?.toDate?.() || new Date(),
+            status: 'Finalizado',
+            km: data.km,
+          }
+        })
         .sort((a, b) => a.finalizedAt.getTime() - b.finalizedAt.getTime())
 
       // 3️⃣ VEHÍCULOS ACTUALMENTE EN EL TALLER (todos de 'vehicles' sin filtro de fecha)
@@ -194,13 +195,13 @@ export default function WeeklyReportButton({
   }
 
   return (
-    <div className='relative'>
+    <div className='relative z-10'>
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => setShowOptions(!showOptions)}
+        onClick={() => generateReport('this-week')}
         disabled={isGenerating}
-        className='bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold shadow-lg transition-all duration-200 flex items-center gap-2 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed'
+        className='bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold shadow-lg transition-all duration-200 flex items-center gap-2 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap'
       >
         {isGenerating ? (
           <>
@@ -236,42 +237,10 @@ export default function WeeklyReportButton({
                 clipRule='evenodd'
               />
             </svg>
-            <span className='hidden sm:inline'>Generar Reporte PDF</span>
-            <span className='sm:hidden'>Reporte PDF</span>
+            <span>Generar reporte semanal</span>
           </>
         )}
       </motion.button>
-
-      {showOptions && !isGenerating && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          className='absolute top-full mt-2 right-0 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden z-50 min-w-[200px]'
-        >
-          <button
-            onClick={() => generateReport('last-week')}
-            className='w-full text-left px-4 py-3 hover:bg-gray-700 text-white transition-colors text-sm flex items-center gap-2'
-          >
-            <span>📅</span>
-            <div>
-              <div className='font-semibold'>Semana pasada</div>
-              <div className='text-xs text-gray-400'>Lun-Dom anterior</div>
-            </div>
-          </button>
-
-          <button
-            onClick={() => generateReport('this-week')}
-            className='w-full text-left px-4 py-3 hover:bg-gray-700 text-white transition-colors text-sm border-t border-gray-700 flex items-center gap-2'
-          >
-            <span>📆</span>
-            <div>
-              <div className='font-semibold'>Esta semana</div>
-              <div className='text-xs text-gray-400'>Lunes a hoy</div>
-            </div>
-          </button>
-        </motion.div>
-      )}
     </div>
   )
 }

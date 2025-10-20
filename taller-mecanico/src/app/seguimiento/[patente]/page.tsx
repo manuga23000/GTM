@@ -441,18 +441,19 @@ export default function SeguimientoPage() {
                                       transition={{ delay: trabajoIndex * 0.1 }}
                                       className='bg-white p-4 rounded-lg border border-gray-200 shadow-sm'
                                     >
-                                      <div className='flex items-center gap-2 mb-2'>
-                                        <FaCheckCircle className='text-green-500' />
-                                        <h6 className='font-medium text-gray-900'>
-                                          {trabajo.titulo}
-                                        </h6>
+                                      <div className='flex items-start gap-3 mb-2'>
+                                        <FaCheckCircle className='text-green-500 mt-1 flex-shrink-0' />
+                                        <div>
+                                          <h6 className='font-medium text-gray-900 text-base'>
+                                            {trabajo.titulo}
+                                          </h6>
+                                          {trabajo.descripcion && (
+                                            <p className='text-gray-700 text-base mt-1 whitespace-pre-line leading-relaxed'>
+                                              {trabajo.descripcion}
+                                            </p>
+                                          )}
+                                        </div>
                                       </div>
-
-                                      {trabajo.descripcion && (
-                                        <p className='text-gray-600 text-sm mb-3 ml-7 whitespace-pre-line'>
-                                          {trabajo.descripcion}
-                                        </p>
-                                      )}
 
                                       {trabajo.archivos &&
                                         trabajo.archivos.length > 0 && (

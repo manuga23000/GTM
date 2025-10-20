@@ -5,12 +5,10 @@ import { motion } from 'framer-motion'
 import { FaCheckCircle } from 'react-icons/fa'
 import SeguimientoHeader from '@/components/sections/Seguimiento/SeguimientoHeader'
 import EstadoActual from '@/components/sections/Seguimiento/EstadoActual'
-import FluidLevels from '@/components/sections/Seguimiento/FluidLevels' // ✅ IMPORT
+import FluidLevels from '@/components/sections/Seguimiento/FluidLevels'
 import Navbar from '@/components/layout/Navbar'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import { SeguimientoData } from '@/actions/seguimiento'
-import { getFirestore } from 'firebase/firestore'
-import { app } from '@/lib/firebase'
 import FileViewer from '@/components/sections/Seguimiento/FileViewer'
 
 export default function SeguimientoPage() {
@@ -471,7 +469,6 @@ export default function SeguimientoPage() {
                             </div>
                           )}
 
-                        {/* ✅ NUEVO: CONTROL DE FLUIDOS DEL SERVICIO */}
                         {servicio.fluidLevels && (
                           <div className='mt-4'>
                             <h5 className='font-medium text-gray-800 mb-4 flex items-center gap-2'>

@@ -2,6 +2,7 @@
 import { useParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { FaCheckCircle } from 'react-icons/fa'
 import SeguimientoHeader from '@/components/sections/Seguimiento/SeguimientoHeader'
 import EstadoActual from '@/components/sections/Seguimiento/EstadoActual'
 import FluidLevels from '@/components/sections/Seguimiento/FluidLevels' // ✅ IMPORT
@@ -369,7 +370,7 @@ export default function SeguimientoPage() {
                   >
                     <div className='space-y-3'>
                       <div className='flex items-center gap-3'>
-                        <div className='flex-shrink-0 w-3 h-3 rounded-full bg-green-500'></div>
+                        <FaCheckCircle className='text-green-500 text-lg flex-shrink-0' />
                         <div className='flex-1'>
                           <h4 className='font-semibold text-gray-900 text-lg'>
                             {servicio.tipoServicio || 'Servicio general'}
@@ -443,7 +444,7 @@ export default function SeguimientoPage() {
                                       className='bg-white p-4 rounded-lg border border-gray-200 shadow-sm'
                                     >
                                       <div className='flex items-center gap-2 mb-2'>
-                                        <span className='text-lg'>✅</span>
+                                        <FaCheckCircle className='text-green-500' />
                                         <h6 className='font-medium text-gray-900'>
                                           {trabajo.titulo}
                                         </h6>

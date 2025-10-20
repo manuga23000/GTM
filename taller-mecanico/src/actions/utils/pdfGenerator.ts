@@ -40,28 +40,39 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
   doc.rect(0, 0, pageWidth, 50, 'F')
 
   try {
-    const logoPath = '/logo.png'
-    doc.addImage(logoPath, 'PNG', 15, 10, 30, 30)
+    // Usando el logo de la empresa que ya existe en el proyecto
+    const logoPath = '/images/header/LOGO GTM.png'
+    doc.addImage(logoPath, 'PNG', 15, 8, 34, 34, undefined, 'FAST')
   } catch (error) {
-    // Logo no encontrado, continuar sin él
+    console.warn('No se pudo cargar el logo:', error)
+    // Dibujar un placeholder si el logo no se encuentra
+    doc.setFillColor(200, 200, 200)
+    doc.rect(15, 8, 34, 34, 'F')
+    doc.setFontSize(8)
+    doc.setTextColor(100, 100, 100)
+    doc.text('LOGO GTM', 32, 28, { align: 'center' })
   }
 
   doc.setTextColor(255, 255, 255)
   doc.setFontSize(26)
   doc.setFont('helvetica', 'bold')
-  doc.text('REPORTE SEMANAL GTM', pageWidth / 2, 22, { align: 'center' })
+  // Mover el texto más a la derecha (cambiando el punto de alineación)
+  doc.text('REPORTE SEMANAL GTM', pageWidth * 0.6, 22, { align: 'center' })
 
+  // Ajustar la línea roja para que esté centrada respecto al texto
+  const textWidth = doc.getTextWidth('REPORTE SEMANAL GTM') * 26 / doc.getFontSize()
+  const lineX = pageWidth * 0.6 - textWidth / 2
+  
   doc.setDrawColor(...redColor)
   doc.setLineWidth(2)
-  doc.line(pageWidth / 2 - 50, 28, pageWidth / 2 + 50, 28)
+  doc.line(lineX, 28, lineX + textWidth, 28)
 
+  // Ajustar la posición de la fecha para que esté alineada
   doc.setFontSize(11)
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(255, 255, 255)
-  const dateRange = `${formatDate(data.startDate)} - ${formatDate(
-    data.endDate
-  )}`
-  doc.text(dateRange, pageWidth / 2, 38, { align: 'center' })
+  const dateRange = `${formatDate(data.startDate)} - ${formatDate(data.endDate)}`
+  doc.text(dateRange, pageWidth * 0.6, 38, { align: 'center' })
 
   // RESUMEN
   let yPosition = 60

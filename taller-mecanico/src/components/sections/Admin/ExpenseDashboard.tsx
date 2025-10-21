@@ -45,6 +45,7 @@ const CustomTooltip = ({
 interface PieDataItem {
   name: string
   value: number
+  [key: string]: any // Add index signature to match ChartDataInput
 }
 
 interface ExpenseDashboardProps {
@@ -91,6 +92,7 @@ export default function ExpenseDashboard({
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  // ✅ DATOS PARA GASTOS (valores negativos convertidos a positivos)
   const expensePieData: PieDataItem[] = Object.entries(
     filteredExpenses
       .filter(e => e.amount < 0)
@@ -103,6 +105,7 @@ export default function ExpenseDashboard({
     .sort((a, b) => b.value - a.value)
     .slice(0, isMobile ? 6 : 10)
 
+  // ✅ DATOS PARA INGRESOS (valores positivos)
   const incomePieData: PieDataItem[] = Object.entries(
     filteredExpenses
       .filter(e => e.amount > 0)
@@ -114,13 +117,6 @@ export default function ExpenseDashboard({
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value)
     .slice(0, isMobile ? 6 : 10)
-
-  const chartConfig = {
-    height: isMobile ? 250 : 300,
-    outerRadius: isMobile ? 70 : 100,
-    labelLine: false,
-    label: isMobile ? false : renderCustomizedLabel,
-  }
 
   return (
     <div className='space-y-6'>
@@ -180,33 +176,72 @@ export default function ExpenseDashboard({
 
       {/* Charts */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-        {/* Expense Pie Chart */}
+        {/* ✅ RUEDITA DE GASTOS */}
         <div className='bg-gray-800 p-4 sm:p-6 rounded-xl shadow-xl'>
           <h3 className='text-lg sm:text-xl font-bold mb-4 text-center text-white'>
             Gastos por Categoría
           </h3>
 
-          {/* Mobile: Gráfico mini FORZADO */}
-          {isMobile ? (
-            <div className='space-y-2'>
-              <div className='flex justify-center'>
-                {/* FORZAMOS dimensiones sin ResponsiveContainer */}
-                <PieChart width={280} height={180}>
+          {expensePieData.length > 0 ? (
+            isMobile ? (
+              // Mobile: Gráfico simplificado
+              <div className='space-y-3'>
+                <div className='flex justify-center'>
+                  <PieChart width={280} height={200}>
+                    <Pie
+                      data={expensePieData}
+                      cx={140}
+                      cy={100}
+                      outerRadius={70}
+                      innerRadius={25}
+                      fill='#8884d8'
+                      dataKey='value'
+                      labelLine={false}
+                    >
+                      {expensePieData.map((entry, index) => (
+                        <Cell
+                          key={`expense-cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </div>
+
+                {/* Leyenda compacta para móvil */}
+                <div className='grid grid-cols-2 gap-2 text-xs'>
+                  {expensePieData.map((entry, index) => (
+                    <div
+                      key={entry.name}
+                      className='flex items-center space-x-2'
+                    >
+                      <div
+                        className='w-3 h-3 rounded-full flex-shrink-0'
+                        style={{
+                          backgroundColor: COLORS[index % COLORS.length],
+                        }}
+                      />
+                      <span className='text-gray-300 truncate'>
+                        {entry.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              // Desktop: Gráfico completo
+              <ResponsiveContainer width='100%' height={300}>
+                <PieChart>
                   <Pie
                     data={expensePieData}
-                    cx={140}
-                    cy={90}
-                    outerRadius={60}
-                    innerRadius={20}
+                    cx='50%'
+                    cy='50%'
+                    outerRadius={100}
                     fill='#8884d8'
                     dataKey='value'
+                    label={renderCustomizedLabel}
                     labelLine={false}
-                    label={props => {
-                      const { percent } = props as { percent: number }
-                      return percent > 0.05
-                        ? `${(percent * 100).toFixed(0)}%`
-                        : ''
-                    }}
                   >
                     {expensePieData.map((entry, index) => (
                       <Cell
@@ -215,79 +250,86 @@ export default function ExpenseDashboard({
                       />
                     ))}
                   </Pie>
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip
+                    formatter={(value: number) => formatCurrencyLocal(value)}
+                  />
                 </PieChart>
-              </div>
-
-              {/* Leyenda compacta */}
-              <div className='grid grid-cols-2 gap-1 text-xs'>
-                {expensePieData.map((entry, index) => (
-                  <div key={entry.name} className='flex items-center space-x-1'>
-                    <div
-                      className='w-2 h-2 rounded-full flex-shrink-0'
-                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                    />
-                    <span className='text-gray-300 truncate'>{entry.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+              </ResponsiveContainer>
+            )
           ) : (
-            /* Desktop: Chart normal */
-            <ResponsiveContainer width='100%' height={chartConfig.height}>
-              <PieChart>
-                <Pie
-                  data={expensePieData}
-                  cx='50%'
-                  cy='50%'
-                  outerRadius={chartConfig.outerRadius}
-                  fill='#8884d8'
-                  dataKey='value'
-                  label={renderCustomizedLabel}
-                  labelLine={false}
-                >
-                  {expensePieData.map((entry, index) => (
-                    <Cell
-                      key={`expense-cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value: number) => formatCurrencyLocal(value)}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className='text-center py-12 text-gray-400'>
+              <div className='mb-3 text-5xl opacity-50'>📊</div>
+              <p className='text-base'>No hay gastos para mostrar</p>
+            </div>
           )}
         </div>
 
-        {/* Income Pie Chart */}
+        {/* ✅ RUEDITA DE INGRESOS */}
         <div className='bg-gray-800 p-4 sm:p-6 rounded-xl shadow-xl'>
           <h3 className='text-lg sm:text-xl font-bold mb-4 text-center text-white'>
             Ingresos por Categoría
           </h3>
 
-          {/* Mobile: Gráfico mini FORZADO */}
-          {isMobile ? (
-            <div className='space-y-2'>
-              <div className='flex justify-center'>
-                {/* FORZAMOS dimensiones sin ResponsiveContainer */}
-                <PieChart width={280} height={180}>
+          {incomePieData.length > 0 ? (
+            isMobile ? (
+              // Mobile: Gráfico simplificado
+              <div className='space-y-3'>
+                <div className='flex justify-center'>
+                  <PieChart width={280} height={200}>
+                    <Pie
+                      data={incomePieData}
+                      cx={140}
+                      cy={100}
+                      outerRadius={70}
+                      innerRadius={25}
+                      fill='#8884d8'
+                      dataKey='value'
+                      labelLine={false}
+                    >
+                      {incomePieData.map((entry, index) => (
+                        <Cell
+                          key={`income-cell-${index}`}
+                          fill={COLORS[(index + 3) % COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </div>
+
+                {/* Leyenda compacta para móvil */}
+                <div className='grid grid-cols-2 gap-2 text-xs'>
+                  {incomePieData.map((entry, index) => (
+                    <div
+                      key={entry.name}
+                      className='flex items-center space-x-2'
+                    >
+                      <div
+                        className='w-3 h-3 rounded-full flex-shrink-0'
+                        style={{
+                          backgroundColor: COLORS[(index + 3) % COLORS.length],
+                        }}
+                      />
+                      <span className='text-gray-300 truncate'>
+                        {entry.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              // Desktop: Gráfico completo
+              <ResponsiveContainer width='100%' height={300}>
+                <PieChart>
                   <Pie
                     data={incomePieData}
-                    cx={140}
-                    cy={90}
-                    outerRadius={60}
-                    innerRadius={20}
+                    cx='50%'
+                    cy='50%'
+                    outerRadius={100}
                     fill='#8884d8'
                     dataKey='value'
+                    label={renderCustomizedLabel}
                     labelLine={false}
-                    label={props => {
-                      const { percent } = props as { percent: number }
-                      return percent > 0.05
-                        ? `${(percent * 100).toFixed(0)}%`
-                        : ''
-                    }}
                   >
                     {incomePieData.map((entry, index) => (
                       <Cell
@@ -296,51 +338,17 @@ export default function ExpenseDashboard({
                       />
                     ))}
                   </Pie>
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip
+                    formatter={(value: number) => formatCurrencyLocal(value)}
+                  />
                 </PieChart>
-              </div>
-
-              {/* Leyenda compacta */}
-              <div className='grid grid-cols-2 gap-1 text-xs'>
-                {incomePieData.map((entry, index) => (
-                  <div key={entry.name} className='flex items-center space-x-1'>
-                    <div
-                      className='w-2 h-2 rounded-full flex-shrink-0'
-                      style={{
-                        backgroundColor: COLORS[(index + 3) % COLORS.length],
-                      }}
-                    />
-                    <span className='text-gray-300 truncate'>{entry.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+              </ResponsiveContainer>
+            )
           ) : (
-            /* Desktop: Chart normal */
-            <ResponsiveContainer width='100%' height={chartConfig.height}>
-              <PieChart>
-                <Pie
-                  data={incomePieData}
-                  cx='50%'
-                  cy='50%'
-                  outerRadius={chartConfig.outerRadius}
-                  fill='#8884d8'
-                  dataKey='value'
-                  label={renderCustomizedLabel}
-                  labelLine={false}
-                >
-                  {incomePieData.map((entry, index) => (
-                    <Cell
-                      key={`income-cell-${index}`}
-                      fill={COLORS[(index + 3) % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value: number) => formatCurrencyLocal(value)}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className='text-center py-12 text-gray-400'>
+              <div className='mb-3 text-5xl opacity-50'>💰</div>
+              <p className='text-base'>No hay ingresos para mostrar</p>
+            </div>
           )}
         </div>
       </div>
@@ -349,7 +357,7 @@ export default function ExpenseDashboard({
       {isMobile && (
         <div className='bg-blue-900/20 border border-blue-500/30 rounded-lg p-4'>
           <p className='text-blue-200 text-sm text-center'>
-            💡 En móvil se muestran los principales elementos para mejor
+            💡 En móvil se muestran los elementos principales para mejor
             visualización
           </p>
         </div>

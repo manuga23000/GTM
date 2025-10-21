@@ -356,9 +356,7 @@ export default function VehicleConfig() {
       if (plateChanged) {
         // 🔄 Si cambió la patente: ELIMINAR viejo documento y CREAR uno nuevo
         // ✅ LOG 2: Cambio de patente detectado
-        console.log(
-          `🔄 Cambiando patente de ${originalPlateNumber} a ${newPlateNormalized}`
-        )
+      
 
         // 1. Obtener todos los datos del vehículo actual (incluyendo steps con archivos)
         const vehicleData = await getVehicleByPlate(originalPlateNumber)

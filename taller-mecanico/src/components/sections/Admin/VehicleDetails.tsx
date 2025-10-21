@@ -287,8 +287,6 @@ export default function VehicleDetails({
         if (onVehicleUpdated) {
           await onVehicleUpdated()
         }
-
-        console.log('✅ Niveles guardados correctamente')
       } else {
         throw new Error(result.message || 'Error al guardar')
       }

@@ -19,7 +19,6 @@ interface EstadoActualProps {
     trabajosRealizados: TrabajoRealizado[]
     updatedAt?: string
     tipoServicio?: string
-    // Niveles de fluidos
     fluidLevels?: {
       aceite: number
       agua: number
@@ -267,7 +266,8 @@ export default function EstadoActual({ data }: EstadoActualProps) {
                     const element = document.getElementById('control-fluidos')
                     if (element) {
                       const offset = 80 // offset para header si lo hay
-                      const elementPosition = element.getBoundingClientRect().top
+                      const elementPosition =
+                        element.getBoundingClientRect().top
                       const offsetPosition =
                         elementPosition + window.pageYOffset - offset
 

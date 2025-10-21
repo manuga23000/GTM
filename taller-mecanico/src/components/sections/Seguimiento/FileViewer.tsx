@@ -292,7 +292,7 @@ const FileGallery = ({
                       height={600}
                       className='max-w-full max-h-full object-contain'
                       style={{
-                        touchAction: 'pinch-zoom', // Permitir zoom en imágenes
+                        touchAction: 'pinch-zoom', 
                         userSelect: 'none',
                       }}
                       onLoad={() => setImageLoaded(true)}

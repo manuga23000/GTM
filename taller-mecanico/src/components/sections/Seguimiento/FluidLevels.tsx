@@ -163,14 +163,14 @@ interface FluidLevelsProps {
   aceite?: number
   agua?: number
   frenos?: number
-  showInfoNote?: boolean // ✅ NUEVO: Prop para mostrar/ocultar el mensaje informativo
+  showInfoNote?: boolean
 }
 
 export default function FluidLevels({
   aceite = 100,
   agua = 100,
   frenos = 100,
-  showInfoNote = true, // ✅ Por defecto se muestra (para mantener compatibilidad)
+  showInfoNote = true,
 }: FluidLevelsProps) {
   return (
     <motion.div

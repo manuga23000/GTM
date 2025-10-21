@@ -92,7 +92,6 @@ export default function ExpenseDashboard({
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // ✅ DATOS PARA GASTOS (valores negativos convertidos a positivos)
   const expensePieData: PieDataItem[] = Object.entries(
     filteredExpenses
       .filter(e => e.amount < 0)
@@ -105,7 +104,6 @@ export default function ExpenseDashboard({
     .sort((a, b) => b.value - a.value)
     .slice(0, isMobile ? 6 : 10)
 
-  // ✅ DATOS PARA INGRESOS (valores positivos)
   const incomePieData: PieDataItem[] = Object.entries(
     filteredExpenses
       .filter(e => e.amount > 0)
@@ -120,7 +118,6 @@ export default function ExpenseDashboard({
 
   return (
     <div className='space-y-6'>
-      {/* Summary Cards */}
       <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
         <motion.div
           whileHover={{ scale: 1.02 }}
@@ -174,9 +171,7 @@ export default function ExpenseDashboard({
         </motion.div>
       </div>
 
-      {/* Charts */}
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-        {/* ✅ RUEDITA DE GASTOS */}
         <div className='bg-gray-800 p-4 sm:p-6 rounded-xl shadow-xl'>
           <h3 className='text-lg sm:text-xl font-bold mb-4 text-center text-white'>
             Gastos por Categoría
@@ -184,7 +179,6 @@ export default function ExpenseDashboard({
 
           {expensePieData.length > 0 ? (
             isMobile ? (
-              // Mobile: Gráfico simplificado
               <div className='space-y-3'>
                 <div className='flex justify-center'>
                   <PieChart width={280} height={200}>
@@ -209,7 +203,6 @@ export default function ExpenseDashboard({
                   </PieChart>
                 </div>
 
-                {/* Leyenda compacta para móvil */}
                 <div className='grid grid-cols-2 gap-2 text-xs'>
                   {expensePieData.map((entry, index) => (
                     <div
@@ -230,7 +223,6 @@ export default function ExpenseDashboard({
                 </div>
               </div>
             ) : (
-              // Desktop: Gráfico completo
               <ResponsiveContainer width='100%' height={300}>
                 <PieChart>
                   <Pie
@@ -264,7 +256,6 @@ export default function ExpenseDashboard({
           )}
         </div>
 
-        {/* ✅ RUEDITA DE INGRESOS */}
         <div className='bg-gray-800 p-4 sm:p-6 rounded-xl shadow-xl'>
           <h3 className='text-lg sm:text-xl font-bold mb-4 text-center text-white'>
             Ingresos por Categoría
@@ -272,7 +263,6 @@ export default function ExpenseDashboard({
 
           {incomePieData.length > 0 ? (
             isMobile ? (
-              // Mobile: Gráfico simplificado
               <div className='space-y-3'>
                 <div className='flex justify-center'>
                   <PieChart width={280} height={200}>
@@ -297,7 +287,6 @@ export default function ExpenseDashboard({
                   </PieChart>
                 </div>
 
-                {/* Leyenda compacta para móvil */}
                 <div className='grid grid-cols-2 gap-2 text-xs'>
                   {incomePieData.map((entry, index) => (
                     <div
@@ -318,7 +307,6 @@ export default function ExpenseDashboard({
                 </div>
               </div>
             ) : (
-              // Desktop: Gráfico completo
               <ResponsiveContainer width='100%' height={300}>
                 <PieChart>
                   <Pie
@@ -353,7 +341,6 @@ export default function ExpenseDashboard({
         </div>
       </div>
 
-      {/* Mobile: Mensaje explicativo */}
       {isMobile && (
         <div className='bg-blue-900/20 border border-blue-500/30 rounded-lg p-4'>
           <p className='text-blue-200 text-sm text-center'>

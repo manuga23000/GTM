@@ -95,7 +95,7 @@ export const sendTurnoConfirmationToClient = async (turnoData: {
       mensaje_cliente: turnoData.message || 'Sin mensaje adicional',
       taller_nombre: 'GTM Taller Mecánico',
       taller_telefono: '+54 9 336 469-4921',
-      taller_direccion: 'San Martín 1234, Resistencia, Chaco',
+      taller_direccion: 'Av. Viale, San Nicolás de los Arroyos, Buenos Aires',
       taller_horarios: 'Lunes a Viernes de 8:00 a 16:00',
       cancel_url: cancelUrl,
     }

@@ -153,7 +153,6 @@ export async function updateVehicle(
       }
     }
 
-    // ✅ NORMALIZAR la patente (quitar espacios)
     const normalizedPlate = plateNumber.replace(/\s+/g, '').toUpperCase()
     const docRef = doc(db, COLLECTION_NAME, normalizedPlate)
 
@@ -166,7 +165,7 @@ export async function updateVehicle(
     const currentTime = new Date()
     const dataToUpdate = {
       ...updateData,
-      plateNumber: normalizedPlate, // ✅ Guardar la patente normalizada
+      plateNumber: normalizedPlate,
       updatedAt: currentTime,
     }
 
@@ -220,7 +219,6 @@ export async function deleteVehicle(
       }
     }
 
-    // ✅ Normalizar la patente antes de eliminar
     const normalizedPlate = plateNumber.replace(/\s+/g, '').toUpperCase()
     const vehicle = await getVehicleByPlate(normalizedPlate)
 
@@ -420,16 +418,11 @@ interface FluidLevel {
   frenos: number
 }
 
-/**
- * Crea un step automático de inspección inicial de fluidos
- * Se llama cuando configuras los fluidos por primera vez al recibir el vehículo
- */
 export async function createInitialFluidInspection(
   plateNumber: string,
   fluidLevels: FluidLevel
 ): Promise<AdminResponse> {
   try {
-    // Detectar niveles bajos
     const warnings: string[] = []
     const aceiteStatus =
       fluidLevels.aceite < 50
@@ -454,7 +447,6 @@ export async function createInitialFluidInspection(
     if (fluidLevels.agua < 50) warnings.push('Refrigerante')
     if (fluidLevels.frenos < 50) warnings.push('Líquido de frenos')
 
-    // Crear descripción del step
     const description = `Inspección inicial de fluidos realizada al ingreso del vehículo.
 
 Estado detectado:
@@ -470,7 +462,6 @@ ${
     : '✅ Todos los niveles de fluidos están en rangos aceptables.'
 }`
 
-    // Crear el step
     return await addVehicleStep(plateNumber, {
       title: '🔍 Inspección inicial de fluidos',
       notes: description,
@@ -487,10 +478,6 @@ ${
   }
 }
 
-/**
- * Crea un step automático cuando se actualizan los niveles de fluidos
- * Documenta qué cambió y el estado anterior vs actual
- */
 export async function createFluidChangeStep(
   plateNumber: string,
   previousLevels: FluidLevel,
@@ -498,7 +485,6 @@ export async function createFluidChangeStep(
   customNotes?: string
 ): Promise<AdminResponse> {
   try {
-    // Detectar qué fluidos cambiaron
     const changes: string[] = []
     const details: string[] = []
 
@@ -544,7 +530,6 @@ export async function createFluidChangeStep(
       }
     }
 
-    // Si no hubo cambios, no crear step
     if (changes.length === 0) {
       return {
         success: true,
@@ -552,13 +537,11 @@ export async function createFluidChangeStep(
       }
     }
 
-    // Crear título descriptivo
     const title =
       changes.length === 1
         ? `✅ ${changes[0]} actualizado`
         : `✅ Actualización de fluidos (${changes.length})`
 
-    // Crear descripción
     const description = `${
       customNotes || 'Se realizó actualización de niveles de fluidos.'
     }
@@ -577,7 +560,6 @@ Estado final:
       newLevels.frenos >= 80 ? '✅' : newLevels.frenos >= 50 ? '⚠️' : '❌'
     }`
 
-    // Crear el step
     return await addVehicleStep(plateNumber, {
       title,
       notes: description,

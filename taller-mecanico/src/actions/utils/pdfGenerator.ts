@@ -1,4 +1,3 @@
-// src/actions/utils/pdfGenerator.ts
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
@@ -29,23 +28,19 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
   const doc = new jsPDF()
   const pageWidth = doc.internal.pageSize.width
 
-  // Configuración de colores - Negro, Rojo y Blanco
   const blackColor: [number, number, number] = [0, 0, 0]
   const redColor: [number, number, number] = [220, 38, 38]
   const blueColor: [number, number, number] = [37, 99, 235]
   const lightGray: [number, number, number] = [245, 245, 245]
 
-  // HEADER CON LOGO
   doc.setFillColor(...blackColor)
   doc.rect(0, 0, pageWidth, 50, 'F')
 
   try {
-    // Usando el logo de la empresa que ya existe en el proyecto
     const logoPath = '/images/header/LOGO GTM.png'
     doc.addImage(logoPath, 'PNG', 15, 8, 34, 34, undefined, 'FAST')
   } catch (error) {
     console.warn('No se pudo cargar el logo:', error)
-    // Dibujar un placeholder si el logo no se encuentra
     doc.setFillColor(200, 200, 200)
     doc.rect(15, 8, 34, 34, 'F')
     doc.setFontSize(8)
@@ -56,25 +51,24 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
   doc.setTextColor(255, 255, 255)
   doc.setFontSize(26)
   doc.setFont('helvetica', 'bold')
-  // Mover el texto más a la derecha (cambiando el punto de alineación)
   doc.text('REPORTE SEMANAL GTM', pageWidth * 0.6, 22, { align: 'center' })
 
-  // Ajustar la línea roja para que esté centrada respecto al texto
-  const textWidth = doc.getTextWidth('REPORTE SEMANAL GTM') * 26 / doc.getFontSize()
+  const textWidth =
+    (doc.getTextWidth('REPORTE SEMANAL GTM') * 26) / doc.getFontSize()
   const lineX = pageWidth * 0.6 - textWidth / 2
-  
+
   doc.setDrawColor(...redColor)
   doc.setLineWidth(2)
   doc.line(lineX, 28, lineX + textWidth, 28)
 
-  // Ajustar la posición de la fecha para que esté alineada
   doc.setFontSize(11)
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(255, 255, 255)
-  const dateRange = `${formatDate(data.startDate)} - ${formatDate(data.endDate)}`
+  const dateRange = `${formatDate(data.startDate)} - ${formatDate(
+    data.endDate
+  )}`
   doc.text(dateRange, pageWidth * 0.6, 38, { align: 'center' })
 
-  // RESUMEN
   let yPosition = 60
   doc.setTextColor(...blackColor)
   doc.setFontSize(18)
@@ -87,11 +81,9 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
 
   yPosition += 12
 
-  // 📦 ESTADÍSTICAS EN 3 CAJAS VERTICALES
   const boxHeight = 28
-  const boxWidth = pageWidth - 28 // Ancho completo menos márgenes
+  const boxWidth = pageWidth - 28
 
-  // 1️⃣ CAJA: VEHÍCULOS INGRESADOS (Negro con borde rojo)
   doc.setFillColor(...blackColor)
   doc.roundedRect(14, yPosition, boxWidth, boxHeight, 3, 3, 'F')
   doc.setDrawColor(...redColor)
@@ -115,7 +107,6 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
 
   yPosition += boxHeight + 8
 
-  // 2️⃣ CAJA: VEHÍCULOS ENTREGADOS (Rojo con borde negro)
   doc.setFillColor(...redColor)
   doc.roundedRect(14, yPosition, boxWidth, boxHeight, 3, 3, 'F')
   doc.setDrawColor(...blackColor)
@@ -138,7 +129,6 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
 
   yPosition += boxHeight + 8
 
-  // 3️⃣ CAJA: VEHÍCULOS EN TALLER (Azul con borde negro)
   doc.setFillColor(...blueColor)
   doc.roundedRect(14, yPosition, boxWidth, boxHeight, 3, 3, 'F')
   doc.setDrawColor(...blackColor)
@@ -161,7 +151,6 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
 
   yPosition += boxHeight + 18
 
-  // 📋 TABLA 1: VEHÍCULOS INGRESADOS
   if (data.vehiclesIn.length > 0) {
     doc.setTextColor(...blackColor)
     doc.setFontSize(15)
@@ -212,11 +201,9 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
       margin: { left: 14, right: 14 },
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     yPosition = (doc as any).lastAutoTable.finalY + 15
   }
 
-  // 📋 TABLA 2: VEHÍCULOS ENTREGADOS
   if (data.vehiclesOut.length > 0) {
     if (yPosition > 220) {
       doc.addPage()
@@ -272,11 +259,9 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
       margin: { left: 14, right: 14 },
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     yPosition = (doc as any).lastAutoTable.finalY + 15
   }
 
-  // 📋 TABLA 3: VEHÍCULOS EN TALLER
   if (data.vehiclesInWorkshop.length > 0) {
     if (yPosition > 220) {
       doc.addPage()
@@ -332,11 +317,9 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
       margin: { left: 14, right: 14 },
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     yPosition = (doc as any).lastAutoTable.finalY + 10
   }
 
-  // FOOTER
   const pageCount = doc.getNumberOfPages()
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i)
@@ -365,7 +348,6 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
     })
   }
 
-  // Guardar PDF
   const fileName = `Reporte_Semanal_GTM_${formatDateForFilename(
     data.startDate
   )}_${formatDateForFilename(data.endDate)}.pdf`

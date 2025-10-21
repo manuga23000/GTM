@@ -166,7 +166,6 @@ export interface VehicleInput {
     | 'delivered'
     | 'finalized'
   updatedAt?: Date
-  // NUEVO: Niveles de fluidos
   fluidLevels?: {
     aceite: number
     agua: number

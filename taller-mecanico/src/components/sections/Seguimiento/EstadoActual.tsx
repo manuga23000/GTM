@@ -257,7 +257,6 @@ export default function EstadoActual({ data }: EstadoActualProps) {
                 </div>
               </motion.div>
 
-              {/* Botón para ir a Control de Fluidos - Solo se muestra si hay niveles de fluidos */}
               {data.fluidLevels && (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -265,7 +264,7 @@ export default function EstadoActual({ data }: EstadoActualProps) {
                   onClick={() => {
                     const element = document.getElementById('control-fluidos')
                     if (element) {
-                      const offset = 80 // offset para header si lo hay
+                      const offset = 80
                       const elementPosition =
                         element.getBoundingClientRect().top
                       const offsetPosition =

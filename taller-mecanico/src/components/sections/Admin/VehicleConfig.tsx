@@ -47,7 +47,6 @@ export default function VehicleConfig() {
   const [isLoadingHistorial, setIsLoadingHistorial] = useState(false)
   const [datosHistorialCargados, setDatosHistorialCargados] = useState(false)
 
-  // ✅ NUEVO: Guardar la patente original antes de editar
   const [originalPlateNumber, setOriginalPlateNumber] = useState<string>('')
 
   const filteredVehicles = useMemo(() => {
@@ -74,8 +73,6 @@ export default function VehicleConfig() {
   const fetchVehicles = async () => {
     try {
       const backendVehicles = await getAllVehicles()
-      
-
 
       const mapped = backendVehicles.map(v => {
         return {
@@ -146,17 +143,15 @@ export default function VehicleConfig() {
       const vehicleData = await getVehicleByPlate(selectedVehicle)
 
       if (vehicleData) {
-        // Actualizar solo ese vehículo en el estado
         setVehiclesInTracking(prev => {
           const updated = prev.map(v => {
             if (v.plateNumber === selectedVehicle) {
-
-
               return {
                 ...v,
-                // Preservar fluidLevels existentes si no vienen en vehicleData
-                fluidLevels: vehicleData.fluidLevels !== undefined ? vehicleData.fluidLevels : v.fluidLevels,
-                // Mantener otros datos actualizados también
+                fluidLevels:
+                  vehicleData.fluidLevels !== undefined
+                    ? vehicleData.fluidLevels
+                    : v.fluidLevels,
                 steps: (vehicleData.steps || []).map(step => {
                   let stepDate: Date
                   const dateValue = step.date
@@ -197,7 +192,6 @@ export default function VehicleConfig() {
           const updatedVehicle = updated.find(
             v => v.plateNumber === selectedVehicle
           )
-
 
           return updated
         })
@@ -324,10 +318,8 @@ export default function VehicleConfig() {
     }
   }
 
-  // ✅ MODIFICADO: Guardar la patente original al abrir el modal de edición
   const handleOpenEditVehicle = () => {
     if (selectedVehicleData) {
-      // Guardar la patente ORIGINAL normalizada (sin espacios)
       const normalizedPlate = selectedVehicleData.plateNumber
         .replace(/\s+/g, '')
         .toUpperCase()
@@ -338,27 +330,19 @@ export default function VehicleConfig() {
     }
   }
 
-  // ✅ REEMPLAZADO: Nueva lógica para detectar cambio de patente
   const handleSaveVehicleEdit = async () => {
     if (!editVehicle || isEditingVehicle) return
     setIsEditingVehicle(true)
     showMessage('Guardando cambios...')
 
     try {
-      // Normalizar la nueva patente (sin espacios)
       const newPlateNormalized = editVehicle.plateNumber
         .replace(/\s+/g, '')
         .toUpperCase()
 
-      // ✅ Detectar si cambió la patente
       const plateChanged = originalPlateNumber !== newPlateNormalized
 
       if (plateChanged) {
-        // 🔄 Si cambió la patente: ELIMINAR viejo documento y CREAR uno nuevo
-        // ✅ LOG 2: Cambio de patente detectado
-      
-
-        // 1. Obtener todos los datos del vehículo actual (incluyendo steps con archivos)
         const vehicleData = await getVehicleByPlate(originalPlateNumber)
 
         if (!vehicleData) {
@@ -367,7 +351,6 @@ export default function VehicleConfig() {
           return
         }
 
-        // 2. Crear el nuevo documento con la nueva patente y TODOS los datos
         const createResponse = await createVehicle({
           ...vehicleData,
           plateNumber: newPlateNormalized,
@@ -380,7 +363,7 @@ export default function VehicleConfig() {
           chassisNumber: editVehicle.chassisNumber,
           km: editVehicle.km,
           estimatedCompletionDate: editVehicle.estimatedCompletionDate,
-          steps: vehicleData.steps || [], // Mantener los steps con archivos
+          steps: vehicleData.steps || [],
         })
 
         if (!createResponse.success) {
@@ -392,7 +375,6 @@ export default function VehicleConfig() {
           return
         }
 
-        // 3. Eliminar el documento viejo
         const deleteResponse = await deleteVehicle(originalPlateNumber)
 
         if (!deleteResponse.success) {
@@ -405,8 +387,6 @@ export default function VehicleConfig() {
           `✅ Patente actualizada: ${originalPlateNumber} → ${newPlateNormalized}`
         )
       } else {
-        // ✏️ Si NO cambió la patente: solo actualizar normalmente
-
         const response = await updateVehicle(originalPlateNumber, {
           plateNumber: newPlateNormalized,
           brand: editVehicle.brand,
@@ -430,10 +410,8 @@ export default function VehicleConfig() {
         showMessage('Vehículo actualizado')
       }
 
-      // Recargar la lista y cerrar modal
       await fetchVehicles()
 
-      // Seleccionar el vehículo con la nueva patente
       const vehicleToSelect = plateChanged
         ? newPlateNormalized
         : originalPlateNumber

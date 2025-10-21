@@ -109,7 +109,6 @@ export default function ServiceConfig() {
     loadConfigs()
   }, [loadConfigs])
 
-  
   const updateConfig = (serviceName: string, field: string, value: unknown) => {
     setConfigs(prev =>
       prev.map(config =>
@@ -120,7 +119,6 @@ export default function ServiceConfig() {
     )
   }
 
-  
   const toggleDay = (serviceName: string, dayValue: number) => {
     setConfigs(prev =>
       prev.map(config => {
@@ -136,13 +134,12 @@ export default function ServiceConfig() {
     )
   }
 
-  
   const toggleAllDays = (serviceName: string) => {
     setConfigs(prev =>
       prev.map(config => {
         if (config.serviceName === serviceName) {
           const currentDays = config.allowedDays
-          const allDays = [1, 2, 3, 4, 5] // Lunes a viernes
+          const allDays = [1, 2, 3, 4, 5]
 
           const newDays = currentDays.length === allDays.length ? [] : allDays
           return { ...config, allowedDays: newDays }
@@ -251,7 +248,6 @@ export default function ServiceConfig() {
     }
   }
 
-  
   const renderServiceConfig = (config: ServiceConfig) => {
     const isActiveService = [
       'Diagnóstico',
@@ -508,7 +504,6 @@ export default function ServiceConfig() {
           </div>
 
           {selectedService === 'Caja automática' ? (
-            // Mostrar sub-servicios de Caja automática
             <div className='space-y-4 sm:space-y-6'>
               <p className='text-gray-300 text-xs sm:text-sm mb-3 sm:mb-4'>
                 Configuración de sub-servicios de Caja automática:
@@ -554,7 +549,6 @@ export default function ServiceConfig() {
               </div>
             </div>
           ) : selectedService === 'Mecánica general' ? (
-            // Mostrar sub-servicios de Mecánica general
             <div className='space-y-4 sm:space-y-6'>
               <p className='text-gray-300 text-xs sm:text-sm mb-3 sm:mb-4'>
                 Configuración de sub-servicios de Mecánica general:

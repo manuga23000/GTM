@@ -1,4 +1,3 @@
-// src/components/sections/Admin/WeeklyReportButton.tsx
 'use client'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
@@ -49,7 +48,6 @@ export default function WeeklyReportButton({
       const endTimestamp = new Date(endDate)
       endTimestamp.setHours(23, 59, 59, 999)
 
-      // 1️⃣ VEHÍCULOS INGRESADOS EN LA SEMANA (de la colección 'vehicles')
       const vehiclesInRef = collection(db, 'vehicles')
       const vehiclesInQuery = query(
         vehiclesInRef,
@@ -76,8 +74,6 @@ export default function WeeklyReportButton({
         }
       })
 
-      // 1️⃣B VEHÍCULOS QUE INGRESARON Y YA FUERON ENTREGADOS EN LA SEMANA (de 'timeline')
-      // Filtrar por entryDate para capturar los que ingresaron en la semana aunque ya fueron entregados
       const historialIngresosSemanaRef = collection(db, 'timeline')
       const historialIngresosSemanaQuery = query(
         historialIngresosSemanaRef,
@@ -109,13 +105,11 @@ export default function WeeklyReportButton({
         }
       })
 
-      // COMBINAR ambos arrays para tener TODOS los ingresos de la semana y ordenar por fecha de ingreso (más antiguo primero)
       const vehiclesIn = [
         ...vehiclesInFromVehicles,
         ...vehiclesInFromTimeline,
       ].sort((a, b) => a.entryDate.getTime() - b.entryDate.getTime())
 
-      // 2️⃣ VEHÍCULOS ENTREGADOS EN LA SEMANA (de 'timeline')
       const vehiclesOutQuery = query(
         collection(db, 'timeline'),
         where('finalizedAt', '>=', startTimestamp),
@@ -124,7 +118,7 @@ export default function WeeklyReportButton({
       )
 
       const vehiclesOutSnapshot = await getDocs(vehiclesOutQuery)
-      // Ordenar vehículos entregados por fecha de finalización (más antiguo primero)
+
       const vehiclesOut = vehiclesOutSnapshot.docs
         .map(doc => {
           const data = doc.data()
@@ -147,8 +141,6 @@ export default function WeeklyReportButton({
         })
         .sort((a, b) => a.finalizedAt.getTime() - b.finalizedAt.getTime())
 
-      // 3️⃣ VEHÍCULOS ACTUALMENTE EN EL TALLER (todos de 'vehicles' sin filtro de fecha)
-      // Ordenar por fecha de ingreso (más antiguo primero)
       const allVehiclesInWorkshopQuery = query(
         collection(db, 'vehicles'),
         orderBy('createdAt', 'desc')
@@ -174,7 +166,6 @@ export default function WeeklyReportButton({
         }
       })
 
-      // Generar PDF con los 3 conjuntos de datos
       generateWeeklyPDF({
         vehiclesIn,
         vehiclesOut,

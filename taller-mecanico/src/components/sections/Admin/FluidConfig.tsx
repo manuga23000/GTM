@@ -15,9 +15,9 @@ interface FluidLevel {
 }
 
 interface FluidConfigProps {
-  plateNumber: string // ✅ NUEVO: Necesario para crear steps
+  plateNumber: string
   initialLevels?: FluidLevel
-  isFirstTime?: boolean // ✅ NUEVO: Detectar si es primera configuración
+  isFirstTime?: boolean
   onSave: (levels: FluidLevel) => Promise<void>
 }
 
@@ -234,7 +234,7 @@ export default function FluidConfig({
     try {
       // 1. Solo guardar los niveles en el vehículo sin crear steps automáticos
       await onSave(levels)
-      
+
       setSaveMessage({
         type: 'success',
         text: '✅ Niveles guardados correctamente',

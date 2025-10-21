@@ -41,7 +41,6 @@ export interface VehicleInTracking {
   steps: VehicleStep[]
   notes: string
   nextStep?: string
-  // ✅ AGREGADO: Propiedad fluidLevels
   fluidLevels?: {
     aceite: number
     agua: number

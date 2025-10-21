@@ -99,7 +99,6 @@ export interface SeguimientoData {
   serviceNumber?: number
   fechaFinalizado?: string
   km?: number
-  // NUEVO: Niveles de fluidos
   fluidLevels?: {
     aceite: number
     agua: number
@@ -265,7 +264,6 @@ export async function getSeguimientoByPatente(
         : data.timeline || [],
       imagenes: data.imagenes || [],
       km: data.km,
-      // NUEVO: Agregar niveles de fluidos si existen
       fluidLevels: data.fluidLevels || undefined,
     }
 
@@ -416,7 +414,6 @@ export async function buscarHistorialCompleto(
         serviceNumber: data.serviceNumber || 1,
         fechaFinalizado: formatearFecha(data.finalizedAt),
         km: data.km,
-        // NUEVO: Agregar niveles de fluidos si existen
         fluidLevels: data.fluidLevels || undefined,
       }
 

@@ -67,7 +67,6 @@ interface RawFirestoreVehicle {
   notes?: string
   nextStep?: string
   steps?: RawFirestoreStep[] | Record<string, RawFirestoreStep>
-  // ✅ AGREGAR ESTA LÍNEA:
   fluidLevels?: {
     aceite: number
     agua: number
@@ -183,11 +182,9 @@ export function filterUndefinedValues(
       filtered[key] = value
       continue
     }
-    // Permitir null explícito para campos de fecha que deben poder borrarse en Firestore
     if (value === undefined) {
       continue
     }
-    // Para estimatedCompletionDate y otros campos de fecha, dejar pasar null
     if (
       value === null &&
       (key === 'estimatedCompletionDate' ||
@@ -272,11 +269,13 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
       : null,
     notes: data.notes || '',
     nextStep: data.nextStep || '',
-    fluidLevels: data.fluidLevels ? {
-      aceite: Number(data.fluidLevels.aceite) || 0,
-      agua: Number(data.fluidLevels.agua) || 0,
-      frenos: Number(data.fluidLevels.frenos) || 0
-    } : undefined,
+    fluidLevels: data.fluidLevels
+      ? {
+          aceite: Number(data.fluidLevels.aceite) || 0,
+          agua: Number(data.fluidLevels.agua) || 0,
+          frenos: Number(data.fluidLevels.frenos) || 0,
+        }
+      : undefined,
     steps: Array.isArray(data.steps)
       ? data.steps.map((step: RawFirestoreStep) => ({
           id: typeof step.id === 'string' ? step.id : '',
@@ -396,11 +395,13 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
                     : undefined,
               }))
             : [],
-          fluidLevels: data.fluidLevels ? {
-            aceite: Number(data.fluidLevels.aceite) || 0,
-            agua: Number(data.fluidLevels.agua) || 0,
-            frenos: Number(data.fluidLevels.frenos) || 0
-          } : undefined,
+          fluidLevels: data.fluidLevels
+            ? {
+                aceite: Number(data.fluidLevels.aceite) || 0,
+                agua: Number(data.fluidLevels.agua) || 0,
+                frenos: Number(data.fluidLevels.frenos) || 0,
+              }
+            : undefined,
         }))
       : [],
   }

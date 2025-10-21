@@ -244,7 +244,6 @@ export default function VehicleDetails({
   const [showFluidConfig, setShowFluidConfig] = useState(false)
   const [localVehicle, setLocalVehicle] = useState(vehicle)
 
-  // Actualizar el estado local cuando cambia el prop vehicle
   useEffect(() => {
     setLocalVehicle(vehicle)
   }, [vehicle])
@@ -263,27 +262,23 @@ export default function VehicleDetails({
     return acc + (step.files?.filter(f => f.type === 'video').length || 0)
   }, 0)
 
-  // ✅ NUEVA: Función para guardar niveles de fluidos
   const handleSaveFluidLevels = async (levels: {
     aceite: number
     agua: number
     frenos: number
   }) => {
     try {
-      // Guardar en Firebase usando updateVehicle
       const { updateVehicle } = await import('@/actions/vehicle')
       const result = await updateVehicle(vehicle.plateNumber, {
         fluidLevels: levels,
       })
 
       if (result.success) {
-        // Actualizar estado local
         setLocalVehicle(prev => ({
           ...prev,
           fluidLevels: levels,
         }))
 
-        // Refrescar la lista de vehículos si existe callback
         if (onVehicleUpdated) {
           await onVehicleUpdated()
         }
@@ -292,7 +287,7 @@ export default function VehicleDetails({
       }
     } catch (error) {
       console.error('❌ Error guardando niveles:', error)
-      throw error // Re-throw para que FluidConfig maneje el error
+      throw error
     }
   }
 

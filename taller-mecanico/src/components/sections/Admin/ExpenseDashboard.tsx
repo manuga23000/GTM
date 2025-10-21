@@ -45,7 +45,7 @@ const CustomTooltip = ({
 interface PieDataItem {
   name: string
   value: number
-  [key: string]: any // Add index signature to match ChartDataInput
+  [key: string]: string | number | boolean | undefined
 }
 
 interface ExpenseDashboardProps {

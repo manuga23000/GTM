@@ -501,10 +501,17 @@ export default function VehicleDetails({
 
                     const timelineDocId = `${vehicle.plateNumber}_servicio_${serviceCount}`
 
-                    const vehicleData = {
-                      ...vehicleWithFreshSteps,
+                    const { fluidLevels, ...vehicleWithoutFluidLevels } =
+                      vehicleWithFreshSteps
+
+                    const vehicleData: any = {
+                      ...vehicleWithoutFluidLevels,
                       finalizedAt: new Date(),
                       serviceNumber: serviceCount,
+                    }
+
+                    if (fluidLevels !== undefined) {
+                      vehicleData.fluidLevels = fluidLevels
                     }
 
                     await setDoc(

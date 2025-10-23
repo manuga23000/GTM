@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaCalendarCheck, FaCarSide, FaBell, FaMobileAlt } from 'react-icons/fa';
+import { FaCalendarCheck, FaCarSide, FaMobileAlt, FaHistory } from 'react-icons/fa';
 import Link from 'next/link';
 
 export default function HeroDesarrollo() {
@@ -33,12 +33,12 @@ export default function HeroDesarrollo() {
             <span className="text-black font-semibold">Seguimiento transparente de cada vehículo</span>
           </div>
           <div className="flex items-center gap-4 bg-red-50 rounded-lg p-4 shadow border border-red-200">
-            <FaBell className="text-2xl text-red-600" />
-            <span className="text-black font-semibold">Notificaciones automáticas a tus clientes</span>
-          </div>
-          <div className="flex items-center gap-4 bg-red-50 rounded-lg p-4 shadow border border-red-200">
             <FaMobileAlt className="text-2xl text-red-600" />
             <span className="text-black font-semibold">Interfaz moderna y adaptada a móviles</span>
+          </div>
+          <div className="flex items-center gap-4 bg-red-50 rounded-lg p-4 shadow border border-red-200">
+            <FaHistory className="text-2xl text-red-600" />
+            <span className="text-black font-semibold">Historial completo de servicios por vehículo</span>
           </div>
         </div>
         <Link href="/contacto">

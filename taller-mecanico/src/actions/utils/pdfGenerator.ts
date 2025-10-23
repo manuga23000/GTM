@@ -210,7 +210,7 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
       margin: { left: 14, right: 14 },
     })
 
-    yPosition = (doc as any).lastAutoTable.finalY + 15
+    yPosition = doc.lastAutoTable.finalY + 15
   }
 
   if (data.vehiclesOut.length > 0) {
@@ -268,7 +268,7 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
       margin: { left: 14, right: 14 },
     })
 
-    yPosition = (doc as any).lastAutoTable.finalY + 15
+    yPosition = doc.lastAutoTable.finalY + 15
   }
 
   if (data.vehiclesInWorkshop.length > 0) {

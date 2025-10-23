@@ -1,6 +1,15 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 
+// Extend jsPDF type with jspdf-autotable
+declare module 'jspdf' {
+  interface jsPDF {
+    lastAutoTable: {
+      finalY: number;
+    };
+  }
+}
+
 interface VehicleReportData {
   plateNumber: string
   brand: string
@@ -317,7 +326,7 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
       margin: { left: 14, right: 14 },
     })
 
-    yPosition = (doc as any).lastAutoTable.finalY + 10
+    yPosition = doc.lastAutoTable.finalY + 10
   }
 
   const pageCount = doc.getNumberOfPages()

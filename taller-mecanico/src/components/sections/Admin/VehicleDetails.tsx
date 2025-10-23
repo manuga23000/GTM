@@ -501,10 +501,21 @@ export default function VehicleDetails({
 
                     const timelineDocId = `${vehicle.plateNumber}_servicio_${serviceCount}`
 
+                    interface VehicleTimelineData
+                      extends Omit<VehicleInTracking, 'fluidLevels'> {
+                      finalizedAt: Date
+                      serviceNumber: number
+                      fluidLevels?: {
+                        aceite: number
+                        agua: number
+                        frenos: number
+                      }
+                    }
+
                     const { fluidLevels, ...vehicleWithoutFluidLevels } =
                       vehicleWithFreshSteps
 
-                    const vehicleData: any = {
+                    const vehicleData: VehicleTimelineData = {
                       ...vehicleWithoutFluidLevels,
                       finalizedAt: new Date(),
                       serviceNumber: serviceCount,

@@ -5,8 +5,8 @@ import autoTable from 'jspdf-autotable'
 declare module 'jspdf' {
   interface jsPDF {
     lastAutoTable: {
-      finalY: number;
-    };
+      finalY: number
+    }
   }
 }
 
@@ -172,31 +172,30 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
 
     yPosition += 8
 
+    // Eliminadas columnas de Patente y Cliente
     const tableData = data.vehiclesIn.map(v => [
-      v.plateNumber,
       `${v.brand} ${v.model} (${v.year})`,
-      v.clientName,
       v.serviceType || 'No especificado',
       formatDate(v.entryDate),
-      v.km ? `${v.km.toLocaleString()} km` : '-',
+      v.km ? v.km.toLocaleString() : '-',
     ])
 
     autoTable(doc, {
       startY: yPosition,
-      head: [['Patente', 'Vehiculo', 'Cliente', 'Servicio', 'Ingreso', 'KM']],
+      head: [['Vehículo', 'Servicio', 'Ingreso', 'KM']],
       body: tableData,
       theme: 'grid',
       headStyles: {
         fillColor: blackColor,
         textColor: [255, 255, 255],
-        fontSize: 9,
+        fontSize: 12, // Aumentado de 9 a 12
         fontStyle: 'bold',
         halign: 'center',
         lineColor: redColor,
         lineWidth: 0.5,
       },
       bodyStyles: {
-        fontSize: 8,
+        fontSize: 11, // Aumentado de 8 a 11
         halign: 'center',
         textColor: blackColor,
       },
@@ -206,6 +205,7 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
       styles: {
         lineColor: [200, 200, 200],
         lineWidth: 0.1,
+        cellPadding: 4, // Aumentado el padding para mejor legibilidad
       },
       margin: { left: 14, right: 14 },
     })
@@ -230,31 +230,30 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
 
     yPosition += 8
 
+    // Eliminadas columnas de Patente y Cliente
     const tableData = data.vehiclesOut.map(v => [
-      v.plateNumber,
       `${v.brand} ${v.model} (${v.year})`,
-      v.clientName,
       v.serviceType || 'No especificado',
       v.finalizedAt ? formatDate(v.finalizedAt) : '-',
-      v.km ? `${v.km.toLocaleString()} km` : '-',
+      v.km ? v.km.toLocaleString() : '-',
     ])
 
     autoTable(doc, {
       startY: yPosition,
-      head: [['Patente', 'Vehiculo', 'Cliente', 'Servicio', 'Entrega', 'KM']],
+      head: [['Vehículo', 'Servicio', 'Entrega', 'KM']],
       body: tableData,
       theme: 'grid',
       headStyles: {
         fillColor: redColor,
         textColor: [255, 255, 255],
-        fontSize: 9,
+        fontSize: 12, // Aumentado de 9 a 12
         fontStyle: 'bold',
         halign: 'center',
         lineColor: blackColor,
         lineWidth: 0.5,
       },
       bodyStyles: {
-        fontSize: 8,
+        fontSize: 11, // Aumentado de 8 a 11
         halign: 'center',
         textColor: blackColor,
       },
@@ -264,6 +263,7 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
       styles: {
         lineColor: [200, 200, 200],
         lineWidth: 0.1,
+        cellPadding: 4, // Aumentado el padding para mejor legibilidad
       },
       margin: { left: 14, right: 14 },
     })
@@ -288,31 +288,30 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
 
     yPosition += 8
 
+    // Eliminadas columnas de Patente y Cliente
     const tableData = data.vehiclesInWorkshop.map(v => [
-      v.plateNumber,
       `${v.brand} ${v.model} (${v.year})`,
-      v.clientName,
       v.serviceType || 'No especificado',
       formatDate(v.entryDate),
-      v.km ? `${v.km.toLocaleString()} km` : '-',
+      v.km ? v.km.toLocaleString() : '-',
     ])
 
     autoTable(doc, {
       startY: yPosition,
-      head: [['Patente', 'Vehiculo', 'Cliente', 'Servicio', 'Ingreso', 'KM']],
+      head: [['Vehículo', 'Servicio', 'Ingreso', 'KM']],
       body: tableData,
       theme: 'grid',
       headStyles: {
         fillColor: blueColor,
         textColor: [255, 255, 255],
-        fontSize: 9,
+        fontSize: 12, // Aumentado de 9 a 12
         fontStyle: 'bold',
         halign: 'center',
         lineColor: blackColor,
         lineWidth: 0.5,
       },
       bodyStyles: {
-        fontSize: 8,
+        fontSize: 11, // Aumentado de 8 a 11
         halign: 'center',
         textColor: blackColor,
       },
@@ -322,6 +321,7 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
       styles: {
         lineColor: [200, 200, 200],
         lineWidth: 0.1,
+        cellPadding: 4, // Aumentado el padding para mejor legibilidad
       },
       margin: { left: 14, right: 14 },
     })

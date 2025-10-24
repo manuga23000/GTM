@@ -173,9 +173,7 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
     yPosition += 8
 
     const tableData = data.vehiclesIn.map(v => [
-      v.plateNumber,
       `${v.brand} ${v.model} (${v.year})`,
-      v.clientName,
       v.serviceType || 'No especificado',
       formatDate(v.entryDate),
       v.km ? `${v.km.toLocaleString()} km` : '-',
@@ -183,22 +181,29 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
 
     autoTable(doc, {
       startY: yPosition,
-      head: [['Patente', 'Vehiculo', 'Cliente', 'Servicio', 'Ingreso', 'KM']],
+      head: [['Vehículo', 'Servicio', 'Ingreso', 'KM']],
+      columnStyles: {
+        0: { cellWidth: 80, fontSize: 12 },
+        1: { cellWidth: 60, fontSize: 12 },
+        2: { cellWidth: 30, fontSize: 12 },
+        3: { cellWidth: 30, fontSize: 12 }
+      },
       body: tableData,
       theme: 'grid',
       headStyles: {
         fillColor: blackColor,
         textColor: [255, 255, 255],
-        fontSize: 9,
+        fontSize: 14,
         fontStyle: 'bold',
         halign: 'center',
         lineColor: redColor,
         lineWidth: 0.5,
       },
       bodyStyles: {
-        fontSize: 8,
+        fontSize: 12,
         halign: 'center',
         textColor: blackColor,
+        cellPadding: 4,
       },
       alternateRowStyles: {
         fillColor: lightGray,
@@ -231,9 +236,7 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
     yPosition += 8
 
     const tableData = data.vehiclesOut.map(v => [
-      v.plateNumber,
       `${v.brand} ${v.model} (${v.year})`,
-      v.clientName,
       v.serviceType || 'No especificado',
       v.finalizedAt ? formatDate(v.finalizedAt) : '-',
       v.km ? `${v.km.toLocaleString()} km` : '-',
@@ -241,7 +244,13 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
 
     autoTable(doc, {
       startY: yPosition,
-      head: [['Patente', 'Vehiculo', 'Cliente', 'Servicio', 'Entrega', 'KM']],
+      head: [['Vehículo', 'Servicio', 'Entrega', 'KM']],
+      columnStyles: {
+        0: { cellWidth: 80, fontSize: 12 },
+        1: { cellWidth: 60, fontSize: 12 },
+        2: { cellWidth: 30, fontSize: 12 },
+        3: { cellWidth: 30, fontSize: 12 }
+      },
       body: tableData,
       theme: 'grid',
       headStyles: {
@@ -289,9 +298,7 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
     yPosition += 8
 
     const tableData = data.vehiclesInWorkshop.map(v => [
-      v.plateNumber,
       `${v.brand} ${v.model} (${v.year})`,
-      v.clientName,
       v.serviceType || 'No especificado',
       formatDate(v.entryDate),
       v.km ? `${v.km.toLocaleString()} km` : '-',
@@ -299,7 +306,13 @@ export function generateWeeklyPDF(data: WeeklyReportData): void {
 
     autoTable(doc, {
       startY: yPosition,
-      head: [['Patente', 'Vehiculo', 'Cliente', 'Servicio', 'Ingreso', 'KM']],
+      head: [['Vehículo', 'Servicio', 'Ingreso', 'KM']],
+      columnStyles: {
+        0: { cellWidth: 80, fontSize: 12 },
+        1: { cellWidth: 60, fontSize: 12 },
+        2: { cellWidth: 30, fontSize: 12 },
+        3: { cellWidth: 30, fontSize: 12 }
+      },
       body: tableData,
       theme: 'grid',
       headStyles: {

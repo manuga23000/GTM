@@ -232,7 +232,6 @@ export default function FluidConfig({
     setSaveMessage(null)
 
     try {
-      // 1. Solo guardar los niveles en el vehículo sin crear steps automáticos
       await onSave(levels)
 
       setSaveMessage({
@@ -240,7 +239,6 @@ export default function FluidConfig({
         text: '✅ Niveles guardados correctamente',
       })
 
-      // Limpiar mensaje después de 3 segundos
       setTimeout(() => setSaveMessage(null), 3000)
     } catch (error) {
       console.error('Error al guardar niveles:', error)

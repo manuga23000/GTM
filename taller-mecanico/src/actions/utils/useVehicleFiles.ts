@@ -80,14 +80,16 @@ export function useVehicleFiles({
           continue
         }
 
-        if (!validateFileSize(file, maxFileSize)) {
+        const isVideo = getFileType(file) === 'video'
+        // Use 25MB limit for videos, keep maxFileSize for images
+        const limitMB = isVideo ? 25 : maxFileSize
+        if (!validateFileSize(file, limitMB)) {
           errors.push(
-            `${file.name}: Tamaño muy grande (máximo ${maxFileSize}MB)`
+            `${file.name}: Tamaño muy grande (máximo ${limitMB}MB)`
           )
           continue
         }
 
-        const isVideo = getFileType(file) === 'video'
         if (
           isVideo &&
           !allowMultipleVideos &&

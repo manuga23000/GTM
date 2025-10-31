@@ -303,8 +303,13 @@ const FileUploader = ({
           alert(`Archivo ${file.name}: Tipo no permitido`)
           return false
         }
-        if (!validateFileSize(file, 10)) {
-          alert(`Archivo ${file.name}: Tamaño muy grande (máximo 10MB)`)
+        // Allow up to 25MB for videos, 10MB for images
+        const isVideo = getFileType(file) === 'video'
+        const maxMB = isVideo ? 25 : 10
+        if (!validateFileSize(file, maxMB)) {
+          alert(
+            `Archivo ${file.name}: Tamaño muy grande (máximo ${maxMB}MB)`
+          )
           return false
         }
         return true

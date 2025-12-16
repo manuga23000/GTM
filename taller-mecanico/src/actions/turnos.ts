@@ -22,6 +22,14 @@ import { getServiceConfig } from './serviceconfig'
 
 const COLLECTION_NAME = 'turnos'
 
+// Helper: format a Date to local YYYY-MM-DD without using UTC/toISOString
+function getLocalDateString(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 async function getServiceAvailabilityConfig(serviceName: string): Promise<{
   maxPerDay?: number | null
   maxPerWeek?: number | null
@@ -122,8 +130,54 @@ export async function createTurno(
         serviceToCheck = turnoData.subService
       }
 
+      // Server-side cutoff validation: before 16:00 -> next day allowed; after 16:00 -> day after next
+      const now = new Date()
+      const cutoffToday = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        16,
+        0,
+        0,
+        0
+      )
+      const minDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      if (now < cutoffToday) {
+        // tomorrow
+        minDate.setDate(minDate.getDate() + 1)
+      } else {
+        // day after tomorrow
+        minDate.setDate(minDate.getDate() + 2)
+      }
+
+      // Validate selected date is >= minDate (compare by local date)
+      const selectedLocalDateStr = getLocalDateString(turnoData.date)
+      const minLocalDateStr = getLocalDateString(minDate)
+      if (selectedLocalDateStr < minLocalDateStr) {
+        return {
+          success: false,
+          message:
+            'Según nuestra política, los turnos tomados después de las 16:00 se agendan para pasado mañana. Elegí una fecha válida.',
+          error: 'DATE_BEFORE_MIN_ALLOWED',
+        }
+      }
+
+      // Validate service allowed days if configured
+      const serviceConfig = await getServiceAvailabilityConfig(serviceToCheck)
+      if (serviceConfig?.allowedDays && serviceConfig.allowedDays.length > 0) {
+        const dow = turnoData.date.getDay()
+        const dayNumber = dow === 0 ? 7 : dow
+        if (!serviceConfig.allowedDays.includes(dayNumber)) {
+          return {
+            success: false,
+            message: 'La fecha seleccionada no está disponible para este servicio.',
+            error: 'DAY_NOT_ALLOWED',
+          }
+        }
+      }
+
       const availability = await checkAvailability(
-        turnoData.date.toISOString().split('T')[0],
+        getLocalDateString(turnoData.date),
         serviceToCheck
       )
 
@@ -546,7 +600,7 @@ export async function getAvailabilityForWeek(
     date.setDate(startDate.getDate() + i)
 
     if (date.getDay() >= 1 && date.getDay() <= 5) {
-      const dateString = date.toISOString().split('T')[0]
+      const dateString = getLocalDateString(date)
       const dayAvailability = await checkAvailability(dateString, service)
       availability.push(dayAvailability)
     }

@@ -315,20 +315,26 @@ export default function FormFields({
                   placeholderText='Selecciona una fecha'
                   minDate={(() => {
                     const now = new Date()
-                    const today8AM = new Date(
+                    const cutoffToday16 = new Date(
                       now.getFullYear(),
                       now.getMonth(),
                       now.getDate(),
-                      8,
-                      10,
+                      16,
+                      0,
                       0
                     )
-
-                    if (now < today8AM) {
-                      return new Date()
+                    const base = new Date(
+                      now.getFullYear(),
+                      now.getMonth(),
+                      now.getDate()
+                    )
+                    // Before 16:00 -> tomorrow; after 16:00 -> day after tomorrow
+                    if (now < cutoffToday16) {
+                      base.setDate(base.getDate() + 1)
+                    } else {
+                      base.setDate(base.getDate() + 2)
                     }
-
-                    return new Date(now.getTime() + 24 * 60 * 60 * 1000)
+                    return base
                   })()}
                   locale='es-custom'
                   calendarStartDay={0}

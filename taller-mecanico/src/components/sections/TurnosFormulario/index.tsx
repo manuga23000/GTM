@@ -79,19 +79,18 @@ export default function TurnosFormulario() {
 
     const datesToCheck: string[] = []
     const now = new Date()
-    const today8AM = new Date(
+    const cutoffToday16 = new Date(
       now.getFullYear(),
       now.getMonth(),
       now.getDate(),
-      8,
-      10,
+      16,
+      0,
       0
     )
 
     let startDay = 0
-    if (now >= today8AM) {
-      startDay = 1
-    }
+    // Before 16:00 -> allow booking for tomorrow; after 16:00 -> from day after tomorrow
+    startDay = now < cutoffToday16 ? 1 : 2
 
     for (let i = startDay; i < 15; i++) {
       const date = new Date()

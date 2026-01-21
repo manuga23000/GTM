@@ -423,6 +423,25 @@ export default function TurnosFormulario() {
 
           <motion.div
             variants={animations.fadeInUp}
+            className='bg-yellow-900/30 border-2 border-yellow-600/50 rounded-xl p-6 mb-8 max-w-2xl mx-auto'
+          >
+            <div className='flex items-start gap-4'>
+              <div className='text-3xl'>🏖️</div>
+              <div className='flex-1'>
+                <h3 className='text-xl font-bold text-yellow-400 mb-2'>
+                  Período de Vacaciones
+                </h3>
+                <p className='text-gray-200'>
+                  Desde el <strong className='text-white'>31 de enero</strong> hasta el{' '}
+                  <strong className='text-white'>10 de febrero</strong> estaremos de vacaciones.
+                  Puedes sacar turnos para después de esa fecha.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            variants={animations.fadeInUp}
             className='bg-gray-800 rounded-2xl p-8 shadow-2xl border border-gray-700'
           >
             <form onSubmit={handleSubmit} className='space-y-6'>

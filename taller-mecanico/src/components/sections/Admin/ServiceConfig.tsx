@@ -6,6 +6,8 @@ import {
   updateServiceConfig,
   initializeServiceConfigs,
   cleanDuplicateConfigs,
+  getVacationMode,
+  setVacationMode,
 } from '@/actions/serviceconfig'
 
 const DAYS_MOBILE = [
@@ -30,6 +32,8 @@ export default function ServiceConfig() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const [vacationMode, setVacationModeState] = useState(false)
+  const [vacationLoading, setVacationLoading] = useState(false)
 
   const availableServices = [
     'Diagnóstico',
@@ -61,6 +65,40 @@ export default function ServiceConfig() {
     'Dirección',
     'Otro / No estoy seguro',
   ]
+
+  const loadVacationMode = async () => {
+    try {
+      const vacationConfig = await getVacationMode()
+      if (vacationConfig) {
+        setVacationModeState(vacationConfig.enabled)
+      }
+    } catch (error) {
+      console.error('❌ Error cargando modo vacaciones:', error)
+    }
+  }
+
+  const handleToggleVacationMode = async () => {
+    setVacationLoading(true)
+    try {
+      const newState = !vacationMode
+      const result = await setVacationMode(newState)
+
+      if (result.success) {
+        setVacationModeState(newState)
+        setMessage(`✅ ${result.message}`)
+      } else {
+        setMessage(`❌ ${result.message}`)
+      }
+
+      setTimeout(() => setMessage(''), 3000)
+    } catch (error) {
+      console.error('❌ Error al cambiar modo vacaciones:', error)
+      setMessage('❌ Error al cambiar modo vacaciones')
+      setTimeout(() => setMessage(''), 3000)
+    } finally {
+      setVacationLoading(false)
+    }
+  }
 
   const loadConfigs = useCallback(async () => {
     try {
@@ -107,6 +145,7 @@ export default function ServiceConfig() {
 
   useEffect(() => {
     loadConfigs()
+    loadVacationMode()
   }, [loadConfigs])
 
   const updateConfig = (serviceName: string, field: string, value: unknown) => {
@@ -442,6 +481,53 @@ export default function ServiceConfig() {
           {message}
         </div>
       )}
+
+      {/* Modo Vacaciones */}
+      <div className='bg-gradient-to-r from-yellow-900/40 to-orange-900/40 border-2 border-yellow-600/50 rounded-xl p-4 sm:p-6'>
+        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+          <div className='flex-1'>
+            <div className='flex items-center gap-3 mb-2'>
+              <span className='text-2xl sm:text-3xl'>🏖️</span>
+              <h3 className='text-lg sm:text-xl font-bold text-yellow-400'>
+                Modo Vacaciones
+              </h3>
+            </div>
+            <p className='text-gray-300 text-xs sm:text-sm'>
+              {vacationMode ? (
+                <>
+                  <strong className='text-yellow-300'>ACTIVO:</strong> Bloqueando turnos del{' '}
+                  <strong className='text-white'>31 de enero</strong> al{' '}
+                  <strong className='text-white'>10 de febrero</strong>
+                </>
+              ) : (
+                <>
+                  Desactivado. Los clientes pueden sacar turnos normalmente.
+                </>
+              )}
+            </p>
+          </div>
+          <button
+            onClick={handleToggleVacationMode}
+            disabled={vacationLoading}
+            className={`px-4 sm:px-6 py-3 rounded-lg font-semibold transition-all duration-300 text-sm sm:text-base min-w-[140px] ${
+              vacationMode
+                ? 'bg-red-600 hover:bg-red-700 text-white'
+                : 'bg-green-600 hover:bg-green-700 text-white'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {vacationLoading ? (
+              <div className='flex items-center justify-center gap-2'>
+                <div className='inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white'></div>
+                <span>...</span>
+              </div>
+            ) : vacationMode ? (
+              'Desactivar'
+            ) : (
+              'Activar'
+            )}
+          </button>
+        </div>
+      </div>
 
       {/* Selector de servicios - RESPONSIVO */}
       <div className='bg-gray-800 p-3 sm:p-6 rounded-xl border border-gray-700'>

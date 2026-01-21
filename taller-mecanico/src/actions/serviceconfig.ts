@@ -377,3 +377,63 @@ export async function cleanDuplicateConfigs(): Promise<ServiceConfigResponse> {
     }
   }
 }
+
+// Vacation Mode Functions
+const VACATION_CONFIG_DOC = 'vacation_mode'
+
+export async function getVacationMode(): Promise<{
+  enabled: boolean
+  startDate: string
+  endDate: string
+} | null> {
+  try {
+    const docRef = doc(db, 'settings', VACATION_CONFIG_DOC)
+    const docSnap = await getDocs(
+      query(collection(db, 'settings'), where('__name__', '==', VACATION_CONFIG_DOC))
+    )
+
+    if (docSnap.empty) {
+      return null
+    }
+
+    const data = docSnap.docs[0].data()
+    return {
+      enabled: data.enabled || false,
+      startDate: data.startDate || '2026-01-31',
+      endDate: data.endDate || '2026-02-10',
+    }
+  } catch (error) {
+    console.error('❌ Error obteniendo modo vacaciones:', error)
+    return null
+  }
+}
+
+export async function setVacationMode(
+  enabled: boolean
+): Promise<ServiceConfigResponse> {
+  try {
+    const vacationData = {
+      enabled,
+      startDate: '2025-01-31',
+      endDate: '2025-02-10',
+      updatedAt: Timestamp.fromDate(new Date()),
+    }
+
+    const docRef = doc(db, 'settings', VACATION_CONFIG_DOC)
+    await setDoc(docRef, vacationData)
+
+    return {
+      success: true,
+      message: enabled
+        ? 'Modo vacaciones activado (31/01 - 10/02)'
+        : 'Modo vacaciones desactivado',
+    }
+  } catch (error) {
+    console.error('❌ Error configurando modo vacaciones:', error)
+    return {
+      success: false,
+      message: 'Error al configurar modo vacaciones',
+      error: 'VACATION_MODE_ERROR',
+    }
+  }
+}

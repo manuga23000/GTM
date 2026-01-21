@@ -389,7 +389,10 @@ export async function getVacationMode(): Promise<{
   try {
     const docRef = doc(db, 'settings', VACATION_CONFIG_DOC)
     const docSnap = await getDocs(
-      query(collection(db, 'settings'), where('__name__', '==', VACATION_CONFIG_DOC))
+      query(
+        collection(db, 'settings'),
+        where('__name__', '==', VACATION_CONFIG_DOC)
+      )
     )
 
     if (docSnap.empty) {
@@ -407,7 +410,7 @@ export async function getVacationMode(): Promise<{
     return null
   }
 }
-
+//
 export async function setVacationMode(
   enabled: boolean
 ): Promise<ServiceConfigResponse> {

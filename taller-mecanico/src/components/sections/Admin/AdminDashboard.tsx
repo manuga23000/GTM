@@ -10,6 +10,7 @@ import AdminStats from './AdminStats'
 import ServiceConfig from './ServiceConfig'
 import VehicleConfig from './VehicleConfig'
 import ExpenseManager from './ExpenseManager'
+import Link from 'next/link'
 
 export default function AdminDashboard() {
   const [turnos, setTurnos] = useState<Turno[]>([])
@@ -161,31 +162,63 @@ export default function AdminDashboard() {
           <span className='hidden sm:block'>Panel de Administración</span>
         </h1>
 
-        {/* Solo botón de logout */}
-        <motion.button
-          whileHover={{
-            scale: 1.1,
-            boxShadow: '0 10px 25px rgba(239, 68, 68, 0.4)',
-          }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handleLogout}
-          aria-label='Cerrar sesión'
-          className='bg-red-600 hover:bg-red-700 text-white p-2 sm:p-3 rounded-full transition-colors duration-200 cursor-pointer flex items-center justify-center shadow-md self-center sm:self-auto'
-        >
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            width='18'
-            height='18'
-            className='sm:w-6 sm:h-6'
-            fill='none'
-            viewBox='0 0 24 24'
+        {/* Botones de acción */}
+        <div className='flex items-center gap-2 sm:gap-3'>
+          <Link href='/admin/presupuesto'>
+            <motion.button
+              whileHover={{
+                scale: 1.1,
+                boxShadow: '0 10px 25px rgba(34, 197, 94, 0.4)',
+              }}
+              whileTap={{ scale: 0.95 }}
+              aria-label='Calculadora de Presupuestos'
+              className='bg-green-600 hover:bg-green-700 text-white p-2 sm:p-3 rounded-full transition-colors duration-200 cursor-pointer flex items-center justify-center shadow-md'
+              title='Calculadora de Presupuestos'
+            >
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                width='18'
+                height='18'
+                className='sm:w-6 sm:h-6'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+                strokeWidth='2'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  d='M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                />
+              </svg>
+            </motion.button>
+          </Link>
+
+          <motion.button
+            whileHover={{
+              scale: 1.1,
+              boxShadow: '0 10px 25px rgba(239, 68, 68, 0.4)',
+            }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleLogout}
+            aria-label='Cerrar sesión'
+            className='bg-red-600 hover:bg-red-700 text-white p-2 sm:p-3 rounded-full transition-colors duration-200 cursor-pointer flex items-center justify-center shadow-md'
           >
-            <path
-              fill='currentColor'
-              d='M16.3 7.7a1 1 0 0 1 1.4 1.4L16.4 11H21a1 1 0 1 1 0 2h-4.6l1.3 1.9a1 1 0 1 1-1.6 1.2l-3-4.2a1 1 0 0 1 0-1.2l3-4.2ZM13 3a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V5H7v14h5v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6Z'
-            />
-          </svg>
-        </motion.button>
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              width='18'
+              height='18'
+              className='sm:w-6 sm:h-6'
+              fill='none'
+              viewBox='0 0 24 24'
+            >
+              <path
+                fill='currentColor'
+                d='M16.3 7.7a1 1 0 0 1 1.4 1.4L16.4 11H21a1 1 0 1 1 0 2h-4.6l1.3 1.9a1 1 0 1 1-1.6 1.2l-3-4.2a1 1 0 0 1 0-1.2l3-4.2ZM13 3a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V5H7v14h5v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6Z'
+              />
+            </svg>
+          </motion.button>
+        </div>
       </motion.div>
 
       <AnimatePresence>

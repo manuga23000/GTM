@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Transaction } from '@/actions/types/types'
+import { X, Save } from 'lucide-react'
 
 interface EditTransactionModalProps {
   transaction: Transaction
@@ -37,7 +38,6 @@ export default function EditTransactionModal({
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
-
     return () => {
       document.body.style.overflow = 'unset'
     }
@@ -84,12 +84,13 @@ export default function EditTransactionModal({
   }
 
   const handleTypeChange = (newType: 'expense' | 'income') => {
-    setFormData({
-      ...formData,
-      type: newType,
-      category: '',
-    })
+    setFormData({ ...formData, type: newType, category: '' })
   }
+
+  const inputClass = (disabled: boolean) =>
+    `w-full p-2 sm:p-3 border border-zinc-700 rounded-xl focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 focus:outline-none text-white transition-all text-sm sm:text-base ${
+      disabled ? 'bg-zinc-700 cursor-not-allowed opacity-50' : 'bg-zinc-900 hover:border-zinc-600'
+    }`
 
   return (
     <motion.div
@@ -97,22 +98,11 @@ export default function EditTransactionModal({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className='fixed inset-0 z-[9999] flex items-center justify-center'
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 9999,
-      }}
-      onClick={e => {
-        if (e.target === e.currentTarget) {
-          onCancel()
-        }
-      }}
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999 }}
+      onClick={e => { if (e.target === e.currentTarget) onCancel() }}
     >
       {/* Backdrop */}
-      <div className='absolute inset-0 bg-black/60 backdrop-blur-sm' />
+      <div className='absolute inset-0 bg-black/70 backdrop-blur-sm' />
 
       {/* Modal Content */}
       <motion.div
@@ -120,61 +110,52 @@ export default function EditTransactionModal({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className='relative bg-gray-800 rounded-xl shadow-2xl w-full mx-4 sm:mx-6 max-w-2xl z-10'
+        className='relative bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl w-full mx-4 sm:mx-6 max-w-2xl z-10 overflow-hidden'
         style={{ maxHeight: 'calc(100vh - 2rem)' }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header fijo */}
-        <div className='flex justify-between items-center p-4 sm:p-6 border-b border-gray-700 bg-gray-800 rounded-t-xl'>
+        {/* Top accent */}
+        <div className='h-0.5 w-full bg-gradient-to-r from-amber-500 to-orange-500' />
+
+        {/* Header */}
+        <div className='flex justify-between items-center p-4 sm:p-6 border-b border-zinc-800'>
           <h3 className='text-xl sm:text-2xl font-bold text-white'>
             Editar Movimiento
           </h3>
           <button
             onClick={onCancel}
-            className='text-gray-400 hover:text-white transition-colors p-1'
+            className='p-2 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors'
           >
-            <svg
-              className='w-6 h-6'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M6 18L18 6M6 6l12 12'
-              />
-            </svg>
+            <X className='w-5 h-5' strokeWidth={2} />
           </button>
         </div>
 
-        {/* Contenido con scroll */}
+        {/* Scrollable content */}
         <div
           className='overflow-y-auto p-4 sm:p-6'
-          style={{ maxHeight: 'calc(100vh - 8rem)' }}
+          style={{ maxHeight: 'calc(100vh - 10rem)' }}
         >
-          <form onSubmit={handleSubmit} className='space-y-4 sm:space-y-6'>
+          <form onSubmit={handleSubmit} className='space-y-4 sm:space-y-5'>
             {/* Tipo */}
             <div>
-              <label className='block text-sm font-medium mb-2 text-white'>
+              <label className='block text-sm font-medium mb-2 text-zinc-300'>
                 Tipo de Movimiento
               </label>
-              <div className='flex gap-2 sm:gap-4'>
+              <div className='flex gap-2 sm:gap-3'>
                 {(['expense', 'income'] as const).map(type => (
                   <motion.button
                     key={type}
                     type='button'
                     disabled={isSubmitting}
                     onClick={() => handleTypeChange(type)}
-                    className={`flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-lg font-medium transition-all text-sm sm:text-base ${
+                    className={`flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-xl font-semibold transition-all text-sm sm:text-base ${
                       formData.type === type
                         ? type === 'expense'
-                          ? 'bg-red-600 text-white'
-                          : 'bg-green-600 text-white'
+                          ? 'bg-red-600 text-white shadow-md'
+                          : 'bg-emerald-600 text-white shadow-md'
                         : isSubmitting
-                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        ? 'bg-zinc-700 text-zinc-500 cursor-not-allowed opacity-50'
+                        : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
                     }`}
                     whileHover={!isSubmitting ? { scale: 1.02 } : {}}
                     whileTap={!isSubmitting ? { scale: 0.98 } : {}}
@@ -187,34 +168,26 @@ export default function EditTransactionModal({
 
             {/* Categoría */}
             <div>
-              <label className='block text-sm font-medium mb-2 text-white'>
+              <label className='block text-sm font-medium mb-2 text-zinc-300'>
                 Categoría
               </label>
               <select
                 value={formData.category}
-                onChange={e =>
-                  setFormData({ ...formData, category: e.target.value })
-                }
+                onChange={e => setFormData({ ...formData, category: e.target.value })}
                 disabled={isSubmitting}
-                className={`w-full p-2 sm:p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white transition-all text-sm sm:text-base ${
-                  isSubmitting
-                    ? 'bg-gray-600 cursor-not-allowed opacity-50'
-                    : 'bg-gray-700 hover:bg-gray-650'
-                }`}
+                className={inputClass(isSubmitting)}
                 required
               >
                 <option value=''>Seleccionar categoría</option>
                 {categories[formData.type].map(cat => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
+                  <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
             </div>
 
             {/* Monto */}
             <div>
-              <label className='block text-sm font-medium mb-2 text-white'>
+              <label className='block text-sm font-medium mb-2 text-zinc-300'>
                 Monto (ARS)
               </label>
               <input
@@ -226,24 +199,14 @@ export default function EditTransactionModal({
                   const value = e.target.value
                   if (value === '' || /^\d*\.?\d*$/.test(value)) {
                     const numericValue = value === '' ? 0 : parseFloat(value)
-                    setFormData({
-                      ...formData,
-                      amount: isNaN(numericValue) ? 0 : numericValue,
-                    })
+                    setFormData({ ...formData, amount: isNaN(numericValue) ? 0 : numericValue })
                   }
                 }}
                 onBlur={e => {
                   const value = parseFloat(e.target.value) || 0
-                  setFormData({
-                    ...formData,
-                    amount: parseFloat(value.toFixed(2)),
-                  })
+                  setFormData({ ...formData, amount: parseFloat(value.toFixed(2)) })
                 }}
-                className={`w-full p-2 sm:p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-all text-sm sm:text-base ${
-                  isSubmitting
-                    ? 'bg-gray-600 cursor-not-allowed opacity-50'
-                    : 'bg-gray-700 hover:bg-gray-650'
-                }`}
+                className={`${inputClass(isSubmitting)} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                 placeholder='0.00'
                 required
               />
@@ -251,41 +214,29 @@ export default function EditTransactionModal({
 
             {/* Fecha */}
             <div>
-              <label className='block text-sm font-medium mb-2 text-white'>
+              <label className='block text-sm font-medium mb-2 text-zinc-300'>
                 Fecha
               </label>
               <input
                 type='date'
                 disabled={isSubmitting}
                 value={formData.date}
-                onChange={e =>
-                  setFormData({ ...formData, date: e.target.value })
-                }
-                className={`w-full p-2 sm:p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white transition-all text-sm sm:text-base ${
-                  isSubmitting
-                    ? 'bg-gray-600 cursor-not-allowed opacity-50'
-                    : 'bg-gray-700 hover:bg-gray-650'
-                }`}
+                onChange={e => setFormData({ ...formData, date: e.target.value })}
+                className={inputClass(isSubmitting)}
                 required
               />
             </div>
 
             {/* Descripción */}
             <div>
-              <label className='block text-sm font-medium mb-2 text-white'>
+              <label className='block text-sm font-medium mb-2 text-zinc-300'>
                 Descripción (Opcional)
               </label>
               <textarea
                 disabled={isSubmitting}
                 value={formData.description}
-                onChange={e =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                className={`w-full p-2 sm:p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white transition-all resize-none text-sm sm:text-base ${
-                  isSubmitting
-                    ? 'bg-gray-600 cursor-not-allowed opacity-50'
-                    : 'bg-gray-700 hover:bg-gray-650'
-                }`}
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                className={`${inputClass(isSubmitting)} resize-none`}
                 rows={3}
                 placeholder='Descripción adicional del movimiento...'
               />
@@ -293,14 +244,14 @@ export default function EditTransactionModal({
           </form>
         </div>
 
-        {/* Footer con botones fijos */}
-        <div className='p-4 sm:p-6 border-t border-gray-700 bg-gray-800 rounded-b-xl'>
-          <div className='flex flex-col sm:flex-row gap-3 sm:gap-4'>
+        {/* Footer */}
+        <div className='p-4 sm:p-6 border-t border-zinc-800'>
+          <div className='flex flex-col sm:flex-row gap-3'>
             <motion.button
               type='button'
               onClick={onCancel}
               disabled={isSubmitting}
-              className='flex-1 py-2 sm:py-3 px-4 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
+              className='flex-1 py-2.5 sm:py-3 px-4 bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base'
               whileHover={!isSubmitting ? { scale: 1.02 } : {}}
               whileTap={!isSubmitting ? { scale: 0.98 } : {}}
             >
@@ -311,11 +262,11 @@ export default function EditTransactionModal({
               type='submit'
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className={`flex-1 py-2 sm:py-3 px-4 font-medium rounded-lg transition-all text-sm sm:text-base ${
+              className={`flex-1 py-2.5 sm:py-3 px-4 font-bold rounded-xl transition-all text-sm sm:text-base flex items-center justify-center gap-2 ${
                 isSubmitting
-                  ? 'bg-blue-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700'
-              } text-white`}
+                  ? 'bg-amber-400 cursor-not-allowed text-zinc-900'
+                  : 'bg-amber-500 hover:bg-amber-600 text-zinc-900 shadow-md shadow-amber-900/20'
+              }`}
               whileHover={!isSubmitting ? { scale: 1.02 } : {}}
               whileTap={!isSubmitting ? { scale: 0.98 } : {}}
             >
@@ -323,17 +274,16 @@ export default function EditTransactionModal({
                 <div className='flex items-center justify-center space-x-2'>
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: 'linear',
-                    }}
-                    className='w-4 h-4 border-2 border-white border-t-transparent rounded-full'
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    className='w-4 h-4 border-2 border-zinc-900/30 border-t-zinc-900 rounded-full'
                   />
                   <span>Guardando...</span>
                 </div>
               ) : (
-                'Guardar Cambios'
+                <>
+                  <Save className='w-4 h-4' strokeWidth={2.2} />
+                  Guardar Cambios
+                </>
               )}
             </motion.button>
           </div>

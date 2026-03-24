@@ -1,4 +1,14 @@
 import { motion } from 'framer-motion'
+import {
+  User,
+  Wrench,
+  CalendarDays,
+  Gauge,
+  CheckCircle2,
+  ArrowRight,
+  Clock,
+  Car,
+} from 'lucide-react'
 
 export interface StepFile {
   id: string
@@ -64,134 +74,122 @@ export default function VehicleList({
   getStatusText,
 }: VehicleListProps) {
   return (
-    <div className='bg-gray-800 rounded-xl p-3 sm:p-6'>
-      <h3 className='text-lg sm:text-xl font-semibold mb-4 sm:mb-6'>
-        Vehículos Activos
-      </h3>
+    <div className='bg-zinc-900/70 border border-zinc-800 rounded-2xl p-3 sm:p-5'>
+      <div className='flex items-center gap-2 mb-4'>
+        <div className='w-6 h-6 rounded-lg bg-amber-500/20 flex items-center justify-center'>
+          <Car className='w-3.5 h-3.5 text-amber-400' strokeWidth={2.2} />
+        </div>
+        <h3 className='text-sm sm:text-base font-bold text-white'>Vehículos Activos</h3>
+        {vehicles.length > 0 && (
+          <span className='ml-auto text-xs text-zinc-500'>{vehicles.length} vehículo{vehicles.length !== 1 ? 's' : ''}</span>
+        )}
+      </div>
+
       {vehicles.length === 0 ? (
-        <div className='text-center py-8 sm:py-12'>
-          <p className='text-gray-400 text-sm sm:text-base'>
-            No hay vehículos para mostrar
-          </p>
+        <div className='text-center py-10 sm:py-14'>
+          <Car className='w-10 h-10 text-zinc-700 mx-auto mb-3' strokeWidth={1.5} />
+          <p className='text-zinc-500 text-sm'>No hay vehículos para mostrar</p>
         </div>
       ) : (
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3'>
           {vehicles.map(vehicle => {
+            const isSelected = selectedVehicle === vehicle.id
             return (
               <motion.div
                 key={vehicle.id}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.015, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                className={`p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                  selectedVehicle === vehicle.id
-                    ? 'bg-blue-900/30 border-blue-500'
-                    : 'bg-gray-700 border-gray-600 hover:border-gray-500'
+                className={`rounded-xl border-2 cursor-pointer transition-all duration-200 overflow-hidden ${
+                  isSelected
+                    ? 'bg-amber-500/10 border-amber-500 shadow-md shadow-amber-900/30'
+                    : 'bg-zinc-800/50 border-zinc-700/70 hover:border-zinc-600'
                 }`}
-                onClick={() => {
-                  if (selectedVehicle === vehicle.id) {
-                    setSelectedVehicle('')
-                  } else {
-                    setSelectedVehicle(vehicle.id)
-                  }
-                }}
+                onClick={() => setSelectedVehicle(isSelected ? '' : vehicle.id)}
               >
-                <div className='flex justify-between items-start mb-2 sm:mb-3'>
-                  <div className='flex-1 min-w-0'>
-                    <h4 className='font-bold text-base sm:text-lg text-white truncate'>
-                      {vehicle.plateNumber}
-                    </h4>
-                    <p className='text-gray-300 text-xs sm:text-sm truncate'>
-                      {vehicle.brand} {vehicle.model} {vehicle.year}
-                    </p>
-                  </div>
+                {/* Top accent */}
+                <div className={`h-0.5 ${isSelected ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-zinc-700'}`} />
 
-                  <div className='flex flex-col items-end gap-1 ml-2'>
-                    <span
-                      className={`px-2 py-1 rounded text-xs text-white ${getStatusColor(
-                        vehicle.status
-                      )} whitespace-nowrap`}
-                    >
+                <div className='p-3 sm:p-4'>
+                  {/* Header row */}
+                  <div className='flex justify-between items-start mb-2.5'>
+                    <div className='flex-1 min-w-0'>
+                      <h4 className='font-extrabold text-sm sm:text-base text-white tracking-wide'>
+                        {vehicle.plateNumber}
+                      </h4>
+                      <p className='text-zinc-400 text-xs truncate mt-0.5'>
+                        {vehicle.brand} {vehicle.model} {vehicle.year}
+                      </p>
+                    </div>
+                    <span className={`ml-2 px-2 py-0.5 rounded-md text-xs text-white font-medium whitespace-nowrap ${getStatusColor(vehicle.status)}`}>
                       {getStatusText(vehicle.status)}
                     </span>
                   </div>
-                </div>
 
-                <div className='space-y-1 sm:space-y-2 text-xs sm:text-sm'>
-                  <div className='flex items-center gap-2'>
-                    <span className='text-blue-400'>👤</span>
-                    <p className='text-gray-300 truncate flex-1'>
-                      {vehicle.clientName}
-                    </p>
-                  </div>
-
-                  <div className='flex items-center gap-2'>
-                    <span className='text-green-400'>🔧</span>
-                    <p className='text-gray-400 truncate flex-1'>
-                      {vehicle.serviceType || 'Sin servicio definido'}
-                    </p>
-                  </div>
-
-                  <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-2 pt-1 sm:pt-2'>
-                    <div className='flex items-center gap-1'>
-                      <span className='text-yellow-400'>📅</span>
-                      <p className='text-gray-500 text-xs'>
-                        Ingreso: {vehicle.entryDate.toLocaleDateString('es-AR')}
-                      </p>
+                  {/* Details */}
+                  <div className='space-y-1.5 text-xs'>
+                    <div className='flex items-center gap-2'>
+                      <User className={`w-3 h-3 shrink-0 ${isSelected ? 'text-amber-400' : 'text-zinc-500'}`} strokeWidth={2} />
+                      <p className='text-zinc-300 truncate flex-1'>{vehicle.clientName}</p>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <Wrench className={`w-3 h-3 shrink-0 ${isSelected ? 'text-amber-400' : 'text-zinc-500'}`} strokeWidth={2} />
+                      <p className='text-zinc-400 truncate flex-1'>{vehicle.serviceType || 'Sin servicio definido'}</p>
+                    </div>
+                    <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 pt-1 border-t border-zinc-700/50'>
+                      <div className='flex items-center gap-1.5'>
+                        <CalendarDays className='w-3 h-3 text-zinc-600' strokeWidth={2} />
+                        <p className='text-zinc-500 text-xs'>
+                          {vehicle.entryDate.toLocaleDateString('es-AR')}
+                        </p>
+                      </div>
+                      {vehicle.km && vehicle.km > 0 && (
+                        <div className='flex items-center gap-1'>
+                          <Gauge className={`w-3 h-3 ${isSelected ? 'text-amber-400' : 'text-zinc-500'}`} strokeWidth={2} />
+                          <p className={`font-semibold text-xs ${isSelected ? 'text-amber-300' : 'text-zinc-400'}`}>
+                            {vehicle.km.toLocaleString()} km
+                          </p>
+                        </div>
+                      )}
                     </div>
 
-                    {vehicle.km && vehicle.km > 0 && (
-                      <div className='flex items-center gap-1'>
-                        <span className='text-purple-400'>🛣️</span>
-                        <p className='text-green-400 font-medium text-xs'>
-                          {vehicle.km.toLocaleString()}KM
+                    {vehicle.steps && vehicle.steps.length > 0 && (
+                      <div className='flex items-center justify-between pt-1 border-t border-zinc-700/50'>
+                        <div className='flex items-center gap-1'>
+                          <CheckCircle2 className='w-3 h-3 text-emerald-400' strokeWidth={2} />
+                          <span className='text-emerald-400 text-xs font-medium'>
+                            {vehicle.steps.length} trabajo{vehicle.steps.length !== 1 ? 's' : ''}
+                          </span>
+                        </div>
+                        {vehicle.nextStep && (
+                          <div className='flex items-center gap-1'>
+                            <ArrowRight className='w-3 h-3 text-amber-400' strokeWidth={2} />
+                            <span className='text-amber-400 text-xs'>Próximo</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {vehicle.estimatedCompletionDate && (
+                      <div className='flex items-center gap-1.5 pt-1'>
+                        <Clock className={`w-3 h-3 ${isSelected ? 'text-amber-400' : 'text-zinc-500'}`} strokeWidth={2} />
+                        <p className={`text-xs font-medium ${isSelected ? 'text-amber-300' : 'text-zinc-400'}`}>
+                          Entrega: {vehicle.estimatedCompletionDate.toLocaleDateString('es-AR')}
                         </p>
                       </div>
                     )}
                   </div>
 
-                  {vehicle.steps && vehicle.steps.length > 0 && (
-                    <div className='flex items-center justify-between pt-1 sm:pt-2 border-t border-gray-600 mt-2'>
-                      <div className='flex items-center gap-1'>
-                        <span className='text-green-400'>✅</span>
-                        <span className='text-green-300 text-xs font-medium'>
-                          {vehicle.steps.length} trabajo
-                          {vehicle.steps.length !== 1 ? 's' : ''}
-                        </span>
-                      </div>
-
-                      {vehicle.nextStep && (
-                        <div className='flex items-center gap-1'>
-                          <span className='text-blue-400'>🔜</span>
-                          <span className='text-blue-300 text-xs'>
-                            Próximo paso
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {vehicle.estimatedCompletionDate && (
-                    <div className='flex items-center gap-1 pt-1'>
-                      <span className='text-purple-400'>⏰</span>
-                      <p className='text-purple-300 text-xs font-medium'>
-                        Entrega:{' '}
-                        {vehicle.estimatedCompletionDate.toLocaleDateString(
-                          'es-AR'
-                        )}
-                      </p>
-                    </div>
+                  {isSelected && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className='flex items-center justify-center mt-2.5 py-1 bg-amber-500/15 rounded-lg text-amber-400 text-xs font-medium gap-1'
+                    >
+                      <ArrowRight className='w-3 h-3' strokeWidth={2} />
+                      Ver detalles abajo · toca para cerrar
+                    </motion.div>
                   )}
                 </div>
-
-                {selectedVehicle === vehicle.id && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className='flex items-center justify-center mt-2 sm:mt-3 py-1 bg-blue-600/20 rounded text-blue-300 text-xs font-medium'
-                  >
-                    👆 Toca para cerrar detalles
-                  </motion.div>
-                )}
               </motion.div>
             )
           })}

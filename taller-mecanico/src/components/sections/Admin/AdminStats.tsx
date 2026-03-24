@@ -1,5 +1,14 @@
 'use client'
 import { Turno } from '@/actions/types/types'
+import {
+  ListChecks,
+  Clock3,
+  CheckCircle2,
+  CalendarRange,
+  TrendingUp,
+  BarChart3,
+  CircleDot,
+} from 'lucide-react'
 
 interface AdminStatsProps {
   turnos: Turno[]
@@ -44,154 +53,178 @@ export default function AdminStats({ turnos }: AdminStatsProps) {
       )
     }).length
 
-    return {
-      total,
-      pending,
-      cancelled,
-      completed,
-      reprogrammed,
-      serviceStats,
-      monthlyStats,
-      thisWeek,
-      thisMonth,
-    }
+    return { total, pending, cancelled, completed, reprogrammed, serviceStats, monthlyStats, thisWeek, thisMonth }
   }
 
   const stats = getStats()
 
+  const topStatCards = [
+    {
+      value: stats.total,
+      label: 'Total turnos',
+      Icon: ListChecks,
+      gradient: 'from-zinc-800/80 to-zinc-900/60',
+      border: 'border-zinc-700/60',
+      iconBg: 'bg-zinc-700/60',
+      iconColor: 'text-zinc-300',
+      valueColor: 'text-white',
+    },
+    {
+      value: stats.pending,
+      label: 'Pendientes',
+      Icon: Clock3,
+      gradient: 'from-amber-600/25 to-amber-800/15',
+      border: 'border-amber-500/30',
+      iconBg: 'bg-amber-500/20',
+      iconColor: 'text-amber-400',
+      valueColor: 'text-amber-300',
+    },
+    {
+      value: stats.completed,
+      label: 'Completados',
+      Icon: CheckCircle2,
+      gradient: 'from-emerald-600/25 to-emerald-800/15',
+      border: 'border-emerald-500/30',
+      iconBg: 'bg-emerald-500/20',
+      iconColor: 'text-emerald-400',
+      valueColor: 'text-emerald-300',
+    },
+    {
+      value: stats.thisWeek,
+      label: 'Esta semana',
+      Icon: CalendarRange,
+      gradient: 'from-orange-600/25 to-orange-800/15',
+      border: 'border-orange-500/30',
+      iconBg: 'bg-orange-500/20',
+      iconColor: 'text-orange-400',
+      valueColor: 'text-orange-300',
+    },
+  ]
+
+  const statusItems = [
+    { value: stats.pending,      label: 'Pendientes',    color: 'text-amber-400',   dot: 'bg-amber-400',   ring: 'ring-amber-400/20'   },
+    { value: stats.cancelled,    label: 'Cancelados',    color: 'text-red-400',     dot: 'bg-red-400',     ring: 'ring-red-400/20'     },
+    { value: stats.completed,    label: 'Completados',   color: 'text-emerald-400', dot: 'bg-emerald-400', ring: 'ring-emerald-400/20' },
+    { value: stats.reprogrammed, label: 'Reprogramados', color: 'text-orange-400',  dot: 'bg-orange-400',  ring: 'ring-orange-400/20'  },
+  ]
+
   return (
-    <div className='space-y-8'>
-      <div className='grid grid-cols-2 md:grid-cols-4 gap-6'>
-        <div className='bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl'>
-          <div className='text-3xl font-bold text-white'>{stats.total}</div>
-          <div className='text-blue-100 text-sm'>Total turnos</div>
-        </div>
-        <div className='bg-gradient-to-br from-yellow-500 to-yellow-600 p-6 rounded-xl'>
-          <div className='text-3xl font-bold text-white'>{stats.pending}</div>
-          <div className='text-yellow-100 text-sm'>Pendientes</div>
-        </div>
-        <div className='bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-xl'>
-          <div className='text-3xl font-bold text-white'>{stats.completed}</div>
-          <div className='text-green-100 text-sm'>Completados</div>
-        </div>
-        <div className='bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl'>
-          <div className='text-3xl font-bold text-white'>{stats.thisWeek}</div>
-          <div className='text-purple-100 text-sm'>Esta semana</div>
-        </div>
+    <div className='space-y-5'>
+
+      {/* ── Top stat cards ── */}
+      <div className='grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4'>
+        {topStatCards.map(({ value, label, Icon, gradient, border, iconBg, iconColor, valueColor }) => (
+          <div
+            key={label}
+            className={`bg-gradient-to-br ${gradient} border ${border} p-4 sm:p-5 rounded-2xl flex flex-col gap-3 shadow-md`}
+          >
+            <div className={`w-9 h-9 rounded-xl ${iconBg} flex items-center justify-center`}>
+              <Icon className={`w-4 h-4 ${iconColor}`} strokeWidth={1.8} />
+            </div>
+            <div>
+              <div className={`text-2xl sm:text-3xl font-bold ${valueColor}`}>{value}</div>
+              <div className='text-zinc-500 text-xs mt-0.5'>{label}</div>
+            </div>
+          </div>
+        ))}
       </div>
 
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
-        <div className='bg-gray-800 p-6 rounded-xl'>
-          <h3 className='text-xl font-bold text-white mb-4'>
-            Servicios más populares
-          </h3>
+      {/* ── Charts row ── */}
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+
+        {/* Popular services */}
+        <div className='bg-zinc-900/70 border border-zinc-800 p-5 sm:p-6 rounded-2xl shadow-md'>
+          <div className='flex items-center gap-2 mb-5'>
+            <div className='w-6 h-6 rounded-lg bg-amber-500/20 flex items-center justify-center'>
+              <TrendingUp className='w-3.5 h-3.5 text-amber-400' strokeWidth={2.2} />
+            </div>
+            <h3 className='text-sm sm:text-base font-bold text-white'>Servicios más populares</h3>
+          </div>
           <div className='space-y-3'>
             {Object.entries(stats.serviceStats)
               .sort(([, a], [, b]) => b - a)
               .slice(0, 5)
-              .map(([service, count]) => (
-                <div
-                  key={service}
-                  className='flex justify-between items-center'
-                >
-                  <span className='text-gray-300'>{service}</span>
-                  <div className='flex items-center space-x-2'>
-                    <div className='w-32 bg-gray-700 rounded-full h-2'>
+              .map(([service, count], i) => (
+                <div key={service} className='flex justify-between items-center gap-3'>
+                  <div className='flex items-center gap-2 min-w-0'>
+                    <span className='text-xs text-zinc-600 font-mono w-4 shrink-0'>{i + 1}</span>
+                    <span className='text-zinc-300 text-sm truncate'>{service}</span>
+                  </div>
+                  <div className='flex items-center gap-3 shrink-0'>
+                    <div className='w-20 sm:w-28 bg-zinc-800 rounded-full h-1.5'>
                       <div
-                        className='bg-blue-500 h-2 rounded-full'
-                        style={{
-                          width: `${(count / stats.total) * 100}%`,
-                        }}
-                      ></div>
+                        className='bg-gradient-to-r from-amber-500 to-orange-500 h-1.5 rounded-full transition-all duration-700'
+                        style={{ width: `${(count / stats.total) * 100}%` }}
+                      />
                     </div>
-                    <span className='text-white font-medium'>{count}</span>
+                    <span className='text-white font-semibold text-sm w-5 text-right'>{count}</span>
                   </div>
                 </div>
               ))}
+            {Object.keys(stats.serviceStats).length === 0 && (
+              <p className='text-zinc-600 text-sm text-center py-4'>Sin datos disponibles</p>
+            )}
           </div>
         </div>
 
-        <div className='bg-gray-800 p-6 rounded-xl'>
-          <h3 className='text-xl font-bold text-white mb-4'>Turnos por mes</h3>
+        {/* Monthly */}
+        <div className='bg-zinc-900/70 border border-zinc-800 p-5 sm:p-6 rounded-2xl shadow-md'>
+          <div className='flex items-center gap-2 mb-5'>
+            <div className='w-6 h-6 rounded-lg bg-emerald-500/20 flex items-center justify-center'>
+              <BarChart3 className='w-3.5 h-3.5 text-emerald-400' strokeWidth={2.2} />
+            </div>
+            <h3 className='text-sm sm:text-base font-bold text-white'>Turnos por mes</h3>
+          </div>
           <div className='space-y-3'>
             {Object.entries(stats.monthlyStats)
               .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
               .slice(-6)
               .map(([month, count]) => (
-                <div key={month} className='flex justify-between items-center'>
-                  <span className='text-gray-300 capitalize'>{month}</span>
-                  <div className='flex items-center space-x-2'>
-                    <div className='w-32 bg-gray-700 rounded-full h-2'>
+                <div key={month} className='flex justify-between items-center gap-3'>
+                  <span className='text-zinc-300 capitalize text-sm'>{month}</span>
+                  <div className='flex items-center gap-3 shrink-0'>
+                    <div className='w-20 sm:w-28 bg-zinc-800 rounded-full h-1.5'>
                       <div
-                        className='bg-green-500 h-2 rounded-full'
-                        style={{
-                          width: `${
-                            (count /
-                              Math.max(...Object.values(stats.monthlyStats))) *
-                            100
-                          }%`,
-                        }}
-                      ></div>
+                        className='bg-gradient-to-r from-emerald-500 to-teal-500 h-1.5 rounded-full transition-all duration-700'
+                        style={{ width: `${(count / Math.max(...Object.values(stats.monthlyStats))) * 100}%` }}
+                      />
                     </div>
-                    <span className='text-white font-medium'>{count}</span>
+                    <span className='text-white font-semibold text-sm w-5 text-right'>{count}</span>
                   </div>
                 </div>
               ))}
+            {Object.keys(stats.monthlyStats).length === 0 && (
+              <p className='text-zinc-600 text-sm text-center py-4'>Sin datos disponibles</p>
+            )}
           </div>
         </div>
       </div>
 
-      <div className='bg-gray-800 p-6 rounded-xl'>
-        <h3 className='text-xl font-bold text-white mb-4'>
-          Estado de los turnos
-        </h3>
-        <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-          <div className='text-center'>
-            <div className='text-2xl font-bold text-yellow-500'>
-              {stats.pending}
-            </div>
-            <div className='text-gray-400 text-sm'>Pendientes</div>
-            <div className='text-xs text-gray-500'>
-              {stats.total > 0
-                ? `${((stats.pending / stats.total) * 100).toFixed(1)}%`
-                : '0%'}
-            </div>
+      {/* ── Status breakdown ── */}
+      <div className='bg-zinc-900/70 border border-zinc-800 p-5 sm:p-6 rounded-2xl shadow-md'>
+        <div className='flex items-center gap-2 mb-5'>
+          <div className='w-6 h-6 rounded-lg bg-zinc-700/60 flex items-center justify-center'>
+            <CircleDot className='w-3.5 h-3.5 text-zinc-400' strokeWidth={2} />
           </div>
-          <div className='text-center'>
-            <div className='text-2xl font-bold text-red-500'>
-              {stats.cancelled}
+          <h3 className='text-sm sm:text-base font-bold text-white'>Estado de los turnos</h3>
+        </div>
+        <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
+          {statusItems.map(({ value, label, color, dot, ring }) => (
+            <div
+              key={label}
+              className={`flex flex-col items-center gap-2 p-4 rounded-xl bg-zinc-800/50 border border-zinc-700/50 ring-1 ${ring}`}
+            >
+              <div className={`w-2 h-2 rounded-full ${dot} shadow-sm`} />
+              <div className={`text-2xl font-bold ${color}`}>{value}</div>
+              <div className='text-zinc-500 text-xs text-center'>{label}</div>
+              <div className='text-xs text-zinc-600 font-mono'>
+                {stats.total > 0 ? `${((value / stats.total) * 100).toFixed(1)}%` : '0%'}
+              </div>
             </div>
-            <div className='text-gray-400 text-sm'>Cancelados</div>
-            <div className='text-xs text-gray-500'>
-              {stats.total > 0
-                ? `${((stats.cancelled / stats.total) * 100).toFixed(1)}%`
-                : '0%'}
-            </div>
-          </div>
-          <div className='text-center'>
-            <div className='text-2xl font-bold text-green-500'>
-              {stats.completed}
-            </div>
-            <div className='text-gray-400 text-sm'>Completados</div>
-            <div className='text-xs text-gray-500'>
-              {stats.total > 0
-                ? `${((stats.completed / stats.total) * 100).toFixed(1)}%`
-                : '0%'}
-            </div>
-          </div>
-          <div className='text-center'>
-            <div className='text-2xl font-bold text-purple-500'>
-              {stats.reprogrammed}
-            </div>
-            <div className='text-gray-400 text-sm'>Reprogramados</div>
-            <div className='text-xs text-gray-500'>
-              {stats.total > 0
-                ? `${((stats.reprogrammed / stats.total) * 100).toFixed(1)}%`
-                : '0%'}
-            </div>
-          </div>
+          ))}
         </div>
       </div>
+
     </div>
   )
 }

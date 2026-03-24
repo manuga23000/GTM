@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Transaction } from '@/actions/types/types'
 import EditTransactionModal from './EditTransactionModal'
 import { updateTransaction, deleteTransaction } from '@/actions/gastos'
+import { Pencil, Trash2, BarChart2 } from 'lucide-react'
 
 interface TransactionTableProps {
   expenses: Transaction[]
@@ -70,14 +71,14 @@ export default function TransactionTable({
 
   return (
     <>
-      <div className='bg-gray-800 rounded-xl shadow-xl overflow-hidden'>
-        <div className='p-4 sm:p-6 border-b border-gray-700'>
+      <div className='bg-zinc-900/80 border border-zinc-800 rounded-2xl shadow-xl overflow-hidden'>
+        <div className='p-4 sm:p-6 border-b border-zinc-800'>
           <h3 className='text-lg sm:text-xl font-bold text-white'>
             Últimos Movimientos
           </h3>
         </div>
 
-        {/* Vista móvil - Tarjetas optimizadas */}
+        {/* Vista móvil — tarjetas */}
         <div className='block lg:hidden'>
           <div className='p-3 space-y-3'>
             {expenses.map((expense, index) => (
@@ -86,7 +87,7 @@ export default function TransactionTable({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className='bg-gray-700 rounded-lg border-l-4 border-l-blue-500 overflow-hidden'
+                className='bg-zinc-800/80 rounded-xl border-l-4 border-l-amber-500 overflow-hidden'
               >
                 {/* Header compacto */}
                 <div className='p-3 pb-2'>
@@ -96,24 +97,24 @@ export default function TransactionTable({
                         <span
                           className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
                             expense.type === 'income'
-                              ? 'bg-green-600/20 text-green-400'
-                              : 'bg-red-600/20 text-red-400'
+                              ? 'bg-emerald-500/20 text-emerald-400'
+                              : 'bg-red-500/20 text-red-400'
                           }`}
                         >
                           {expense.type === 'income' ? 'Ingreso' : 'Gasto'}
                         </span>
-                        <span className='text-gray-400 text-xs truncate'>
+                        <span className='text-zinc-500 text-xs truncate'>
                           {expense.date}
                         </span>
                       </div>
-                      <h4 className='text-white font-medium text-sm truncate'>
+                      <h4 className='text-white font-semibold text-sm truncate'>
                         {expense.category}
                       </h4>
                     </div>
                     <div
                       className={`text-right font-bold text-lg ml-2 ${
                         expense.type === 'income'
-                          ? 'text-green-400'
+                          ? 'text-emerald-400'
                           : 'text-red-400'
                       }`}
                     >
@@ -121,40 +122,25 @@ export default function TransactionTable({
                     </div>
                   </div>
 
-                  {/* Descripción si existe */}
-                  {expense.description &&
-                    expense.description !== expense.category && (
-                      <div className='mb-2'>
-                        <p className='text-gray-300 text-xs line-clamp-2'>
-                          {expense.description}
-                        </p>
-                      </div>
-                    )}
+                  {expense.description && expense.description !== expense.category && (
+                    <div className='mb-2'>
+                      <p className='text-zinc-400 text-xs line-clamp-2'>
+                        {expense.description}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
-                {/* Botones de acción optimizados */}
+                {/* Botones */}
                 <div className='px-3 pb-3'>
                   <div className='grid grid-cols-2 gap-2'>
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleEditTransaction(expense)}
-                      className='flex items-center justify-center gap-2 py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium'
+                      className='flex items-center justify-center gap-2 py-2.5 px-3 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/25 rounded-xl transition-colors text-sm font-medium'
                     >
-                      <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        className='h-4 w-4'
-                        fill='none'
-                        viewBox='0 0 24 24'
-                        stroke='currentColor'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={2}
-                          d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
-                        />
-                      </svg>
+                      <Pencil className='h-4 w-4' strokeWidth={2} />
                       Editar
                     </motion.button>
 
@@ -163,37 +149,20 @@ export default function TransactionTable({
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleDeleteTransaction(expense.id!)}
                       disabled={deletingId === expense.id}
-                      className='flex items-center justify-center gap-2 py-2.5 px-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium min-h-[40px]'
+                      className='flex items-center justify-center gap-2 py-2.5 px-3 bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/25 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium min-h-[40px]'
                     >
                       {deletingId === expense.id ? (
                         <>
                           <motion.div
                             animate={{ rotate: 360 }}
-                            transition={{
-                              duration: 1,
-                              repeat: Infinity,
-                              ease: 'linear',
-                            }}
-                            className='h-4 w-4 border-2 border-white border-t-transparent rounded-full'
+                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            className='h-4 w-4 border-2 border-red-400 border-t-transparent rounded-full'
                           />
                           <span className='text-xs'>Eliminando...</span>
                         </>
                       ) : (
                         <>
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            className='h-4 w-4'
-                            fill='none'
-                            viewBox='0 0 24 24'
-                            stroke='currentColor'
-                          >
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth={2}
-                              d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
-                            />
-                          </svg>
+                          <Trash2 className='h-4 w-4' strokeWidth={2} />
                           Eliminar
                         </>
                       )}
@@ -204,8 +173,8 @@ export default function TransactionTable({
             ))}
 
             {expenses.length === 0 && (
-              <div className='text-center py-12 text-gray-400'>
-                <div className='mb-3 text-5xl opacity-50'>📊</div>
+              <div className='text-center py-12 text-zinc-500'>
+                <BarChart2 className='w-12 h-12 mx-auto mb-3 opacity-30' strokeWidth={1.5} />
                 <p className='text-base'>No hay transacciones para mostrar</p>
                 <p className='text-sm mt-1 opacity-75'>
                   Agrega tu primera transacción para comenzar
@@ -215,17 +184,21 @@ export default function TransactionTable({
           </div>
         </div>
 
-        {/* Vista desktop - Tabla tradicional */}
+        {/* Vista desktop — tabla */}
         <div className='hidden lg:block overflow-x-auto'>
           <table className='w-full'>
-            <thead className='bg-gray-700'>
+            <thead className='bg-zinc-800'>
               <tr>
-                <th className='px-6 py-3 text-left text-white'>Fecha</th>
-                <th className='px-6 py-3 text-left text-white'>Categoría</th>
-                <th className='px-6 py-3 text-left text-white'>Descripción</th>
-                <th className='px-6 py-3 text-right text-white'>Monto</th>
-                <th className='px-6 py-3 text-center text-white'>Tipo</th>
-                <th className='px-6 py-3 text-center text-white'>Acciones</th>
+                {['Fecha', 'Categoría', 'Descripción', 'Monto', 'Tipo', 'Acciones'].map(h => (
+                  <th
+                    key={h}
+                    className={`px-6 py-3 text-xs font-bold text-zinc-400 uppercase tracking-wider ${
+                      h === 'Monto' || h === 'Acciones' ? 'text-right' : h === 'Tipo' ? 'text-center' : 'text-left'
+                    }`}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -235,18 +208,14 @@ export default function TransactionTable({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className='border-b border-gray-700 hover:bg-gray-700/50'
+                  className='border-b border-zinc-800 hover:bg-zinc-800/50 transition-colors'
                 >
-                  <td className='px-6 py-4 text-white'>{expense.date}</td>
-                  <td className='px-6 py-4 text-white'>{expense.category}</td>
-                  <td className='px-6 py-4 text-white'>
-                    {expense.description}
-                  </td>
+                  <td className='px-6 py-4 text-zinc-300 text-sm'>{expense.date}</td>
+                  <td className='px-6 py-4 text-white font-medium text-sm'>{expense.category}</td>
+                  <td className='px-6 py-4 text-zinc-400 text-sm'>{expense.description}</td>
                   <td
-                    className={`px-6 py-4 text-right font-bold ${
-                      expense.type === 'income'
-                        ? 'text-green-400'
-                        : 'text-red-400'
+                    className={`px-6 py-4 text-right font-bold text-sm ${
+                      expense.type === 'income' ? 'text-emerald-400' : 'text-red-400'
                     }`}
                   >
                     {formatCurrencyLocal(expense.amount)}
@@ -255,8 +224,8 @@ export default function TransactionTable({
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${
                         expense.type === 'income'
-                          ? 'bg-green-600/20 text-green-400'
-                          : 'bg-red-600/20 text-red-400'
+                          ? 'bg-emerald-500/20 text-emerald-400'
+                          : 'bg-red-500/20 text-red-400'
                       }`}
                     >
                       {expense.type === 'income' ? 'Ingreso' : 'Gasto'}
@@ -264,64 +233,32 @@ export default function TransactionTable({
                   </td>
                   <td className='px-6 py-4'>
                     <div className='flex justify-center space-x-2'>
-                      {/* Edit Button */}
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => handleEditTransaction(expense)}
-                        className='p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors'
+                        className='p-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg transition-colors border border-amber-500/25'
                         title='Editar'
                       >
-                        <svg
-                          xmlns='http://www.w3.org/2000/svg'
-                          className='h-4 w-4'
-                          fill='none'
-                          viewBox='0 0 24 24'
-                          stroke='currentColor'
-                        >
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2}
-                            d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
-                          />
-                        </svg>
+                        <Pencil className='h-4 w-4' strokeWidth={2} />
                       </motion.button>
 
-                      {/* Delete Button */}
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => handleDeleteTransaction(expense.id!)}
                         disabled={deletingId === expense.id}
-                        className='p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+                        className='p-2 bg-red-500/15 hover:bg-red-500/25 text-red-400 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-500/20'
                         title='Eliminar'
                       >
                         {deletingId === expense.id ? (
                           <motion.div
                             animate={{ rotate: 360 }}
-                            transition={{
-                              duration: 1,
-                              repeat: Infinity,
-                              ease: 'linear',
-                            }}
-                            className='h-4 w-4 border-2 border-white border-t-transparent rounded-full'
+                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            className='h-4 w-4 border-2 border-red-400 border-t-transparent rounded-full'
                           />
                         ) : (
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            className='h-4 w-4'
-                            fill='none'
-                            viewBox='0 0 24 24'
-                            stroke='currentColor'
-                          >
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth={2}
-                              d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
-                            />
-                          </svg>
+                          <Trash2 className='h-4 w-4' strokeWidth={2} />
                         )}
                       </motion.button>
                     </div>
@@ -330,10 +267,7 @@ export default function TransactionTable({
               ))}
               {expenses.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={6}
-                    className='px-6 py-8 text-center text-gray-400'
-                  >
+                  <td colSpan={6} className='px-6 py-10 text-center text-zinc-500'>
                     No hay transacciones para mostrar
                   </td>
                 </tr>

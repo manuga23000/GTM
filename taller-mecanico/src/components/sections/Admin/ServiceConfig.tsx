@@ -9,6 +9,20 @@ import {
   getVacationMode,
   setVacationMode,
 } from '@/actions/serviceconfig'
+import {
+  Search,
+  ClipboardList,
+  Settings2,
+  Cog,
+  Wrench,
+  PalmtreeIcon,
+  Save,
+  RefreshCw,
+  CheckCircle2,
+  XCircle,
+  Info,
+  Lightbulb,
+} from 'lucide-react'
 
 const DAYS_MOBILE = [
   { value: 1, label: 'L' },
@@ -25,6 +39,14 @@ const DAYS_DESKTOP = [
   { value: 4, label: 'Jueves' },
   { value: 5, label: 'Viernes' },
 ]
+
+const SERVICE_ICONS: Record<string, React.ReactNode> = {
+  'Diagnóstico':        <Search       className='w-5 h-5 sm:w-6 sm:h-6' strokeWidth={1.8} />,
+  'Revisación técnica': <ClipboardList className='w-5 h-5 sm:w-6 sm:h-6' strokeWidth={1.8} />,
+  'Otro':               <Settings2    className='w-5 h-5 sm:w-6 sm:h-6' strokeWidth={1.8} />,
+  'Caja automática':    <Cog          className='w-5 h-5 sm:w-6 sm:h-6' strokeWidth={1.8} />,
+  'Mecánica general':   <Wrench       className='w-5 h-5 sm:w-6 sm:h-6' strokeWidth={1.8} />,
+}
 
 export default function ServiceConfig() {
   const [configs, setConfigs] = useState<ServiceConfig[]>([])
@@ -69,9 +91,7 @@ export default function ServiceConfig() {
   const loadVacationMode = async () => {
     try {
       const vacationConfig = await getVacationMode()
-      if (vacationConfig) {
-        setVacationModeState(vacationConfig.enabled)
-      }
+      if (vacationConfig) setVacationModeState(vacationConfig.enabled)
     } catch (error) {
       console.error('❌ Error cargando modo vacaciones:', error)
     }
@@ -82,14 +102,12 @@ export default function ServiceConfig() {
     try {
       const newState = !vacationMode
       const result = await setVacationMode(newState)
-
       if (result.success) {
         setVacationModeState(newState)
         setMessage(`✅ ${result.message}`)
       } else {
         setMessage(`❌ ${result.message}`)
       }
-
       setTimeout(() => setMessage(''), 3000)
     } catch (error) {
       console.error('❌ Error al cambiar modo vacaciones:', error)
@@ -103,37 +121,24 @@ export default function ServiceConfig() {
   const loadConfigs = useCallback(async () => {
     try {
       setLoading(true)
-
       await cleanDuplicateConfigs()
-
       await initializeServiceConfigs()
-
       const allConfigs = await getAllServiceConfigs()
-
       const uniqueConfigs = allConfigs.reduce((acc, config) => {
-        const existingIndex = acc.findIndex(
-          c => c.serviceName === config.serviceName
-        )
+        const existingIndex = acc.findIndex(c => c.serviceName === config.serviceName)
         if (existingIndex === -1) {
           acc.push(config)
         } else {
           const existing = acc[existingIndex]
-          if (config.updatedAt > existing.updatedAt) {
-            acc[existingIndex] = config
-          }
+          if (config.updatedAt > existing.updatedAt) acc[existingIndex] = config
         }
         return acc
       }, [] as ServiceConfig[])
 
       setConfigs(uniqueConfigs)
-
       if (!selectedService && uniqueConfigs.length > 0) {
-        const firstAvailableService = uniqueConfigs.find(config =>
-          availableServices.includes(config.serviceName)
-        )
-        if (firstAvailableService) {
-          setSelectedService(firstAvailableService.serviceName)
-        }
+        const firstAvailableService = uniqueConfigs.find(config => availableServices.includes(config.serviceName))
+        if (firstAvailableService) setSelectedService(firstAvailableService.serviceName)
       }
     } catch (error) {
       console.error('❌ Error cargando configuraciones:', error)
@@ -151,9 +156,7 @@ export default function ServiceConfig() {
   const updateConfig = (serviceName: string, field: string, value: unknown) => {
     setConfigs(prev =>
       prev.map(config =>
-        config.serviceName === serviceName
-          ? { ...config, [field]: value }
-          : config
+        config.serviceName === serviceName ? { ...config, [field]: value } : config
       )
     )
   }
@@ -177,10 +180,8 @@ export default function ServiceConfig() {
     setConfigs(prev =>
       prev.map(config => {
         if (config.serviceName === serviceName) {
-          const currentDays = config.allowedDays
           const allDays = [1, 2, 3, 4, 5]
-
-          const newDays = currentDays.length === allDays.length ? [] : allDays
+          const newDays = config.allowedDays.length === allDays.length ? [] : allDays
           return { ...config, allowedDays: newDays }
         }
         return config
@@ -198,10 +199,7 @@ export default function ServiceConfig() {
     setSaving(true)
     try {
       if (selectedService === 'Caja automática') {
-        const subServiceConfigs = configs.filter(config =>
-          cajaAutomaticaSubServices.includes(config.serviceName)
-        )
-
+        const subServiceConfigs = configs.filter(config => cajaAutomaticaSubServices.includes(config.serviceName))
         for (const configToSave of subServiceConfigs) {
           const result = await updateServiceConfig(configToSave.serviceName, {
             maxPerDay: configToSave.maxPerDay,
@@ -211,22 +209,11 @@ export default function ServiceConfig() {
             isActive: configToSave.isActive,
             serviceName: configToSave.serviceName,
           })
-
-          if (!result.success) {
-            throw new Error(
-              `Error guardando ${configToSave.serviceName}: ${result.message}`
-            )
-          }
+          if (!result.success) throw new Error(`Error guardando ${configToSave.serviceName}: ${result.message}`)
         }
-
-        setMessage(
-          '✅ Configuraciones de Caja automática guardadas exitosamente'
-        )
+        setMessage('✅ Configuraciones de Caja automática guardadas exitosamente')
       } else if (selectedService === 'Mecánica general') {
-        const subServiceConfigs = configs.filter(config =>
-          mecanicaGeneralSubServices.includes(config.serviceName)
-        )
-
+        const subServiceConfigs = configs.filter(config => mecanicaGeneralSubServices.includes(config.serviceName))
         for (const configToSave of subServiceConfigs) {
           const result = await updateServiceConfig(configToSave.serviceName, {
             maxPerDay: configToSave.maxPerDay,
@@ -236,27 +223,12 @@ export default function ServiceConfig() {
             isActive: configToSave.isActive,
             serviceName: configToSave.serviceName,
           })
-
-          if (!result.success) {
-            throw new Error(
-              `Error guardando ${configToSave.serviceName}: ${result.message}`
-            )
-          }
+          if (!result.success) throw new Error(`Error guardando ${configToSave.serviceName}: ${result.message}`)
         }
-
-        setMessage(
-          '✅ Configuraciones de Mecánica general guardadas exitosamente'
-        )
+        setMessage('✅ Configuraciones de Mecánica general guardadas exitosamente')
       } else {
-        const configToSave = configs.find(
-          config => config.serviceName === selectedService
-        )
-        if (!configToSave) {
-          throw new Error(
-            `No se encontró configuración para ${selectedService}`
-          )
-        }
-
+        const configToSave = configs.find(config => config.serviceName === selectedService)
+        if (!configToSave) throw new Error(`No se encontró configuración para ${selectedService}`)
         const result = await updateServiceConfig(selectedService, {
           maxPerDay: configToSave.maxPerDay,
           maxPerWeek: configToSave.maxPerWeek,
@@ -265,27 +237,21 @@ export default function ServiceConfig() {
           isActive: configToSave.isActive,
           serviceName: configToSave.serviceName,
         })
-
-        if (!result.success) {
-          throw new Error(result.message)
-        }
-
-        setMessage(
-          `✅ Configuración de ${selectedService} guardada exitosamente`
-        )
+        if (!result.success) throw new Error(result.message)
+        setMessage(`✅ Configuración de ${selectedService} guardada exitosamente`)
       }
-
       setTimeout(() => setMessage(''), 3000)
     } catch (error: unknown) {
       console.error('❌ Error guardando configuración:', error)
-      const errorMessage =
-        error instanceof Error ? error.message : 'Error desconocido'
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
       setMessage(`❌ Error: ${errorMessage}`)
       setTimeout(() => setMessage(''), 5000)
     } finally {
       setSaving(false)
     }
   }
+
+  const isSuccess = message.includes('✅')
 
   const renderServiceConfig = (config: ServiceConfig) => {
     const isActiveService = [
@@ -298,121 +264,93 @@ export default function ServiceConfig() {
 
     return (
       <div
-        className={`bg-gray-800 p-3 sm:p-6 rounded-xl border-l-4 ${
-          isActiveService ? 'border-blue-500' : 'border-gray-600'
+        className={`bg-zinc-900/70 border p-3 sm:p-5 rounded-xl border-l-4 ${
+          isActiveService ? 'border-l-amber-500 border-zinc-800' : 'border-l-zinc-700 border-zinc-800'
         } ${
-          selectedService === 'Caja automática' ||
-          selectedService === 'Mecánica general'
-            ? 'mb-0'
-            : 'mb-3 sm:mb-6'
+          selectedService === 'Caja automática' || selectedService === 'Mecánica general' ? 'mb-0' : 'mb-3 sm:mb-4'
         }`}
       >
-        <div className='flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 sm:mb-4 gap-2 sm:gap-0'>
-          <h3
-            className={`text-sm sm:text-lg font-semibold ${
-              isActiveService ? 'text-white' : 'text-gray-400'
-            }`}
-          >
-            {config.serviceName}
-          </h3>
-        </div>
+        <h3 className={`text-sm sm:text-base font-semibold mb-3 ${isActiveService ? 'text-white' : 'text-zinc-500'}`}>
+          {config.serviceName}
+        </h3>
 
-        <div className='space-y-3 sm:space-y-4'>
-          {/* Grid responsivo para inputs */}
-          <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4'>
+        <div className='space-y-3'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
             <div>
-              <label className='block text-xs sm:text-sm font-medium text-gray-300 mb-1 sm:mb-2'>
-                Máximo por día
-              </label>
+              <label className='block text-xs font-medium text-zinc-400 mb-1.5'>Máximo por día</label>
               <input
                 type='number'
                 min='0'
                 value={config.maxPerDay || ''}
-                onChange={e =>
-                  updateConfig(
-                    config.serviceName,
-                    'maxPerDay',
-                    e.target.value ? parseInt(e.target.value) : null
-                  )
-                }
+                onChange={e => updateConfig(config.serviceName, 'maxPerDay', e.target.value ? parseInt(e.target.value) : null)}
                 disabled={!isActiveService}
-                className={`w-full p-2 rounded border text-white focus:outline-none focus:ring-2 text-xs sm:text-base ${
+                className={`w-full px-3 py-2 rounded-lg border text-white text-xs sm:text-sm focus:outline-none focus:ring-2 transition-all ${
                   isActiveService
-                    ? 'bg-gray-700 border-gray-600 focus:ring-blue-600 cursor-text'
-                    : 'bg-gray-900 border-gray-800 text-gray-500 cursor-not-allowed'
+                    ? 'bg-zinc-800 border-zinc-700 focus:ring-amber-500/40 focus:border-amber-500/40 cursor-text'
+                    : 'bg-zinc-900 border-zinc-800 text-zinc-600 cursor-not-allowed'
                 }`}
                 placeholder='Sin límite'
               />
             </div>
             <div>
-              <label className='block text-xs sm:text-sm font-medium text-gray-300 mb-1 sm:mb-2'>
-                Máximo por semana
-              </label>
+              <label className='block text-xs font-medium text-zinc-400 mb-1.5'>Máximo por semana</label>
               <input
                 type='number'
                 min='0'
                 value={config.maxPerWeek || ''}
-                onChange={e =>
-                  updateConfig(
-                    config.serviceName,
-                    'maxPerWeek',
-                    e.target.value ? parseInt(e.target.value) : null
-                  )
-                }
+                onChange={e => updateConfig(config.serviceName, 'maxPerWeek', e.target.value ? parseInt(e.target.value) : null)}
                 disabled={!isActiveService}
-                className={`w-full p-2 rounded border text-white focus:outline-none focus:ring-2 text-xs sm:text-base ${
+                className={`w-full px-3 py-2 rounded-lg border text-white text-xs sm:text-sm focus:outline-none focus:ring-2 transition-all ${
                   isActiveService
-                    ? 'bg-gray-700 border-gray-600 focus:ring-blue-600 cursor-text'
-                    : 'bg-gray-900 border-gray-800 text-gray-500 cursor-not-allowed'
+                    ? 'bg-zinc-800 border-zinc-700 focus:ring-amber-500/40 focus:border-amber-500/40 cursor-text'
+                    : 'bg-zinc-900 border-zinc-800 text-zinc-600 cursor-not-allowed'
                 }`}
                 placeholder='Sin límite'
               />
             </div>
           </div>
 
-          {/* Días permitidos - RESPONSIVO */}
+          {/* Days */}
           <div>
-            <label className='block text-xs sm:text-sm font-medium text-gray-300 mb-1 sm:mb-2'>
-              Días permitidos
-            </label>
-            <div className='flex justify-between items-center'>
-              <div className='flex flex-wrap gap-1 sm:gap-2'>
-                {/* Móvil: mostrar versión corta */}
-                <div className='flex gap-1 sm:hidden'>
+            <label className='block text-xs font-medium text-zinc-400 mb-1.5'>Días permitidos</label>
+            <div className='flex justify-between items-center gap-2'>
+              <div className='flex flex-wrap gap-1.5'>
+                {/* Mobile */}
+                <div className='flex gap-1.5 sm:hidden'>
                   {DAYS_MOBILE.map(day => (
                     <button
                       key={day.value}
                       onClick={() => toggleDay(config.serviceName, day.value)}
                       disabled={!isActiveService}
-                      className={`px-2 py-1 rounded text-xs font-medium transition-colors min-w-[28px] ${
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all min-w-[30px] ${
                         isActiveService
                           ? config.allowedDays.includes(day.value)
-                            ? 'bg-blue-600 text-white cursor-pointer'
-                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600 cursor-pointer'
+                            ? 'bg-amber-500 text-zinc-900 shadow-sm cursor-pointer'
+                            : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 cursor-pointer'
                           : config.allowedDays.includes(day.value)
-                          ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                          : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                          ? 'bg-zinc-700 text-zinc-500 cursor-not-allowed'
+                          : 'bg-zinc-900 text-zinc-600 cursor-not-allowed'
                       }`}
                     >
                       {day.label}
                     </button>
                   ))}
                 </div>
-                {/* Desktop: mostrar versión completa */}
-                <div className='hidden sm:flex gap-2'>
+                {/* Desktop */}
+                <div className='hidden sm:flex gap-1.5'>
                   {DAYS_DESKTOP.map(day => (
                     <button
                       key={day.value}
                       onClick={() => toggleDay(config.serviceName, day.value)}
                       disabled={!isActiveService}
-                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                         isActiveService
                           ? config.allowedDays.includes(day.value)
-                            ? 'bg-blue-600 text-white cursor-pointer'
-                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600 cursor-pointer'
+                            ? 'bg-amber-500 text-zinc-900 shadow-sm cursor-pointer'
+                            : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 cursor-pointer'
                           : config.allowedDays.includes(day.value)
-                          ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                          : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                          ? 'bg-zinc-700 text-zinc-500 cursor-not-allowed'
+                          : 'bg-zinc-900 text-zinc-600 cursor-not-allowed'
                       }`}
                     >
                       {day.label}
@@ -420,26 +358,30 @@ export default function ServiceConfig() {
                   ))}
                 </div>
               </div>
+              {/* Toggle all */}
               <button
                 onClick={() => toggleAllDays(config.serviceName)}
                 disabled={!isActiveService}
-                className={`px-2 py-1 rounded text-xs font-medium transition-colors ml-2 ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ml-1 ${
                   isActiveService
-                    ? 'bg-gray-600 hover:bg-gray-500 text-white cursor-pointer'
-                    : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                    ? 'bg-zinc-700 hover:bg-zinc-600 text-zinc-300 cursor-pointer'
+                    : 'bg-zinc-900 text-zinc-600 cursor-not-allowed'
                 }`}
               >
-                {config.allowedDays.length === 5 ? '❌' : '✅'}
+                {config.allowedDays.length === 5 ? (
+                  <XCircle className='w-3.5 h-3.5' strokeWidth={2} />
+                ) : (
+                  <CheckCircle2 className='w-3.5 h-3.5' strokeWidth={2} />
+                )}
               </button>
             </div>
           </div>
 
           {isActiveService && (
-            <div className='bg-blue-900/20 border border-blue-700/30 rounded-lg p-2 sm:p-3 mt-3 sm:mt-4'>
-              <p className='text-blue-300 text-xs sm:text-sm'>
-                <strong>💡 Tip:</strong> Esta configuración se aplica
-                inmediatamente al sistema de turnos. Los cambios afectan la
-                disponibilidad de fechas para los clientes.
+            <div className='bg-amber-500/8 border border-amber-500/20 rounded-lg p-2.5 flex items-start gap-2'>
+              <Lightbulb className='w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5' strokeWidth={2} />
+              <p className='text-amber-200/80 text-xs'>
+                Esta configuración se aplica inmediatamente al sistema de turnos.
               </p>
             </div>
           )}
@@ -450,115 +392,105 @@ export default function ServiceConfig() {
 
   if (loading) {
     return (
-      <div className='flex justify-center items-center h-32 sm:h-64'>
-        <div className='animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-blue-500'></div>
-        <span className='ml-4 text-white text-sm sm:text-base'>
-          Cargando configuraciones...
-        </span>
+      <div className='flex justify-center items-center h-32 sm:h-64 gap-4'>
+        <div className='relative w-9 h-9'>
+          <div className='absolute inset-0 border-2 border-zinc-800 rounded-full' />
+          <div className='absolute inset-0 border-2 border-amber-500 border-t-transparent rounded-full animate-spin' />
+        </div>
+        <span className='text-zinc-400 text-sm'>Cargando configuraciones…</span>
       </div>
     )
   }
 
   return (
-    <div className='space-y-4 sm:space-y-6'>
+    <div className='space-y-4 sm:space-y-5'>
+
+      {/* ── Header ── */}
       <div>
-        <h2 className='text-lg sm:text-2xl font-bold text-white'>
-          Configuración de Servicios
-        </h2>
-        <p className='text-gray-400 text-xs sm:text-sm mt-1'>
-          Gestiona la disponibilidad y límites de cada servicio
-        </p>
+        <div className='flex items-center gap-2 mb-1'>
+          <div className='w-6 h-6 rounded-lg bg-amber-500/20 flex items-center justify-center'>
+            <Settings2 className='w-3.5 h-3.5 text-amber-400' strokeWidth={2.2} />
+          </div>
+          <h2 className='text-base sm:text-xl font-bold text-white'>Configuración de Servicios</h2>
+        </div>
+        <p className='text-zinc-500 text-xs sm:text-sm ml-8'>Gestiona la disponibilidad y límites de cada servicio</p>
       </div>
 
+      {/* ── Message ── */}
       {message && (
-        <div
-          className={`p-3 sm:p-4 rounded-lg text-sm sm:text-base ${
-            message.includes('✅')
-              ? 'bg-green-600 text-white'
-              : 'bg-red-600 text-white'
-          }`}
-        >
-          {message}
+        <div className={`p-3 rounded-xl text-sm flex items-center gap-2.5 border ${
+          isSuccess
+            ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300'
+            : 'bg-red-500/10 border-red-500/25 text-red-300'
+        }`}>
+          {isSuccess
+            ? <CheckCircle2 className='w-4 h-4 shrink-0' strokeWidth={2} />
+            : <XCircle      className='w-4 h-4 shrink-0' strokeWidth={2} />
+          }
+          {message.replace('✅ ', '').replace('❌ ', '')}
         </div>
       )}
 
-      {/* Modo Vacaciones */}
-      <div className='bg-gradient-to-r from-yellow-900/40 to-orange-900/40 border-2 border-yellow-600/50 rounded-xl p-4 sm:p-6'>
-        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-          <div className='flex-1'>
-            <div className='flex items-center gap-3 mb-2'>
-              <span className='text-2xl sm:text-3xl'>🏖️</span>
-              <h3 className='text-lg sm:text-xl font-bold text-yellow-400'>
-                Modo Vacaciones
-              </h3>
+      {/* ── Vacation mode ── */}
+      <div className='bg-zinc-900/70 border border-amber-500/25 rounded-2xl p-4 sm:p-5 overflow-hidden relative'>
+        <div className='absolute inset-0 bg-gradient-to-br from-amber-500/8 to-orange-500/5 pointer-events-none' />
+        <div className='relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+          <div className='flex items-start gap-3'>
+            <div className='p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/20 shrink-0'>
+              <Wrench className='w-5 h-5 text-amber-400' strokeWidth={1.8} />
             </div>
-            <p className='text-gray-300 text-xs sm:text-sm'>
-              {vacationMode ? (
-                <>
-                  <strong className='text-yellow-300'>ACTIVO:</strong> Bloqueando turnos del{' '}
-                  <strong className='text-white'>31 de enero</strong> al{' '}
-                  <strong className='text-white'>10 de febrero</strong>
-                </>
-              ) : (
-                <>
-                  Desactivado. Los clientes pueden sacar turnos normalmente.
-                </>
-              )}
-            </p>
+            <div>
+              <h3 className='text-base font-bold text-amber-400 mb-1'>Modo Vacaciones</h3>
+              <p className='text-zinc-400 text-xs sm:text-sm'>
+                {vacationMode ? (
+                  <>
+                    <span className='text-amber-300 font-semibold'>ACTIVO:</span> Bloqueando turnos del{' '}
+                    <span className='text-white font-medium'>31 de enero</span> al{' '}
+                    <span className='text-white font-medium'>10 de febrero</span>
+                  </>
+                ) : (
+                  'Desactivado. Los clientes pueden sacar turnos normalmente.'
+                )}
+              </p>
+            </div>
           </div>
           <button
             onClick={handleToggleVacationMode}
             disabled={vacationLoading}
-            className={`px-4 sm:px-6 py-3 rounded-lg font-semibold transition-all duration-300 text-sm sm:text-base min-w-[140px] ${
+            className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 min-w-[130px] border disabled:opacity-50 disabled:cursor-not-allowed ${
               vacationMode
-                ? 'bg-red-600 hover:bg-red-700 text-white'
-                : 'bg-green-600 hover:bg-green-700 text-white'
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                ? 'bg-red-600/80 hover:bg-red-500 text-white border-red-500/30'
+                : 'bg-emerald-600/80 hover:bg-emerald-500 text-white border-emerald-500/30'
+            }`}
           >
             {vacationLoading ? (
-              <div className='flex items-center justify-center gap-2'>
-                <div className='inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white'></div>
-                <span>...</span>
-              </div>
-            ) : vacationMode ? (
-              'Desactivar'
-            ) : (
-              'Activar'
-            )}
+              <span className='w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin' />
+            ) : vacationMode ? 'Desactivar' : 'Activar'}
           </button>
         </div>
       </div>
 
-      {/* Selector de servicios - RESPONSIVO */}
-      <div className='bg-gray-800 p-3 sm:p-6 rounded-xl border border-gray-700'>
-        <h3 className='text-sm sm:text-lg font-semibold text-white mb-3 sm:mb-4'>
-          Selecciona un servicio para configurar
-        </h3>
-        <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4'>
+      {/* ── Service selector ── */}
+      <div className='bg-zinc-900/70 border border-zinc-800 p-4 sm:p-5 rounded-2xl'>
+        <h3 className='text-sm font-semibold text-zinc-400 mb-3'>Selecciona un servicio para configurar</h3>
+        <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3'>
           {availableServices.map(service => {
             const isSelected = selectedService === service
-
             return (
               <button
                 key={service}
                 onClick={() => setSelectedService(service)}
-                className={`p-2 sm:p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
+                className={`p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
                   isSelected
-                    ? 'border-blue-500 bg-blue-900/20 text-white'
-                    : 'border-gray-600 bg-gray-700 hover:border-gray-500 text-gray-300 hover:text-white'
+                    ? 'border-amber-500 bg-amber-500/10 text-white shadow-md shadow-amber-900/20'
+                    : 'border-zinc-700/80 bg-zinc-800/50 hover:border-zinc-600 text-zinc-400 hover:text-zinc-200'
                 }`}
               >
-                <div className='text-center'>
-                  <div className='text-lg sm:text-2xl mb-1 sm:mb-2'>
-                    {service === 'Diagnóstico' && '🔍'}
-                    {service === 'Revisación técnica' && '📋'}
-                    {service === 'Otro' && '⚙️'}
-                    {service === 'Caja automática' && '🔧'}
-                    {service === 'Mecánica general' && '🔩'}
+                <div className='flex flex-col items-center gap-2'>
+                  <div className={`${isSelected ? 'text-amber-400' : 'text-zinc-500'}`}>
+                    {SERVICE_ICONS[service]}
                   </div>
-                  <div className='font-semibold text-xs sm:text-sm'>
-                    {service}
-                  </div>
+                  <div className='font-semibold text-xs text-center leading-tight'>{service}</div>
                 </div>
               </button>
             )
@@ -566,174 +498,113 @@ export default function ServiceConfig() {
         </div>
       </div>
 
-      {/* Configuración del servicio seleccionado */}
+      {/* ── Selected service config ── */}
       {selectedService && (
-        <div className='space-y-4 sm:space-y-6'>
-          <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-gray-700 pb-2 gap-3 sm:gap-0'>
-            <h3 className='text-base sm:text-xl font-semibold text-white'>
-              Configuración de: {selectedService}
+        <div className='space-y-4'>
+          <div className='flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-zinc-800 pb-3 gap-3'>
+            <h3 className='text-sm sm:text-base font-semibold text-white'>
+              Configuración: <span className='text-amber-400'>{selectedService}</span>
             </h3>
             <button
               onClick={handleSave}
               disabled={saving}
-              className='px-4 sm:px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-200 cursor-pointer text-sm sm:text-base'
+              className='flex items-center justify-center gap-2 px-4 sm:px-5 py-2 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 disabled:bg-zinc-700 disabled:cursor-not-allowed text-zinc-900 disabled:text-zinc-400 font-bold rounded-xl transition-all duration-200 cursor-pointer text-sm border border-amber-400/30 disabled:border-zinc-600 shadow-sm shadow-amber-900/30'
             >
               {saving ? (
-                <>
-                  <div className='inline-block animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white mr-2'></div>
-                  Guardando...
-                </>
+                <span className='w-3.5 h-3.5 border-2 border-zinc-600/30 border-t-zinc-600 rounded-full animate-spin' />
               ) : (
-                '💾 Guardar Configuración'
+                <Save className='w-3.5 h-3.5' strokeWidth={2.2} />
               )}
+              {saving ? 'Guardando…' : 'Guardar'}
             </button>
           </div>
 
           {selectedService === 'Caja automática' ? (
-            <div className='space-y-4 sm:space-y-6'>
-              <p className='text-gray-300 text-xs sm:text-sm mb-3 sm:mb-4'>
-                Configuración de sub-servicios de Caja automática:
-              </p>
-              <div className='grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6'>
+            <div className='space-y-3'>
+              <p className='text-zinc-400 text-xs mb-2'>Sub-servicios de Caja automática:</p>
+              <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
                 {cajaAutomaticaSubServices.map(subService => {
-                  const subConfig = configs.find(
-                    c => c.serviceName === subService
+                  const subConfig = configs.find(c => c.serviceName === subService)
+                  return subConfig ? (
+                    <div key={subService}>{renderServiceConfig(subConfig)}</div>
+                  ) : (
+                    <div key={subService} className='bg-zinc-900/70 border border-zinc-800 border-l-4 border-l-zinc-700 p-4 rounded-xl'>
+                      <h3 className='text-sm font-semibold text-zinc-500 mb-3'>{subService}
+                        <span className='ml-2 px-2 py-0.5 bg-zinc-800 text-xs rounded-full text-zinc-400'>SIN CONFIG</span>
+                      </h3>
+                      <div className='text-center py-4 text-zinc-500 text-xs'>
+                        No se encontró configuración.
+                        <button onClick={loadConfigs} className='flex items-center gap-1.5 mx-auto mt-3 px-3 py-1.5 bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 rounded-lg text-xs border border-amber-500/25 transition-colors cursor-pointer'>
+                          <RefreshCw className='w-3 h-3' strokeWidth={2} /> Recargar
+                        </button>
+                      </div>
+                    </div>
                   )
-                  if (subConfig) {
-                    return (
-                      <div key={subService}>
-                        {renderServiceConfig(subConfig)}
-                      </div>
-                    )
-                  } else {
-                    return (
-                      <div
-                        key={subService}
-                        className='bg-gray-800 p-3 sm:p-6 rounded-xl border-l-4 border-gray-600'
-                      >
-                        <div className='flex justify-between items-start mb-3 sm:mb-4'>
-                          <h3 className='text-sm sm:text-lg font-semibold text-gray-400'>
-                            {subService}
-                            <span className='ml-2 px-2 py-1 bg-gray-600 text-xs rounded-full text-gray-300'>
-                              SIN CONFIGURACIÓN
-                            </span>
-                          </h3>
-                        </div>
-                        <div className='text-center py-4 sm:py-8 text-gray-400 text-xs sm:text-sm'>
-                          No se encontró configuración para {subService}.
-                          <button
-                            onClick={loadConfigs}
-                            className='block mx-auto mt-2 sm:mt-4 px-3 sm:px-4 py-1 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors duration-200 cursor-pointer text-xs sm:text-sm'
-                          >
-                            🔄 Recargar
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  }
                 })}
               </div>
             </div>
           ) : selectedService === 'Mecánica general' ? (
-            <div className='space-y-4 sm:space-y-6'>
-              <p className='text-gray-300 text-xs sm:text-sm mb-3 sm:mb-4'>
-                Configuración de sub-servicios de Mecánica general:
-              </p>
-              <div className='grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6'>
+            <div className='space-y-3'>
+              <p className='text-zinc-400 text-xs mb-2'>Sub-servicios de Mecánica general:</p>
+              <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
                 {mecanicaGeneralSubServices.map(subService => {
-                  const subConfig = configs.find(
-                    c => c.serviceName === subService
+                  const subConfig = configs.find(c => c.serviceName === subService)
+                  return subConfig ? (
+                    <div key={subService}>{renderServiceConfig(subConfig)}</div>
+                  ) : (
+                    <div key={subService} className='bg-zinc-900/70 border border-zinc-800 border-l-4 border-l-zinc-700 p-4 rounded-xl'>
+                      <h3 className='text-sm font-semibold text-zinc-500 mb-3'>{subService}
+                        <span className='ml-2 px-2 py-0.5 bg-zinc-800 text-xs rounded-full text-zinc-400'>SIN CONFIG</span>
+                      </h3>
+                      <div className='text-center py-4 text-zinc-500 text-xs'>
+                        No se encontró configuración.
+                        <button onClick={loadConfigs} className='flex items-center gap-1.5 mx-auto mt-3 px-3 py-1.5 bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 rounded-lg text-xs border border-amber-500/25 transition-colors cursor-pointer'>
+                          <RefreshCw className='w-3 h-3' strokeWidth={2} /> Recargar
+                        </button>
+                      </div>
+                    </div>
                   )
-                  if (subConfig) {
-                    return (
-                      <div key={subService}>
-                        {renderServiceConfig(subConfig)}
-                      </div>
-                    )
-                  } else {
-                    return (
-                      <div
-                        key={subService}
-                        className='bg-gray-800 p-3 sm:p-6 rounded-xl border-l-4 border-gray-600'
-                      >
-                        <div className='flex justify-between items-start mb-3 sm:mb-4'>
-                          <h3 className='text-sm sm:text-lg font-semibold text-gray-400'>
-                            {subService}
-                            <span className='ml-2 px-2 py-1 bg-gray-600 text-xs rounded-full text-gray-300'>
-                              SIN CONFIGURACIÓN
-                            </span>
-                          </h3>
-                        </div>
-                        <div className='text-center py-4 sm:py-8 text-gray-400 text-xs sm:text-sm'>
-                          No se encontró configuración para {subService}.
-                          <button
-                            onClick={loadConfigs}
-                            className='block mx-auto mt-2 sm:mt-4 px-3 sm:px-4 py-1 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors duration-200 cursor-pointer text-xs sm:text-sm'
-                          >
-                            🔄 Recargar
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  }
                 })}
               </div>
             </div>
           ) : (
             (() => {
-              const selectedConfig = configs.find(
-                config => config.serviceName === selectedService
+              const selectedConfig = configs.find(config => config.serviceName === selectedService)
+              if (selectedConfig) return renderServiceConfig(selectedConfig)
+              return (
+                <div className='text-center py-8 text-zinc-500 text-xs'>
+                  No se encontró configuración para {selectedService}.
+                  <button onClick={loadConfigs} className='flex items-center gap-1.5 mx-auto mt-3 px-3 py-1.5 bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 rounded-lg text-xs border border-amber-500/25 transition-colors cursor-pointer'>
+                    <RefreshCw className='w-3 h-3' strokeWidth={2} /> Recargar
+                  </button>
+                </div>
               )
-              if (selectedConfig) {
-                return renderServiceConfig(selectedConfig)
-              } else {
-                return (
-                  <div className='text-center py-4 sm:py-8 text-gray-400 text-xs sm:text-sm'>
-                    No se encontró configuración para {selectedService}.
-                    <button
-                      onClick={loadConfigs}
-                      className='block mx-auto mt-2 sm:mt-4 px-3 sm:px-4 py-1 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors duration-200 cursor-pointer text-xs sm:text-sm'
-                    >
-                      🔄 Recargar
-                    </button>
-                  </div>
-                )
-              }
             })()
           )}
         </div>
       )}
 
-      {/* Información */}
-      <div className='bg-gray-800 p-3 sm:p-6 rounded-xl mt-4 sm:mt-8'>
-        <h3 className='text-sm sm:text-lg font-semibold text-white mb-2 sm:mb-4'>
-          ℹ️ Información de Configuración
-        </h3>
-        <div className='text-gray-300 space-y-1 sm:space-y-2 text-xs sm:text-sm'>
-          <p>
-            • <strong>Máximo por día:</strong> Número máximo de turnos que se
-            pueden agendar por día para este servicio.
-          </p>
-          <p>
-            • <strong>Máximo por semana:</strong> Número máximo de turnos que se
-            pueden agendar por semana para este servicio.
-          </p>
-          <p>
-            • <strong>Días permitidos:</strong> Días de la semana en los que se
-            puede agendar este servicio.
-          </p>
+      {/* ── Info box ── */}
+      <div className='bg-zinc-900/70 border border-zinc-800 p-4 sm:p-5 rounded-2xl'>
+        <div className='flex items-center gap-2 mb-3'>
+          <Info className='w-4 h-4 text-zinc-500' strokeWidth={2} />
+          <h3 className='text-sm font-semibold text-zinc-400'>Información de Configuración</h3>
         </div>
-
-        <div className='mt-3 sm:mt-4 p-2 sm:p-3 bg-blue-900/20 border border-blue-700/30 rounded-lg'>
-          <p className='text-blue-300 text-xs sm:text-sm'>
-            <strong>🤝 Coexistencia de límites:</strong> Si configuras AMBOS
-            límites (diario y semanal), el sistema verificará que se cumplan las
-            DOS condiciones. Por ejemplo: con máximo 2/día y 8/semana, si el
-            lunes ya tienes 2 turnos, el martes seguirá disponible porque solo
-            has usado 2 de los 8 turnos semanales.
-          </p>
+        <div className='text-zinc-500 space-y-1.5 text-xs sm:text-sm'>
+          <p>• <span className='text-zinc-300 font-medium'>Máximo por día:</span> Número máximo de turnos que se pueden agendar por día.</p>
+          <p>• <span className='text-zinc-300 font-medium'>Máximo por semana:</span> Número máximo de turnos que se pueden agendar por semana.</p>
+          <p>• <span className='text-zinc-300 font-medium'>Días permitidos:</span> Días de la semana en los que se puede agendar el servicio.</p>
+        </div>
+        <div className='mt-3 p-3 bg-amber-500/8 border border-amber-500/20 rounded-xl'>
+          <div className='flex items-start gap-2'>
+            <Lightbulb className='w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5' strokeWidth={2} />
+            <p className='text-amber-200/70 text-xs'>
+              Si configurás AMBOS límites, el sistema verificará que se cumplan las dos condiciones simultáneamente.
+            </p>
+          </div>
         </div>
       </div>
+
     </div>
   )
 }

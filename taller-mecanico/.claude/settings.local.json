@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npm run dev:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(npx tsc:*)",
+      "Bash(grep:*)"
     ]
   }
 }

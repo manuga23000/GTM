@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { generateWeeklyPDF } from '@/actions/utils/pdfGenerator'
+import { FileDown, Loader2 } from 'lucide-react'
 
 interface WeeklyReportButtonProps {
   onMessage?: (message: string) => void
@@ -192,42 +193,16 @@ export default function WeeklyReportButton({
         whileTap={{ scale: 0.95 }}
         onClick={() => generateReport('this-week')}
         disabled={isGenerating}
-        className='bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold shadow-lg transition-all duration-200 flex items-center gap-2 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap'
+        className='bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-zinc-900 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-semibold shadow-lg shadow-amber-900/30 transition-all duration-200 flex items-center gap-2 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap'
       >
         {isGenerating ? (
           <>
-            <svg className='animate-spin h-5 w-5' viewBox='0 0 24 24'>
-              <circle
-                className='opacity-25'
-                cx='12'
-                cy='12'
-                r='10'
-                stroke='currentColor'
-                strokeWidth='4'
-                fill='none'
-              />
-              <path
-                className='opacity-75'
-                fill='currentColor'
-                d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
-              />
-            </svg>
+            <Loader2 className='h-5 w-5 animate-spin' strokeWidth={2} />
             Generando...
           </>
         ) : (
           <>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              className='h-5 w-5'
-              viewBox='0 0 20 20'
-              fill='currentColor'
-            >
-              <path
-                fillRule='evenodd'
-                d='M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z'
-                clipRule='evenodd'
-              />
-            </svg>
+            <FileDown className='h-5 w-5' strokeWidth={2} />
             <span>Generar reporte semanal</span>
           </>
         )}

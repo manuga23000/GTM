@@ -14,6 +14,7 @@ import VehicleModal from './VehicleModal'
 import WeeklyReportButton from './WeeklyReportButton'
 import { deleteFileFromStorage } from '@/lib/storageUtils'
 import { buscarHistorialCompleto } from '@/actions/seguimiento'
+import { Plus, Search, X, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface FirestoreTimestamp {
   seconds: number
@@ -21,9 +22,7 @@ interface FirestoreTimestamp {
 }
 
 export default function VehicleConfig() {
-  const [vehiclesInTracking, setVehiclesInTracking] = useState<
-    VehicleInTracking[]
-  >([])
+  const [vehiclesInTracking, setVehiclesInTracking] = useState<VehicleInTracking[]>([])
   const [message, setMessage] = useState<string>('')
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -32,9 +31,7 @@ export default function VehicleConfig() {
   const [showEditVehicleModal, setShowEditVehicleModal] = useState(false)
   const [editVehicle, setEditVehicle] = useState<VehicleInTracking | null>(null)
   const [showTrackingModal, setShowTrackingModal] = useState(false)
-  const [editTracking, setEditTracking] = useState<VehicleInTracking | null>(
-    null
-  )
+  const [editTracking, setEditTracking] = useState<VehicleInTracking | null>(null)
   const [selectedVehicle, setSelectedVehicle] = useState<string>('')
   const [showAddForm, setShowAddForm] = useState(false)
   const [addVehicleError, setAddVehicleError] = useState<string>('')
@@ -46,7 +43,6 @@ export default function VehicleConfig() {
 
   const [isLoadingHistorial, setIsLoadingHistorial] = useState(false)
   const [datosHistorialCargados, setDatosHistorialCargados] = useState(false)
-
   const [originalPlateNumber, setOriginalPlateNumber] = useState<string>('')
 
   const filteredVehicles = useMemo(() => {
@@ -62,71 +58,51 @@ export default function VehicleConfig() {
 
   const totalPages = Math.ceil(filteredVehicles.length / VEHICLES_PER_PAGE)
 
-  useEffect(() => {
-    fetchVehicles()
-  }, [])
-
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [searchTerm])
+  useEffect(() => { fetchVehicles() }, [])
+  useEffect(() => { setCurrentPage(1) }, [searchTerm])
 
   const fetchVehicles = async () => {
     try {
       const backendVehicles = await getAllVehicles()
-
-      const mapped = backendVehicles.map(v => {
-        return {
-          id: v.plateNumber,
-          plateNumber: v.plateNumber,
-          brand: v.brand || '',
-          model: v.model || '',
-          year: v.year || new Date().getFullYear(),
-          clientName: v.clientName,
-          clientPhone: v.clientPhone || '',
-          serviceType: v.serviceType || '',
-          chassisNumber: v.chassisNumber || '',
-          entryDate: v.createdAt ? new Date(v.createdAt) : new Date(),
-          estimatedCompletionDate: v.estimatedCompletionDate
-            ? new Date(v.estimatedCompletionDate)
-            : null,
-          status: 'received' as const,
-          km: v.km || 0,
-          steps: (v.steps || []).map(step => {
-            let stepDate: Date
-            const dateValue = step.date
-
-            if (dateValue instanceof Date) {
-              stepDate = dateValue
-            } else if (
-              dateValue &&
-              typeof dateValue === 'object' &&
-              'seconds' in dateValue
-            ) {
-              const timestamp = dateValue as FirestoreTimestamp
-              stepDate = new Date(timestamp.seconds * 1000)
-            } else {
-              stepDate = new Date()
-            }
-
-            return {
-              ...step,
-              status: 'completed' as const,
-              date: stepDate,
-              files: (step.files || []).map(file => ({
-                ...file,
-                uploadedAt:
-                  file.uploadedAt instanceof Date
-                    ? file.uploadedAt
-                    : new Date(file.uploadedAt),
-              })),
-            }
-          }),
-          notes: v.notes || '',
-          nextStep: v.nextStep || '',
-          fluidLevels: v.fluidLevels || undefined,
-        }
-      })
-
+      const mapped = backendVehicles.map(v => ({
+        id: v.plateNumber,
+        plateNumber: v.plateNumber,
+        brand: v.brand || '',
+        model: v.model || '',
+        year: v.year || new Date().getFullYear(),
+        clientName: v.clientName,
+        clientPhone: v.clientPhone || '',
+        serviceType: v.serviceType || '',
+        chassisNumber: v.chassisNumber || '',
+        entryDate: v.createdAt ? new Date(v.createdAt) : new Date(),
+        estimatedCompletionDate: v.estimatedCompletionDate ? new Date(v.estimatedCompletionDate) : null,
+        status: 'received' as const,
+        km: v.km || 0,
+        steps: (v.steps || []).map(step => {
+          let stepDate: Date
+          const dateValue = step.date
+          if (dateValue instanceof Date) {
+            stepDate = dateValue
+          } else if (dateValue && typeof dateValue === 'object' && 'seconds' in dateValue) {
+            const timestamp = dateValue as FirestoreTimestamp
+            stepDate = new Date(timestamp.seconds * 1000)
+          } else {
+            stepDate = new Date()
+          }
+          return {
+            ...step,
+            status: 'completed' as const,
+            date: stepDate,
+            files: (step.files || []).map(file => ({
+              ...file,
+              uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(file.uploadedAt),
+            })),
+          }
+        }),
+        notes: v.notes || '',
+        nextStep: v.nextStep || '',
+        fluidLevels: v.fluidLevels || undefined,
+      }))
       setVehiclesInTracking(mapped)
     } catch (error) {
       console.error('❌ fetchVehicles: Error:', error)
@@ -135,50 +111,34 @@ export default function VehicleConfig() {
   }
 
   const refreshSelectedVehicle = async () => {
-    if (!selectedVehicle) {
-      return
-    }
-
+    if (!selectedVehicle) return
     try {
       const vehicleData = await getVehicleByPlate(selectedVehicle)
-
       if (vehicleData) {
         setVehiclesInTracking(prev => {
           const updated = prev.map(v => {
             if (v.plateNumber === selectedVehicle) {
               return {
                 ...v,
-                fluidLevels:
-                  vehicleData.fluidLevels !== undefined
-                    ? vehicleData.fluidLevels
-                    : v.fluidLevels,
+                fluidLevels: vehicleData.fluidLevels !== undefined ? vehicleData.fluidLevels : v.fluidLevels,
                 steps: (vehicleData.steps || []).map(step => {
                   let stepDate: Date
                   const dateValue = step.date
-
                   if (dateValue instanceof Date) {
                     stepDate = dateValue
-                  } else if (
-                    dateValue &&
-                    typeof dateValue === 'object' &&
-                    'seconds' in dateValue
-                  ) {
+                  } else if (dateValue && typeof dateValue === 'object' && 'seconds' in dateValue) {
                     const timestamp = dateValue as FirestoreTimestamp
                     stepDate = new Date(timestamp.seconds * 1000)
                   } else {
                     stepDate = new Date()
                   }
-
                   return {
                     ...step,
                     status: 'completed' as const,
                     date: stepDate,
                     files: (step.files || []).map(file => ({
                       ...file,
-                      uploadedAt:
-                        file.uploadedAt instanceof Date
-                          ? file.uploadedAt
-                          : new Date(file.uploadedAt),
+                      uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(file.uploadedAt),
                     })),
                   }
                 }),
@@ -188,11 +148,6 @@ export default function VehicleConfig() {
             }
             return v
           })
-
-          const updatedVehicle = updated.find(
-            v => v.plateNumber === selectedVehicle
-          )
-
           return updated
         })
       }
@@ -229,21 +184,13 @@ export default function VehicleConfig() {
   const handlePatenteChange = async (patente: string) => {
     setDatosHistorialCargados(false)
     setAddVehicleError('')
-
     setNewVehicle(prev => ({ ...prev, plateNumber: patente.toUpperCase() }))
-
-    if (!patente.trim()) {
-      return
-    }
-
+    if (!patente.trim()) return
     setIsLoadingHistorial(true)
-
     try {
       const historial = await buscarHistorialCompleto(patente)
-
       if (historial.length > 0) {
         const ultimoServicio = historial[0]
-
         setNewVehicle(prev => ({
           ...prev,
           plateNumber: patente.toUpperCase(),
@@ -258,13 +205,8 @@ export default function VehicleConfig() {
           notes: '',
           estimatedCompletionDate: null,
         }))
-
         setDatosHistorialCargados(true)
-        showMessage(
-          `Datos cargados del historial (${historial.length} servicio${
-            historial.length > 1 ? 's' : ''
-          } anterior${historial.length > 1 ? 'es' : ''})`
-        )
+        showMessage(`Datos cargados del historial (${historial.length} servicio${historial.length > 1 ? 's' : ''} anterior${historial.length > 1 ? 'es' : ''})`)
       }
     } catch (error) {
       console.error('Error buscando historial:', error)
@@ -275,38 +217,19 @@ export default function VehicleConfig() {
 
   const handleDeleteVehicle = async () => {
     if (!selectedVehicleData || isDeletingVehicle) return
-
-    const fileCount = selectedVehicleData.steps.reduce((acc, step) => {
-      return acc + (step.files?.length || 0)
-    }, 0)
-
-    const confirmMessage =
-      fileCount > 0
-        ? `¿Seguro que deseas eliminar el vehículo ${
-            selectedVehicleData.plateNumber
-          }?\n\nEsto también eliminará ${fileCount} archivo${
-            fileCount !== 1 ? 's' : ''
-          } multimedia asociado${fileCount !== 1 ? 's' : ''}.`
-        : `¿Seguro que deseas eliminar el vehículo ${selectedVehicleData.plateNumber}?`
-
+    const fileCount = selectedVehicleData.steps.reduce((acc, step) => acc + (step.files?.length || 0), 0)
+    const confirmMessage = fileCount > 0
+      ? `¿Seguro que deseas eliminar el vehículo ${selectedVehicleData.plateNumber}?\n\nEsto también eliminará ${fileCount} archivo${fileCount !== 1 ? 's' : ''} multimedia asociado${fileCount !== 1 ? 's' : ''}.`
+      : `¿Seguro que deseas eliminar el vehículo ${selectedVehicleData.plateNumber}?`
     if (!window.confirm(confirmMessage)) return
-
     setIsDeletingVehicle(true)
     showMessage('Eliminando vehículo y archivos...')
-
     try {
       const response = await deleteVehicle(selectedVehicleData.plateNumber)
-
       if (response.success) {
         await fetchVehicles()
         setSelectedVehicle('')
-        showMessage(
-          fileCount > 0
-            ? `Vehículo y ${fileCount} archivo${
-                fileCount !== 1 ? 's' : ''
-              } eliminado${fileCount !== 1 ? 's' : ''} exitosamente`
-            : 'Vehículo eliminado exitosamente'
-        )
+        showMessage(fileCount > 0 ? `Vehículo y ${fileCount} archivo${fileCount !== 1 ? 's' : ''} eliminado${fileCount !== 1 ? 's' : ''} exitosamente` : 'Vehículo eliminado exitosamente')
       } else {
         showMessage(response.message || 'Error al eliminar vehículo')
       }
@@ -320,11 +243,8 @@ export default function VehicleConfig() {
 
   const handleOpenEditVehicle = () => {
     if (selectedVehicleData) {
-      const normalizedPlate = selectedVehicleData.plateNumber
-        .replace(/\s+/g, '')
-        .toUpperCase()
+      const normalizedPlate = selectedVehicleData.plateNumber.replace(/\s+/g, '').toUpperCase()
       setOriginalPlateNumber(normalizedPlate)
-
       setEditVehicle({ ...selectedVehicleData })
       setShowEditVehicleModal(true)
     }
@@ -334,23 +254,16 @@ export default function VehicleConfig() {
     if (!editVehicle || isEditingVehicle) return
     setIsEditingVehicle(true)
     showMessage('Guardando cambios...')
-
     try {
-      const newPlateNormalized = editVehicle.plateNumber
-        .replace(/\s+/g, '')
-        .toUpperCase()
-
+      const newPlateNormalized = editVehicle.plateNumber.replace(/\s+/g, '').toUpperCase()
       const plateChanged = originalPlateNumber !== newPlateNormalized
-
       if (plateChanged) {
         const vehicleData = await getVehicleByPlate(originalPlateNumber)
-
         if (!vehicleData) {
           showMessage('Error: No se encontró el vehículo original')
           setIsEditingVehicle(false)
           return
         }
-
         const createResponse = await createVehicle({
           ...vehicleData,
           plateNumber: newPlateNormalized,
@@ -365,27 +278,14 @@ export default function VehicleConfig() {
           estimatedCompletionDate: editVehicle.estimatedCompletionDate,
           steps: vehicleData.steps || [],
         })
-
         if (!createResponse.success) {
-          showMessage(
-            createResponse.message ||
-              'Error al crear vehículo con nueva patente'
-          )
+          showMessage(createResponse.message || 'Error al crear vehículo con nueva patente')
           setIsEditingVehicle(false)
           return
         }
-
         const deleteResponse = await deleteVehicle(originalPlateNumber)
-
-        if (!deleteResponse.success) {
-          showMessage(
-            '⚠️ Vehículo actualizado pero no se pudo eliminar el registro anterior'
-          )
-        }
-
-        showMessage(
-          `✅ Patente actualizada: ${originalPlateNumber} → ${newPlateNormalized}`
-        )
+        if (!deleteResponse.success) showMessage('⚠️ Vehículo actualizado pero no se pudo eliminar el registro anterior')
+        showMessage(`✅ Patente actualizada: ${originalPlateNumber} → ${newPlateNormalized}`)
       } else {
         const response = await updateVehicle(originalPlateNumber, {
           plateNumber: newPlateNormalized,
@@ -400,24 +300,17 @@ export default function VehicleConfig() {
           createdAt: editVehicle.entryDate,
           estimatedCompletionDate: editVehicle.estimatedCompletionDate,
         })
-
         if (!response.success) {
           showMessage(response.message || 'Error al actualizar vehículo')
           setIsEditingVehicle(false)
           return
         }
-
         showMessage('Vehículo actualizado')
       }
-
       await fetchVehicles()
-
-      const vehicleToSelect = plateChanged
-        ? newPlateNormalized
-        : originalPlateNumber
+      const vehicleToSelect = plateChanged ? editVehicle.plateNumber.replace(/\s+/g, '').toUpperCase() : originalPlateNumber
       setSelectedVehicle('')
       setTimeout(() => setSelectedVehicle(vehicleToSelect), 50)
-
       setShowEditVehicleModal(false)
     } catch (error) {
       console.error('Error al guardar cambios:', error)
@@ -434,10 +327,7 @@ export default function VehicleConfig() {
         ...step,
         files: (step.files || []).map(file => ({
           ...file,
-          uploadedAt:
-            file.uploadedAt instanceof Date
-              ? file.uploadedAt
-              : new Date(file.uploadedAt),
+          uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(file.uploadedAt),
         })),
       })),
     })
@@ -448,38 +338,29 @@ export default function VehicleConfig() {
     if (!editTracking || isEditingTracking) return
     setIsEditingTracking(true)
     showMessage('Guardando seguimiento...')
-
     try {
       const normalizedSteps = editTracking.steps.map(step => ({
         ...step,
         files: (step.files || []).map(file => ({
           ...file,
-          uploadedAt:
-            file.uploadedAt instanceof Date
-              ? file.uploadedAt
-              : new Date(file.uploadedAt),
+          uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(file.uploadedAt),
         })),
       }))
-
       const updateResult = await updateVehicle(editTracking.plateNumber, {
         steps: normalizedSteps,
         nextStep: editTracking.nextStep,
         notes: editTracking.notes,
         estimatedCompletionDate: editTracking.estimatedCompletionDate,
       })
-
       if (updateResult.success) {
         await fetchVehicles()
         const currentSelected = selectedVehicle
         setSelectedVehicle('')
         setTimeout(() => setSelectedVehicle(currentSelected), 50)
-
         setShowTrackingModal(false)
         showMessage('Seguimiento actualizado')
       } else {
-        showMessage(
-          'Error al guardar seguimiento: ' + (updateResult.message || '')
-        )
+        showMessage('Error al guardar seguimiento: ' + (updateResult.message || ''))
       }
     } catch (error) {
       console.error('Error saving tracking:', error)
@@ -494,31 +375,11 @@ export default function VehicleConfig() {
     setIsAddingVehicle(true)
     setAddVehicleError('')
     showMessage('Guardando vehículo...')
-
     try {
-      const response = await createVehicle({
-        ...newVehicle,
-        createdAt: newVehicle.createdAt,
-        km: newVehicle.km,
-        steps: [],
-      })
-
+      const response = await createVehicle({ ...newVehicle, createdAt: newVehicle.createdAt, km: newVehicle.km, steps: [] })
       if (response.success) {
         await fetchVehicles()
-        setNewVehicle({
-          plateNumber: '',
-          brand: '',
-          model: '',
-          year: new Date().getFullYear(),
-          clientName: '',
-          clientPhone: '',
-          serviceType: '',
-          chassisNumber: '',
-          km: 0,
-          notes: '',
-          createdAt: new Date(),
-          estimatedCompletionDate: null,
-        })
+        setNewVehicle({ plateNumber: '', brand: '', model: '', year: new Date().getFullYear(), clientName: '', clientPhone: '', serviceType: '', chassisNumber: '', km: 0, notes: '', createdAt: new Date(), estimatedCompletionDate: null })
         setDatosHistorialCargados(false)
         setShowAddForm(false)
         showMessage('Vehículo agregado exitosamente')
@@ -534,127 +395,91 @@ export default function VehicleConfig() {
     }
   }
 
-  const getStatusColor = (
-    status:
-      | 'received'
-      | 'in-diagnosis'
-      | 'in-repair'
-      | 'completed'
-      | 'delivered'
-  ) => {
+  const getStatusColor = (status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered') => {
     switch (status) {
-      case 'received':
-        return 'bg-blue-600'
-      case 'in-diagnosis':
-        return 'bg-yellow-600'
-      case 'in-repair':
-        return 'bg-orange-600'
-      case 'completed':
-        return 'bg-green-600'
-      case 'delivered':
-        return 'bg-gray-600'
-      default:
-        return 'bg-gray-600'
+      case 'received':     return 'bg-blue-600'
+      case 'in-diagnosis': return 'bg-amber-600'
+      case 'in-repair':    return 'bg-orange-600'
+      case 'completed':    return 'bg-emerald-600'
+      case 'delivered':    return 'bg-zinc-600'
+      default:             return 'bg-zinc-600'
     }
   }
 
-  const getStatusText = (
-    status:
-      | 'received'
-      | 'in-diagnosis'
-      | 'in-repair'
-      | 'completed'
-      | 'delivered'
-  ) => {
+  const getStatusText = (status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered') => {
     switch (status) {
-      case 'received':
-        return 'Recibido'
-      case 'in-diagnosis':
-        return 'En diagnóstico'
-      case 'in-repair':
-        return 'En reparación'
-      case 'completed':
-        return 'Completado'
-      case 'delivered':
-        return 'Entregado'
-      default:
-        return 'Desconocido'
+      case 'received':     return 'Recibido'
+      case 'in-diagnosis': return 'En diagnóstico'
+      case 'in-repair':    return 'En reparación'
+      case 'completed':    return 'Completado'
+      case 'delivered':    return 'Entregado'
+      default:             return 'Desconocido'
     }
   }
 
   return (
-    <div className='min-h-screen bg-gray-900 text-white'>
-      <div className='bg-gray-800 shadow-lg py-4 sm:py-6'>
+    <div className='min-h-screen bg-zinc-950 text-white'>
+
+      {/* ── Top bar ── */}
+      <div className='bg-zinc-900/80 border-b border-zinc-800 py-4 sm:py-5'>
         <div className='max-w-6xl mx-auto flex flex-col gap-4 px-3 sm:px-4'>
           <div className='flex flex-col sm:flex-row justify-between items-start gap-3'>
             <div>
-              <h2 className='text-xl sm:text-2xl md:text-3xl font-bold text-white'>
-                Gestión de Vehículos
-              </h2>
-              <p className='text-gray-400 mt-1 text-sm sm:text-base'>
-                {filteredVehicles.length} vehículos encontrados
+              <h2 className='text-lg sm:text-2xl font-bold text-white'>Gestión de Vehículos</h2>
+              <p className='text-zinc-500 mt-0.5 text-xs sm:text-sm'>
+                {filteredVehicles.length} vehículo{filteredVehicles.length !== 1 ? 's' : ''} encontrado{filteredVehicles.length !== 1 ? 's' : ''}
               </p>
             </div>
 
-            {/* BOTONES - Nuevo Vehículo y Generar Reporte PDF */}
-            <div className='flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto'>
+            {/* Buttons */}
+            <div className='flex flex-col sm:flex-row gap-2 w-full sm:w-auto'>
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  setAddVehicleError('')
-                  setShowAddForm(true)
-                }}
-                className='w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors text-sm sm:text-base flex items-center justify-center gap-2'
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => { setAddVehicleError(''); setShowAddForm(true) }}
+                className='w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-900 font-bold rounded-xl transition-all text-sm border border-amber-400/30 shadow-md shadow-amber-900/30'
               >
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  className='h-5 w-5'
-                  viewBox='0 0 20 20'
-                  fill='currentColor'
-                >
-                  <path
-                    fillRule='evenodd'
-                    d='M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z'
-                    clipRule='evenodd'
-                  />
-                </svg>
+                <Plus className='w-4 h-4' strokeWidth={2.5} />
                 Nuevo Vehículo
               </motion.button>
-
               <WeeklyReportButton onMessage={showMessage} />
             </div>
           </div>
 
-          <div className='relative w-full sm:max-w-md'>
+          {/* Search */}
+          <div className='relative w-full sm:max-w-sm'>
+            <Search className='absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none' strokeWidth={2} />
             <input
               type='text'
-              placeholder='Buscar por patente...'
+              placeholder='Buscar por patente…'
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className='w-full px-3 sm:px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 text-sm sm:text-base'
+              className='w-full pl-10 pr-9 py-2.5 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/30 transition-all text-sm'
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className='absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white p-1'
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors p-0.5'
               >
-                ✕
+                <X className='w-3.5 h-3.5' strokeWidth={2.2} />
               </button>
             )}
           </div>
         </div>
       </div>
 
-      <main className='max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-8'>
+      <main className='max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6'>
+
+        {/* ── Toast ── */}
         <AnimatePresence>
           {message && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className='p-3 sm:p-4 bg-blue-600 text-white rounded-lg text-center text-sm sm:text-base'
+              className='p-3 sm:p-4 bg-amber-500/15 border border-amber-500/30 text-amber-200 rounded-xl flex items-center gap-3 text-sm'
             >
+              <CheckCircle2 className='w-4 h-4 text-amber-400 shrink-0' strokeWidth={2} />
               {message}
             </motion.div>
           )}
@@ -668,39 +493,37 @@ export default function VehicleConfig() {
           getStatusText={getStatusText}
         />
 
+        {/* ── Pagination ── */}
         {totalPages > 1 && (
-          <div className='flex justify-center items-center gap-1 sm:gap-2 mt-4 sm:mt-6'>
+          <div className='flex justify-center items-center gap-1.5 mt-4'>
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className='px-2 sm:px-3 py-1 sm:py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors text-xs sm:text-sm'
+              className='p-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg transition-colors'
             >
-              ← Ant
+              <ChevronLeft className='w-4 h-4' strokeWidth={2} />
             </button>
 
             <div className='flex gap-1'>
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                let page
+                let page: number
                 if (totalPages <= 5) {
                   page = i + 1
+                } else if (currentPage <= 3) {
+                  page = i + 1
+                } else if (currentPage >= totalPages - 2) {
+                  page = totalPages - 4 + i
                 } else {
-                  if (currentPage <= 3) {
-                    page = i + 1
-                  } else if (currentPage >= totalPages - 2) {
-                    page = totalPages - 4 + i
-                  } else {
-                    page = currentPage - 2 + i
-                  }
+                  page = currentPage - 2 + i
                 }
-
                 return (
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`px-2 sm:px-3 py-1 sm:py-2 rounded transition-colors text-xs sm:text-sm ${
+                    className={`w-9 h-9 rounded-lg transition-all text-xs font-semibold ${
                       currentPage === page
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-700 hover:bg-gray-600 text-white'
+                        ? 'bg-amber-500 text-zinc-900 shadow-sm'
+                        : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300'
                     }`}
                   >
                     {page}
@@ -710,13 +533,11 @@ export default function VehicleConfig() {
             </div>
 
             <button
-              onClick={() =>
-                setCurrentPage(Math.min(totalPages, currentPage + 1))
-              }
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className='px-2 sm:px-3 py-1 sm:py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors text-xs sm:text-sm'
+              className='p-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg transition-colors'
             >
-              Sig →
+              <ChevronRight className='w-4 h-4' strokeWidth={2} />
             </button>
           </div>
         )}
@@ -733,9 +554,7 @@ export default function VehicleConfig() {
               onVehicleFinalized={async () => {
                 await fetchVehicles()
                 setSelectedVehicle('')
-                showMessage(
-                  'Servicio finalizado. Vehículo movido al historial.'
-                )
+                showMessage('Servicio finalizado. Vehículo movido al historial.')
               }}
               onVehicleUpdated={refreshSelectedVehicle}
             />

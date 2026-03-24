@@ -2,6 +2,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Transaction } from '@/actions/types/types'
+import { Plus } from 'lucide-react'
 
 type CategoryType = 'expense' | 'income'
 
@@ -27,19 +28,19 @@ export default function ExpenseForm({
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className='bg-gray-800 p-8 rounded-xl shadow-xl'
+        className='bg-zinc-900/80 border border-zinc-800 p-6 sm:p-8 rounded-2xl shadow-xl'
       >
-        <h3 className='text-2xl font-bold mb-6 text-center text-white'>
+        <h3 className='text-xl font-bold mb-6 text-center text-white'>
           Agregar Movimiento
         </h3>
 
-        <div className='space-y-6'>
+        <div className='space-y-5'>
           {/* Tipo */}
           <div>
-            <label className='block text-sm font-medium mb-2 text-white'>
+            <label className='block text-sm font-medium mb-2 text-zinc-300'>
               Tipo de Movimiento
             </label>
-            <div className='flex gap-4'>
+            <div className='flex gap-3'>
               {(['expense', 'income'] as const).map(type => (
                 <motion.button
                   key={type}
@@ -52,14 +53,14 @@ export default function ExpenseForm({
                       category: '',
                     })
                   }
-                  className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+                  className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all text-sm ${
                     newTransaction.type === type
                       ? type === 'expense'
-                        ? 'bg-red-600 text-white'
-                        : 'bg-green-600 text-white'
+                        ? 'bg-red-600 text-white shadow-md'
+                        : 'bg-emerald-600 text-white shadow-md'
                       : isSubmitting
-                      ? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-50'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      ? 'bg-zinc-700 text-zinc-500 cursor-not-allowed opacity-50'
+                      : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
                   }`}
                   whileHover={!isSubmitting ? { scale: 1.02 } : {}}
                   whileTap={!isSubmitting ? { scale: 0.98 } : {}}
@@ -72,7 +73,7 @@ export default function ExpenseForm({
 
           {/* Categoría */}
           <div className='space-y-2'>
-            <label className='block text-sm font-medium text-white'>
+            <label className='block text-sm font-medium text-zinc-300'>
               Categoría
             </label>
             <select
@@ -84,10 +85,10 @@ export default function ExpenseForm({
                 })
               }
               disabled={isSubmitting}
-              className={`w-full p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 focus:ring-offset-transparent focus:outline-none md:focus:ring-2 md:focus:ring-blue-500 text-white transition-all ${
+              className={`w-full p-3 border border-zinc-700 rounded-xl focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 focus:outline-none text-white transition-all text-sm ${
                 isSubmitting
-                  ? 'bg-gray-600 cursor-not-allowed opacity-50'
-                  : 'bg-gray-700 hover:bg-gray-650'
+                  ? 'bg-zinc-700 cursor-not-allowed opacity-50'
+                  : 'bg-zinc-900 hover:border-zinc-600'
               }`}
               required
             >
@@ -104,7 +105,7 @@ export default function ExpenseForm({
 
           {/* Monto */}
           <div>
-            <label className='block text-sm font-medium mb-2 text-white'>
+            <label className='block text-sm font-medium mb-2 text-zinc-300'>
               Monto (ARS)
             </label>
             <input
@@ -134,10 +135,10 @@ export default function ExpenseForm({
                   amount: parseFloat(value.toFixed(2)),
                 })
               }}
-              className={`w-full p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-all ${
+              className={`w-full p-3 border border-zinc-700 rounded-xl focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 focus:outline-none text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-all text-sm ${
                 isSubmitting
-                  ? 'bg-gray-600 cursor-not-allowed opacity-50'
-                  : 'bg-gray-700 hover:bg-gray-650'
+                  ? 'bg-zinc-700 cursor-not-allowed opacity-50'
+                  : 'bg-zinc-900 hover:border-zinc-600'
               }`}
               placeholder='0.00'
             />
@@ -145,7 +146,7 @@ export default function ExpenseForm({
 
           {/* Fecha */}
           <div>
-            <label className='block text-sm font-medium mb-2 text-white'>
+            <label className='block text-sm font-medium mb-2 text-zinc-300'>
               Fecha
             </label>
             <input
@@ -158,10 +159,10 @@ export default function ExpenseForm({
                   date: e.target.value,
                 })
               }
-              className={`w-full p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white transition-all ${
+              className={`w-full p-3 border border-zinc-700 rounded-xl focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 focus:outline-none text-white transition-all text-sm ${
                 isSubmitting
-                  ? 'bg-gray-600 cursor-not-allowed opacity-50'
-                  : 'bg-gray-700 hover:bg-gray-650'
+                  ? 'bg-zinc-700 cursor-not-allowed opacity-50'
+                  : 'bg-zinc-900 hover:border-zinc-600'
               }`}
             />
           </div>
@@ -169,10 +170,10 @@ export default function ExpenseForm({
           <motion.button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className={`relative w-full py-4 font-bold rounded-lg transition-all duration-300 overflow-hidden ${
+            className={`relative w-full py-3.5 font-bold rounded-xl transition-all duration-300 overflow-hidden flex items-center justify-center gap-2 ${
               isSubmitting
-                ? 'bg-gradient-to-r from-blue-400 to-purple-500 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                ? 'bg-gradient-to-r from-amber-400 to-orange-500 cursor-not-allowed text-zinc-900'
+                : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-zinc-900 shadow-lg shadow-amber-900/30'
             }`}
             whileHover={!isSubmitting ? { scale: 1.02 } : {}}
             whileTap={!isSubmitting ? { scale: 0.98 } : {}}
@@ -180,15 +181,9 @@ export default function ExpenseForm({
             {/* Loading background animation */}
             {isSubmitting && (
               <motion.div
-                className='absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500'
-                animate={{
-                  x: ['-100%', '100%'],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: 'linear',
-                }}
+                className='absolute inset-0'
+                animate={{ x: ['-100%', '100%'] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                 style={{
                   background:
                     'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
@@ -200,73 +195,43 @@ export default function ExpenseForm({
             <div className='relative flex items-center justify-center space-x-2'>
               {isSubmitting ? (
                 <>
-                  {/* Cool spinning loader */}
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: 'linear',
-                    }}
-                    className='w-5 h-5 border-2 border-white border-t-transparent rounded-full'
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    className='w-5 h-5 border-2 border-zinc-900/30 border-t-zinc-900 rounded-full'
                   />
                   <motion.span
                     initial={{ opacity: 0.5 }}
                     animate={{ opacity: [0.5, 1, 0.5] }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: Infinity,
-                      ease: 'easeInOut',
-                    }}
-                    className='text-white font-medium'
+                    transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                    className='text-zinc-900 font-bold'
                   >
                     Procesando...
                   </motion.span>
-                  {/* Floating dots animation */}
                   <div className='flex space-x-1'>
                     {[0, 1, 2].map(i => (
                       <motion.div
                         key={i}
-                        animate={{
-                          y: [0, -8, 0],
-                          opacity: [0.7, 1, 0.7],
-                        }}
-                        transition={{
-                          duration: 1.2,
-                          repeat: Infinity,
-                          delay: i * 0.2,
-                          ease: 'easeInOut',
-                        }}
-                        className='w-1.5 h-1.5 bg-white rounded-full'
+                        animate={{ y: [0, -8, 0], opacity: [0.7, 1, 0.7] }}
+                        transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2, ease: 'easeInOut' }}
+                        className='w-1.5 h-1.5 bg-zinc-900 rounded-full'
                       />
                     ))}
                   </div>
                 </>
               ) : (
                 <>
-                  <span className='text-white'>Agregar Movimiento</span>
-                  <motion.span
-                    whileHover={{ scale: 1.2, rotate: 10 }}
-                    className='text-xl'
-                  >
-                    ✨
-                  </motion.span>
+                  <Plus className='w-5 h-5' strokeWidth={2.5} />
+                  <span className='text-zinc-900 font-bold'>Agregar Movimiento</span>
                 </>
               )}
             </div>
 
-            {/* Subtle pulse effect when loading */}
             {isSubmitting && (
               <motion.div
                 className='absolute inset-0 bg-white'
-                animate={{
-                  opacity: [0, 0.1, 0],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
+                animate={{ opacity: [0, 0.1, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
               />
             )}
           </motion.button>

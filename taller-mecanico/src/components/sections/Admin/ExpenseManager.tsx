@@ -25,6 +25,7 @@ import {
 import ExpenseDashboard from './ExpenseDashboard'
 import ExpenseForm from './ExpenseForm'
 import TransactionTable from './TransactionTable'
+import { BarChart2, List, Plus } from 'lucide-react'
 
 type DateRange = 'hoy' | 'mes' | 'año' | 'personalizado'
 type CategoryType = 'expense' | 'income'
@@ -276,30 +277,35 @@ export default function ExpenseManager() {
     }).format(amount)
   }
 
+  const tabs = [
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart2 },
+    { id: 'transactions', label: 'Movimientos', icon: List },
+    { id: 'add', label: 'Agregar', icon: Plus },
+  ]
+
   return (
-    <div className='space-y-6'>
+    <div className='space-y-5'>
       {/* Navigation Tabs */}
-      <div className='flex flex-wrap bg-gray-800 rounded-xl p-2 gap-2'>
-        {[
-          { id: 'dashboard', label: 'Dashboard', emoji: '📊' },
-          { id: 'transactions', label: 'Movimientos', emoji: '📝' },
-          { id: 'add', label: 'Agregar', emoji: '➕' },
-        ].map(tab => (
-          <motion.button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-300 ${
-              activeTab === tab.id
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'text-gray-300 hover:text-white hover:bg-gray-700'
-            }`}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <span className='mr-2'>{tab.emoji}</span>
-            {tab.label}
-          </motion.button>
-        ))}
+      <div className='flex flex-wrap bg-zinc-900/70 border border-zinc-800 rounded-2xl p-2 gap-2'>
+        {tabs.map(tab => {
+          const Icon = tab.icon
+          return (
+            <motion.button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 py-2.5 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-sm ${
+                activeTab === tab.id
+                  ? 'bg-gradient-to-br from-amber-500 to-orange-600 text-zinc-900 shadow-md shadow-amber-900/30'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+              }`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Icon className='w-4 h-4' strokeWidth={2.2} />
+              {tab.label}
+            </motion.button>
+          )
+        })}
       </div>
 
       {/* Content */}
@@ -312,9 +318,9 @@ export default function ExpenseManager() {
           transition={{ duration: 0.3 }}
         >
           {activeTab === 'dashboard' && (
-            <div className='space-y-6'>
+            <div className='space-y-5'>
               {/* Date Range Selector */}
-              <div className='bg-gray-800 p-4 rounded-xl'>
+              <div className='bg-zinc-900/70 border border-zinc-800 p-4 rounded-2xl'>
                 <div className='flex flex-col space-y-4'>
                   <div className='flex flex-wrap gap-2'>
                     {(
@@ -330,10 +336,10 @@ export default function ExpenseManager() {
                             setShowCustomDateRange(false)
                           }
                         }}
-                        className={`px-4 py-2 rounded-lg transition-colors ${
+                        className={`px-4 py-2 rounded-xl transition-colors text-sm font-medium ${
                           dateRange === range
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            ? 'bg-amber-500 text-zinc-900 font-bold'
+                            : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
                         }`}
                       >
                         {range.charAt(0).toUpperCase() + range.slice(1)}
@@ -344,25 +350,25 @@ export default function ExpenseManager() {
                   {showCustomDateRange && (
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mt-2'>
                       <div>
-                        <label className='block text-sm font-medium text-gray-300 mb-1'>
+                        <label className='block text-sm font-medium text-zinc-300 mb-1'>
                           Fecha de inicio
                         </label>
                         <input
                           type='date'
                           value={customStartDate}
                           onChange={e => setCustomStartDate(e.target.value)}
-                          className='w-full p-2 bg-gray-700 border border-gray-600 rounded-lg text-white'
+                          className='w-full p-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-amber-500/50'
                         />
                       </div>
                       <div>
-                        <label className='block text-sm font-medium text-gray-300 mb-1'>
+                        <label className='block text-sm font-medium text-zinc-300 mb-1'>
                           Fecha de fin
                         </label>
                         <input
                           type='date'
                           value={customEndDate}
                           onChange={e => setCustomEndDate(e.target.value)}
-                          className='w-full p-2 bg-gray-700 border border-gray-600 rounded-lg text-white'
+                          className='w-full p-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-amber-500/50'
                           min={customStartDate}
                         />
                       </div>

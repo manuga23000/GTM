@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/presupuestos/:path*',
+
         destination:
           'https://presupuestos-gamma.vercel.app/presupuestos/:path*',
       },

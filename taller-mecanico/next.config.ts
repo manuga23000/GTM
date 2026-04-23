@@ -8,16 +8,6 @@ const nextConfig: NextConfig = {
       'lh3.googleusercontent.com',
     ],
   },
-  async rewrites() {
-    return [
-      {
-        source: '/presupuestos/:path*',
-
-        destination:
-          'https://presupuestos-gamma.vercel.app/presupuestos/:path*',
-      },
-    ]
-  },
   env: {
     // Firebase
     NEXT_PUBLIC_FIREBASE_API: process.env.NEXT_PUBLIC_FIREBASE_API,

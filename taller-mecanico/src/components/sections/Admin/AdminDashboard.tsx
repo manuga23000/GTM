@@ -10,6 +10,7 @@ import AdminStats from './AdminStats'
 import ServiceConfig from './ServiceConfig'
 import VehicleConfig from './VehicleConfig'
 import ExpenseManager from './ExpenseManager'
+import VehicleHistory from './VehicleHistory'
 import Link from 'next/link'
 import {
   CalendarDays,
@@ -21,14 +22,16 @@ import {
   LogOut,
   CheckCircle2,
   Wrench,
+  History,
 } from 'lucide-react'
 
 const tabs = [
-  { id: 'turnos',   label: 'Turnos',  Icon: CalendarDays },
-  { id: 'stats',    label: 'Stats',   Icon: BarChart2    },
-  { id: 'config',   label: 'Config',  Icon: Settings2    },
-  { id: 'vehicles', label: 'Autos',   Icon: Car          },
-  { id: 'expenses', label: 'Gastos',  Icon: Wallet       },
+  { id: 'turnos',   label: 'Turnos',     Icon: CalendarDays },
+  { id: 'stats',    label: 'Stats',      Icon: BarChart2    },
+  { id: 'config',   label: 'Config',     Icon: Settings2    },
+  { id: 'vehicles', label: 'Autos',      Icon: Car          },
+  { id: 'history',  label: 'Historial',  Icon: History      },
+  { id: 'expenses', label: 'Gastos',     Icon: Wallet       },
 ] as const
 
 type TabId = (typeof tabs)[number]['id']
@@ -258,6 +261,7 @@ export default function AdminDashboard() {
             {activeTab === 'stats'    && <AdminStats turnos={turnos} />}
             {activeTab === 'config'   && <ServiceConfig />}
             {activeTab === 'vehicles' && <VehicleConfig />}
+            {activeTab === 'history'  && <VehicleHistory />}
             {activeTab === 'expenses' && <ExpenseManager />}
           </motion.div>
         </AnimatePresence>

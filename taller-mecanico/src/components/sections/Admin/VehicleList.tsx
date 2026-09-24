@@ -9,6 +9,7 @@ import {
   Clock,
   Car,
 } from 'lucide-react'
+import type { ServiceData, ServiceDataMotor, ServiceDataCaja } from '@/actions/types/types'
 
 export interface StepFile {
   id: string
@@ -56,6 +57,11 @@ export interface VehicleInTracking {
     agua: number
     frenos: number
   }
+  serviceData?: ServiceData
+  serviceDataMotor?: ServiceDataMotor
+  serviceDataCaja?: ServiceDataCaja
+  fotoVehiculo?: string
+  observaciones?: VehicleStep[]
 }
 
 interface VehicleListProps {

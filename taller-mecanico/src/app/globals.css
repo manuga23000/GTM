@@ -27,6 +27,32 @@
   }
 }
 
+@keyframes nebulaDrift1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(3%, 5%) scale(1.08); }
+  66% { transform: translate(-2%, -3%) scale(0.95); }
+}
+@keyframes nebulaDrift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40% { transform: translate(-4%, 3%) scale(1.06); }
+  70% { transform: translate(2%, -4%) scale(0.94); }
+}
+@keyframes nebulaDrift3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(5%, -2%) scale(1.1); }
+}
+@keyframes lightSweep {
+  0%, 100% { transform: rotate(-25deg) translateX(-120%); opacity: 0; }
+  10% { opacity: 0.08; }
+  50% { transform: rotate(-25deg) translateX(80%); opacity: 0.08; }
+  60% { opacity: 0; }
+  61% { transform: rotate(-25deg) translateX(-120%); }
+}
+@keyframes starTwinkle {
+  0%, 100% { opacity: var(--tw-opacity, 0.4); }
+  50% { opacity: 0.1; }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -148,4 +174,56 @@ h1,
 /* Prevenir scroll durante el loading */
 body.loading {
   overflow: hidden !important;
+}
+
+/* Shimmer slide for premium card borders */
+@keyframes shimmerSlide {
+  0%, 65% {
+    transform: translateX(-150%);
+  }
+  85% {
+    transform: translateX(150%);
+  }
+  85.01%, 100% {
+    transform: translateX(-150%);
+  }
+}
+
+.shimmer-border {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 45%,
+    rgba(255, 255, 255, 0.18) 50%,
+    rgba(255, 255, 255, 0.1) 55%,
+    transparent 100%
+  );
+  animation: shimmerSlide 6s ease-in-out infinite;
+}
+
+/* Skeleton loading shimmer for images */
+@keyframes shimmerSkeleton {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.shimmer-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(39, 39, 42, 0.8) 0%,
+    rgba(63, 63, 70, 0.5) 50%,
+    rgba(39, 39, 42, 0.8) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmerSkeleton 1.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-border {
+    animation: none;
+    opacity: 0;
+  }
+  .shimmer-skeleton {
+    animation: none;
+  }
 }

@@ -25,7 +25,10 @@ import {
   Video,
   Clock,
   ArrowRight,
+  Eye,
 } from 'lucide-react'
+import type { ServiceData, ServiceDataMotor, ServiceDataCaja } from '@/actions/types/types'
+import ServiceDataForm, { getDetectedServiceTypes, getReparacionesTitulo, VehiclePhotoUpload } from './ServiceDataForm'
 
 function usePortal() {
   const [mounted, setMounted] = useState(false)
@@ -109,6 +112,11 @@ interface VehicleInTracking {
   steps: VehicleStep[]
   notes: string
   nextStep?: string
+  serviceData?: ServiceData
+  serviceDataMotor?: ServiceDataMotor
+  serviceDataCaja?: ServiceDataCaja
+  fotoVehiculo?: string
+  observaciones?: VehicleStep[]
 }
 
 type VehicleSetter<T> = (value: T | ((prev: T) => T)) => void
@@ -513,8 +521,218 @@ const TrackingForm = ({
     ))
   }
 
+  const showPasoAPaso = (() => {
+    if (!tracking.serviceType) return true
+    const types = getDetectedServiceTypes(tracking.serviceType)
+    if (!types.motor && !types.caja) return true
+    const titulo = getReparacionesTitulo(tracking.serviceType)
+    return titulo !== tracking.serviceType
+  })()
+
+  // ── Observaciones state & handlers ──
+  const [localObservaciones, setLocalObservaciones] = useState<LocalVehicleStep[]>([])
+  const [newObservacion, setNewObservacion] = useState({ title: '' })
+  const [editingObsId, setEditingObsId] = useState<string | null>(null)
+  const [editingObsTitle, setEditingObsTitle] = useState('')
+
+  useEffect(() => {
+    setLocalObservaciones(prev => {
+      const pendingMap = new Map(prev.map(s => [s.id, s.pendingFiles || []]))
+      return (tracking.observaciones || []).map(obs => ({
+        ...obs,
+        pendingFiles: pendingMap.get(obs.id) || [],
+      }))
+    })
+  }, [tracking.observaciones])
+
+  const handleAddObservacion = () => {
+    if (!newObservacion.title.trim()) return
+    if ((tracking.observaciones || []).length >= 3) return
+    const obs: VehicleStep = {
+      id: Date.now().toString(),
+      title: newObservacion.title.trim(),
+      status: 'completed',
+      date: new Date(),
+      notes: '',
+      files: [],
+    }
+    setTracking(prev => ({ ...prev, observaciones: [...(prev.observaciones || []), obs] }))
+    setNewObservacion({ title: '' })
+  }
+
+  const handleDeleteObservacion = async (obsId: string) => {
+    if (!confirm('¿Seguro que deseas eliminar esta observación?')) return
+    const obsToDelete = (tracking.observaciones || []).find(o => o.id === obsId)
+    if (obsToDelete?.files) {
+      await Promise.all(obsToDelete.files.map(file => deleteFileFromStorage(file.url)))
+    }
+    setTracking(prev => ({ ...prev, observaciones: (prev.observaciones || []).filter(o => o.id !== obsId) }))
+  }
+
+  const handleEditObservacion = (obsId: string) => {
+    const obs = (tracking.observaciones || []).find(o => o.id === obsId)
+    if (obs) { setEditingObsId(obsId); setEditingObsTitle(obs.title) }
+  }
+
+  const handleSaveEditObservacion = () => {
+    if (!editingObsId) return
+    setTracking(prev => ({
+      ...prev,
+      observaciones: (prev.observaciones || []).map(obs =>
+        obs.id === editingObsId ? { ...obs, title: editingObsTitle.trim() } : obs
+      ),
+    }))
+    setEditingObsId(null)
+    setEditingObsTitle('')
+  }
+
+  const handleCancelEditObservacion = () => {
+    setEditingObsId(null)
+    setEditingObsTitle('')
+  }
+
+  const handleObsFilesSelected = async (obsId: string, files: File[]) => {
+    const currentObs = (tracking.observaciones || []).find(o => o.id === obsId)
+    const currentFiles = currentObs?.files || []
+    const currentVideoCount = currentFiles.filter(f => f.type === 'video').length
+    const pendingFiles: PendingStepFile[] = []
+
+    for (const file of files) {
+      if (currentFiles.length + pendingFiles.length >= 10) break
+      const isVideo = getFileType(file) === 'video'
+      if (isVideo && (currentVideoCount > 0 || pendingFiles.some(f => f.type === 'video'))) continue
+      pendingFiles.push({
+        id: Date.now().toString() + Math.random(),
+        file,
+        type: getFileType(file),
+        tempUrl: URL.createObjectURL(file),
+        uploadProgress: 0,
+        uploading: true,
+      })
+    }
+
+    setLocalObservaciones(prev =>
+      prev.map(obs => obs.id !== obsId ? obs : { ...obs, pendingFiles: [...(obs.pendingFiles || []), ...pendingFiles] })
+    )
+
+    for (const pendingFile of pendingFiles) {
+      try {
+        const fileName = generateUniqueFileName(pendingFile.file.name, tracking.plateNumber, obsId)
+        const uploadResult = await uploadFileToStorage(
+          pendingFile.file, fileName,
+          progress => setLocalObservaciones(prev => prev.map(obs =>
+            obs.id !== obsId ? obs : {
+              ...obs,
+              pendingFiles: (obs.pendingFiles || []).map(pf =>
+                pf.id === pendingFile.id ? { ...pf, uploadProgress: progress } : pf
+              ),
+            }
+          ))
+        )
+
+        const uploadedFile: StepFile = {
+          id: pendingFile.id,
+          fileName: uploadResult.metadata.name,
+          type: pendingFile.type,
+          url: uploadResult.url,
+          thumbnailUrl: uploadResult.thumbnailUrl,
+          storageRef: fileName,
+          uploadedAt: new Date(),
+          size: uploadResult.metadata.size,
+          dimensions: uploadResult.metadata.dimensions,
+        }
+
+        setTracking(prev => ({
+          ...prev,
+          observaciones: (prev.observaciones || []).map(obs =>
+            obs.id !== obsId ? obs : { ...obs, files: [...(obs.files || []), uploadedFile] }
+          ),
+        }))
+
+        setLocalObservaciones(prev => prev.map(obs =>
+          obs.id !== obsId ? obs : {
+            ...obs,
+            pendingFiles: (obs.pendingFiles || []).filter(pf => pf.id !== pendingFile.id),
+          }
+        ))
+
+        URL.revokeObjectURL(pendingFile.tempUrl)
+      } catch (error) {
+        console.error('Error uploading file:', error)
+        setLocalObservaciones(prev => prev.map(obs =>
+          obs.id !== obsId ? obs : {
+            ...obs,
+            pendingFiles: (obs.pendingFiles || []).map(pf =>
+              pf.id === pendingFile.id ? { ...pf, uploading: false, error: 'Error al subir archivo' } : pf
+            ),
+          }
+        ))
+      }
+    }
+  }
+
+  const handleRemoveObsFile = async (obsId: string, fileId: string) => {
+    const obsFile = (tracking.observaciones || []).find(o => o.id === obsId)?.files?.find(f => f.id === fileId)
+    if (obsFile) await deleteFileFromStorage(obsFile.url)
+    setTracking(prev => ({
+      ...prev,
+      observaciones: (prev.observaciones || []).map(obs =>
+        obs.id !== obsId ? obs : { ...obs, files: (obs.files || []).filter(f => f.id !== fileId) }
+      ),
+    }))
+  }
+
+  const handleRemoveObsPendingFile = (obsId: string, fileId: string) => {
+    const pendingFile = localObservaciones.find(o => o.id === obsId)?.pendingFiles?.find(f => f.id === fileId)
+    if (pendingFile) URL.revokeObjectURL(pendingFile.tempUrl)
+    setLocalObservaciones(prev => prev.map(obs =>
+      obs.id !== obsId ? obs : { ...obs, pendingFiles: (obs.pendingFiles || []).filter(f => f.id !== fileId) }
+    ))
+  }
+
   return (
     <div className='space-y-4 sm:space-y-5'>
+      {tracking.fotoVehiculo && (
+        <div className='bg-zinc-800/60 p-3 rounded-xl border border-zinc-700/50 mb-1'>
+          <div className='flex items-center gap-3'>
+            <div className='w-12 h-12 rounded-full overflow-hidden border-2 border-amber-500/30 flex-shrink-0'>
+              <img src={tracking.fotoVehiculo} alt='Vehículo' loading='eager' className='w-full h-full object-cover' />
+            </div>
+            <span className='text-zinc-300 font-medium text-xs sm:text-sm'>Foto del Vehículo</span>
+          </div>
+        </div>
+      )}
+
+      {/* Datos específicos del servicio */}
+      {tracking.serviceType && (() => {
+        const types = getDetectedServiceTypes(tracking.serviceType)
+        return (
+          <>
+            {types.motor && (
+              <ServiceDataForm
+                formType="motor"
+                serviceData={tracking.serviceDataMotor || (tracking.serviceData?.type === 'motor' ? tracking.serviceData : undefined)}
+                onChange={(data: ServiceData) =>
+                  setTracking(prev => ({ ...prev, serviceDataMotor: data as ServiceDataMotor }))
+                }
+                plateNumber={tracking.plateNumber}
+              />
+            )}
+            {types.caja && (
+              <ServiceDataForm
+                formType="caja"
+                serviceData={tracking.serviceDataCaja || (tracking.serviceData?.type === 'caja' ? tracking.serviceData : undefined)}
+                onChange={(data: ServiceData) =>
+                  setTracking(prev => ({ ...prev, serviceDataCaja: data as ServiceDataCaja }))
+                }
+                plateNumber={tracking.plateNumber}
+              />
+            )}
+          </>
+        )
+      })()}
+
+      {showPasoAPaso && (<>
       {/* Agregar trabajo */}
       <div className='flex flex-col w-full'>
         <label className='text-amber-300 font-medium mb-1.5 text-xs sm:text-sm'>
@@ -727,6 +945,129 @@ const TrackingForm = ({
               </button>
             </>
           )}
+        </div>
+      </div>
+      </>)}
+
+      {/* Observaciones */}
+      <div className='flex flex-col w-full'>
+        <div className='flex items-center justify-between mb-1.5'>
+          <label className='text-amber-300 font-medium text-xs sm:text-sm flex items-center gap-1.5'>
+            <Eye className='w-3.5 h-3.5' strokeWidth={2} />
+            Observaciones
+          </label>
+          <span className='text-zinc-500 text-xs'>{(tracking.observaciones || []).length}/3</span>
+        </div>
+        {(tracking.observaciones || []).length < 3 && (
+          <div className='flex flex-row items-center gap-2 w-full mb-2'>
+            <input
+              type='text'
+              placeholder='Agregar observación...'
+              value={newObservacion.title}
+              onChange={e => setNewObservacion({ title: e.target.value })}
+              className='flex-1 px-2 sm:px-4 py-2 bg-zinc-900 border border-amber-500/40 rounded-xl text-white text-sm shadow focus:outline-none focus:border-amber-500/70 focus:ring-1 focus:ring-amber-500/20'
+              onKeyDown={e => { if (e.key === 'Enter') handleAddObservacion() }}
+              maxLength={200}
+            />
+            <button
+              onClick={handleAddObservacion}
+              disabled={!newObservacion.title.trim()}
+              className='px-3 py-2 bg-amber-500 hover:bg-amber-600 text-zinc-900 rounded-xl text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1'
+            >
+              <Plus className='w-4 h-4' strokeWidth={2.5} />
+            </button>
+          </div>
+        )}
+        <div className='space-y-2 max-h-52 overflow-y-auto'>
+          {localObservaciones.map(obs => {
+            const obsFiles = obs.files || []
+            const pendingFiles = obs.pendingFiles || []
+            const totalFiles = obsFiles.length + pendingFiles.length
+            const hasVideo =
+              obsFiles.some(f => f.type === 'video') ||
+              pendingFiles.some(f => f.type === 'video')
+
+            return (
+              <motion.div
+                key={obs.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className='bg-zinc-800/60 p-2 rounded-xl border border-zinc-700/50 text-xs'
+              >
+                <div className='flex items-center justify-between w-full mb-1'>
+                  <div className='flex items-center gap-1 sm:gap-2 flex-1 min-w-0'>
+                    <Eye className='w-3.5 h-3.5 text-amber-400 shrink-0' strokeWidth={2} />
+                    {editingObsId === obs.id ? (
+                      <>
+                        <input
+                          type='text'
+                          value={editingObsTitle}
+                          onChange={e => setEditingObsTitle(e.target.value)}
+                          className='flex-1 px-2 py-1 bg-zinc-900 border border-amber-500/50 rounded-lg text-white text-xs shadow mr-1 focus:outline-none'
+                          maxLength={200}
+                          autoFocus
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') handleSaveEditObservacion()
+                            if (e.key === 'Escape') handleCancelEditObservacion()
+                          }}
+                        />
+                        <button
+                          onClick={handleSaveEditObservacion}
+                          className='text-emerald-400 hover:text-emerald-300 text-xs p-1'
+                          title='Guardar'
+                          disabled={!editingObsTitle.trim()}
+                        >
+                          <CheckCircle2 className='w-3.5 h-3.5' strokeWidth={2} />
+                        </button>
+                        <button
+                          onClick={handleCancelEditObservacion}
+                          className='text-zinc-400 hover:text-zinc-300 text-xs p-1'
+                          title='Cancelar'
+                        >
+                          <X className='w-3.5 h-3.5' strokeWidth={2} />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span className='text-white flex-1 truncate text-xs sm:text-sm'>
+                          {obs.title}
+                        </span>
+                        <button
+                          onClick={() => handleEditObservacion(obs.id)}
+                          className='text-amber-400 hover:text-amber-300 text-xs p-1'
+                          title='Editar'
+                        >
+                          <Pencil className='w-3 h-3' strokeWidth={2} />
+                        </button>
+                      </>
+                    )}
+
+                    <FileUploader
+                      onFilesSelected={files => handleObsFilesSelected(obs.id, files)}
+                      disabled={editingObsId === obs.id}
+                      currentFileCount={totalFiles}
+                      hasVideo={hasVideo}
+                    />
+
+                    <button
+                      onClick={() => handleDeleteObservacion(obs.id)}
+                      className='text-red-400 hover:text-red-300 text-xs p-1'
+                      title='Eliminar'
+                    >
+                      <Trash2 className='w-3 h-3' strokeWidth={2} />
+                    </button>
+                  </div>
+                </div>
+
+                <StepFileViewer
+                  files={obsFiles}
+                  pendingFiles={pendingFiles}
+                  onRemoveFile={fileId => handleRemoveObsFile(obs.id, fileId)}
+                  onRemovePendingFile={fileId => handleRemoveObsPendingFile(obs.id, fileId)}
+                />
+              </motion.div>
+            )
+          })}
         </div>
       </div>
 
@@ -966,6 +1307,14 @@ export default function VehicleModal({
                   }}
                   isEdit={true}
                 />
+
+                <div className='mt-4'>
+                  <VehiclePhotoUpload
+                    fotoUrl={editVehicle.fotoVehiculo}
+                    onChange={url => setEditVehicle(prev => prev ? ({ ...prev, fotoVehiculo: url }) : prev)}
+                    plateNumber={editVehicle.plateNumber}
+                  />
+                </div>
 
                 <div className='flex gap-2 sm:gap-3 pt-3 sm:pt-4 mt-4 sm:mt-5 border-t border-zinc-800'>
                   <button

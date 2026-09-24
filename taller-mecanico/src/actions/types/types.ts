@@ -143,6 +143,44 @@ export interface VehicleStep {
   files?: StepFile[]
 }
 
+export interface ServiceDataCaja {
+  type: 'caja'
+  fotoVehiculo?: string
+  aceite: {
+    marca: string
+    tipo: string
+    fotoUrl?: string
+  }
+  filtro: boolean
+  filtroFotoUrl?: string
+  cartucho: boolean
+  cartuchoFotoUrl?: string
+}
+
+export interface ServiceDataMotor {
+  type: 'motor'
+  fotoVehiculo?: string
+  aceite: {
+    marca: string
+    tipo: string
+    fotoUrl?: string
+  }
+  filtros: {
+    aceite: boolean
+    aire: boolean
+    combustible: boolean
+    habitaculo: boolean
+  }
+  filtrosFotos?: {
+    aceite?: string
+    aire?: string
+    combustible?: string
+    habitaculo?: string
+  }
+}
+
+export type ServiceData = ServiceDataCaja | ServiceDataMotor
+
 export interface VehicleInput {
   plateNumber: string
   brand?: string
@@ -171,6 +209,11 @@ export interface VehicleInput {
     agua: number
     frenos: number
   }
+  serviceData?: ServiceData
+  serviceDataMotor?: ServiceDataMotor
+  serviceDataCaja?: ServiceDataCaja
+  fotoVehiculo?: string
+  observaciones?: VehicleStep[]
 }
 export interface TimelineItem {
   id: number

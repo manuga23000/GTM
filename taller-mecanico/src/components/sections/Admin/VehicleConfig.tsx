@@ -102,6 +102,31 @@ export default function VehicleConfig() {
         notes: v.notes || '',
         nextStep: v.nextStep || '',
         fluidLevels: v.fluidLevels || undefined,
+        serviceData: v.serviceData || undefined,
+        serviceDataMotor: v.serviceDataMotor || (v.serviceData?.type === 'motor' ? v.serviceData : undefined),
+        serviceDataCaja: v.serviceDataCaja || (v.serviceData?.type === 'caja' ? v.serviceData : undefined),
+        fotoVehiculo: v.fotoVehiculo || undefined,
+        observaciones: (v.observaciones || []).map(obs => {
+          let obsDate: Date
+          const dateValue = obs.date
+          if (dateValue instanceof Date) {
+            obsDate = dateValue
+          } else if (dateValue && typeof dateValue === 'object' && 'seconds' in dateValue) {
+            const timestamp = dateValue as FirestoreTimestamp
+            obsDate = new Date(timestamp.seconds * 1000)
+          } else {
+            obsDate = new Date()
+          }
+          return {
+            ...obs,
+            status: 'completed' as const,
+            date: obsDate,
+            files: (obs.files || []).map(file => ({
+              ...file,
+              uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(file.uploadedAt),
+            })),
+          }
+        }),
       }))
       setVehiclesInTracking(mapped)
     } catch (error) {
@@ -121,6 +146,10 @@ export default function VehicleConfig() {
               return {
                 ...v,
                 fluidLevels: vehicleData.fluidLevels !== undefined ? vehicleData.fluidLevels : v.fluidLevels,
+                serviceData: vehicleData.serviceData !== undefined ? vehicleData.serviceData : v.serviceData,
+                serviceDataMotor: vehicleData.serviceDataMotor !== undefined ? vehicleData.serviceDataMotor : v.serviceDataMotor,
+                serviceDataCaja: vehicleData.serviceDataCaja !== undefined ? vehicleData.serviceDataCaja : v.serviceDataCaja,
+                fotoVehiculo: vehicleData.fotoVehiculo !== undefined ? vehicleData.fotoVehiculo : v.fotoVehiculo,
                 steps: (vehicleData.steps || []).map(step => {
                   let stepDate: Date
                   const dateValue = step.date
@@ -144,6 +173,27 @@ export default function VehicleConfig() {
                 }),
                 notes: vehicleData.notes || v.notes,
                 nextStep: vehicleData.nextStep || v.nextStep,
+                observaciones: (vehicleData.observaciones || []).map(obs => {
+                  let obsDate: Date
+                  const dateValue = obs.date
+                  if (dateValue instanceof Date) {
+                    obsDate = dateValue
+                  } else if (dateValue && typeof dateValue === 'object' && 'seconds' in dateValue) {
+                    const timestamp = dateValue as FirestoreTimestamp
+                    obsDate = new Date(timestamp.seconds * 1000)
+                  } else {
+                    obsDate = new Date()
+                  }
+                  return {
+                    ...obs,
+                    status: 'completed' as const,
+                    date: obsDate,
+                    files: (obs.files || []).map(file => ({
+                      ...file,
+                      uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(file.uploadedAt),
+                    })),
+                  }
+                }),
               }
             }
             return v
@@ -276,6 +326,7 @@ export default function VehicleConfig() {
           chassisNumber: editVehicle.chassisNumber,
           km: editVehicle.km,
           estimatedCompletionDate: editVehicle.estimatedCompletionDate,
+          fotoVehiculo: editVehicle.fotoVehiculo,
           steps: vehicleData.steps || [],
         })
         if (!createResponse.success) {
@@ -299,6 +350,7 @@ export default function VehicleConfig() {
           km: editVehicle.km,
           createdAt: editVehicle.entryDate,
           estimatedCompletionDate: editVehicle.estimatedCompletionDate,
+          fotoVehiculo: editVehicle.fotoVehiculo,
         })
         if (!response.success) {
           showMessage(response.message || 'Error al actualizar vehículo')
@@ -346,11 +398,23 @@ export default function VehicleConfig() {
           uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(file.uploadedAt),
         })),
       }))
+      const normalizedObservaciones = (editTracking.observaciones || []).map(obs => ({
+        ...obs,
+        files: (obs.files || []).map(file => ({
+          ...file,
+          uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(file.uploadedAt),
+        })),
+      }))
       const updateResult = await updateVehicle(editTracking.plateNumber, {
         steps: normalizedSteps,
+        observaciones: normalizedObservaciones,
         nextStep: editTracking.nextStep,
         notes: editTracking.notes,
         estimatedCompletionDate: editTracking.estimatedCompletionDate,
+        serviceData: editTracking.serviceData,
+        serviceDataMotor: editTracking.serviceDataMotor,
+        serviceDataCaja: editTracking.serviceDataCaja,
+        fotoVehiculo: editTracking.fotoVehiculo,
       })
       if (updateResult.success) {
         await fetchVehicles()

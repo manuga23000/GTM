@@ -16,6 +16,7 @@ import {
 } from 'firebase/firestore'
 import { app } from '@/lib/firebase'
 import FluidConfig from './FluidConfig'
+import { ServiceDataDisplay } from './ServiceDataForm'
 import {
   X,
   Pencil,
@@ -38,6 +39,7 @@ import {
   Gauge,
   CalendarDays,
 } from 'lucide-react'
+import type { ServiceData, ServiceDataMotor, ServiceDataCaja } from '@/actions/types/types'
 
 interface StepFile {
   id: string
@@ -94,6 +96,11 @@ interface VehicleInTracking {
     agua: number
     frenos: number
   }
+  serviceData?: ServiceData
+  serviceDataMotor?: ServiceDataMotor
+  serviceDataCaja?: ServiceDataCaja
+  fotoVehiculo?: string
+  observaciones?: VehicleStep[]
 }
 
 interface VehicleDetailsProps {
@@ -463,7 +470,10 @@ export default function VehicleDetails({
                         serviceNumber: serviceCount,
                       }
                       if (fluidLevels !== undefined) vehicleData.fluidLevels = fluidLevels
-                      await setDoc(doc(db, 'timeline', timelineDocId), vehicleData)
+                      const cleanData = Object.fromEntries(
+                        Object.entries(vehicleData).filter(([, v]) => v !== undefined)
+                      )
+                      await setDoc(doc(db, 'timeline', timelineDocId), cleanData)
                       await deleteDoc(doc(db, 'vehicles', vehicle.id))
                       alert(`Servicio finalizado correctamente. Número de servicio: ${serviceCount}`)
                       await onVehicleFinalized()
@@ -607,6 +617,17 @@ export default function VehicleDetails({
                     : <span className='text-zinc-600 italic font-normal'>No definido</span>}
                 </div>
               </div>
+
+              {/* Service-specific data */}
+              {localVehicle.serviceDataMotor && (
+                <ServiceDataDisplay serviceData={localVehicle.serviceDataMotor} />
+              )}
+              {localVehicle.serviceDataCaja && (
+                <ServiceDataDisplay serviceData={localVehicle.serviceDataCaja} />
+              )}
+              {!localVehicle.serviceDataMotor && !localVehicle.serviceDataCaja && localVehicle.serviceData && (
+                <ServiceDataDisplay serviceData={localVehicle.serviceData} />
+              )}
 
               {/* Works count */}
               <div className='bg-emerald-900/20 border border-emerald-500/25 p-3 sm:p-4 rounded-xl text-center'>

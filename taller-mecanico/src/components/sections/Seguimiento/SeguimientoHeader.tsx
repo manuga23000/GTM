@@ -1,6 +1,6 @@
 'use client'
 import { motion } from 'framer-motion'
-import { FaCar, FaCalendarAlt, FaUser, FaWrench } from 'react-icons/fa'
+import { FaCar, FaCalendarAlt, FaUser, FaWrench, FaTachometerAlt } from 'react-icons/fa'
 
 interface SeguimientoHeaderProps {
   data: {
@@ -11,6 +11,8 @@ interface SeguimientoHeaderProps {
     cliente: string
     fechaIngreso: string
     tipoServicio?: string
+    km?: number
+    fotoVehiculo?: string
   }
 }
 
@@ -62,70 +64,22 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
           transition={{ delay: 0.3, duration: 0.6 }}
           className='bg-white/10 backdrop-blur-sm rounded-2xl p-3 md:p-4 border border-white/20'
         >
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className='text-center mb-3 md:hidden'
-          >
+          {/* Foto mobile centrada */}
+          {data.fotoVehiculo && (
+            <div className='flex justify-center mb-3 md:hidden'>
+              <div className='w-24 h-24 rounded-full overflow-hidden border-3 border-white/30 shadow-lg'>
+                <img src={data.fotoVehiculo} alt='Vehículo' loading='eager' className='w-full h-full object-cover' />
+              </div>
+            </div>
+          )}
+
+          {/* Mobile */}
+          <div className='flex flex-col items-center gap-3 md:hidden'>
             <div className='inline-flex items-center bg-red-600 text-white px-4 py-2 rounded-lg text-xl font-bold tracking-wider'>
               <FaCar className='mr-2 text-lg' />
               {data.patente}
             </div>
-          </motion.div>
-
-          <div className='hidden md:grid md:grid-cols-3 gap-4 items-center'>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className='text-center md:text-left'
-            >
-              <div className='inline-flex items-center bg-red-600 text-white px-6 py-3 rounded-lg text-2xl font-bold tracking-wider'>
-                <FaCar className='mr-3 text-xl' />
-                {data.patente}
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className='text-center'
-            >
-              <h3 className='text-xl font-bold mb-1'>
-                {data.marca} {data.modelo}
-              </h3>
-              <p className='text-gray-300 text-base mb-2'>Año {data.año}</p>
-              <div className='flex items-center justify-center text-gray-300'>
-                <FaUser className='mr-2 text-sm' />
-                <span className='font-medium text-base'>{data.cliente}</span>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className='text-center md:text-right'
-            >
-              <div className='inline-flex items-center bg-gray-700 text-white px-4 py-3 rounded-lg'>
-                <FaCalendarAlt className='mr-3 text-base' />
-                <div>
-                  <div className='text-sm text-gray-300 mb-1'>
-                    Fecha de Ingreso
-                  </div>
-                  <div className='font-bold text-base'>
-                    {formatearFecha(data.fechaIngreso)}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          <div className='grid grid-cols-1 gap-3 md:hidden'>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className='text-center'
-            >
+            <div className='text-center'>
               <h3 className='text-lg font-bold mb-1'>
                 {data.marca} {data.modelo}
               </h3>
@@ -134,26 +88,72 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
                 <FaUser className='mr-2 text-sm' />
                 <span className='font-medium text-sm'>{data.cliente}</span>
               </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className='text-center'
-            >
+            </div>
+            <div className='flex items-center gap-3'>
               <div className='inline-flex items-center bg-gray-700 text-white px-3 py-2 rounded-lg'>
                 <FaCalendarAlt className='mr-2 text-sm' />
                 <div>
-                  <div className='text-xs text-gray-300 mb-1'>
-                    Fecha de Ingreso
-                  </div>
-                  <div className='font-bold text-sm'>
-                    {formatearFecha(data.fechaIngreso)}
-                  </div>
+                  <div className='text-xs text-gray-300'>Ingreso</div>
+                  <div className='font-bold text-sm'>{formatearFecha(data.fechaIngreso)}</div>
                 </div>
               </div>
+              {data.km && data.km > 0 && (
+                <div className='inline-flex items-center bg-blue-600 text-white px-3 py-2 rounded-lg'>
+                  <FaTachometerAlt className='mr-2 text-sm' />
+                  <div>
+                    <div className='text-xs text-blue-100'>Kilometraje</div>
+                    <div className='font-bold text-sm'>{data.km.toLocaleString()} km</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Desktop */}
+          <div className='hidden md:flex md:items-center md:gap-5'>
+          {data.fotoVehiculo && (
+            <div className='w-24 h-24 rounded-full overflow-hidden border-3 border-white/30 shadow-lg flex-shrink-0'>
+              <img src={data.fotoVehiculo} alt='Vehículo' loading='eager' className='w-full h-full object-cover' />
+            </div>
+          )}
+          <div className='flex-1 grid grid-cols-3 gap-4 items-center'>
+            <motion.div whileHover={{ scale: 1.02 }} className='text-left'>
+              <div className='inline-flex items-center bg-red-600 text-white px-6 py-3 rounded-lg text-2xl font-bold tracking-wider'>
+                <FaCar className='mr-3 text-xl' />
+                {data.patente}
+              </div>
             </motion.div>
+
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className='text-center'>
+              <h3 className='text-xl font-bold mb-1'>{data.marca} {data.modelo}</h3>
+              <p className='text-gray-300 text-base mb-2'>Año {data.año}</p>
+              <div className='flex items-center justify-center text-gray-300'>
+                <FaUser className='mr-2 text-sm' />
+                <span className='font-medium text-base'>{data.cliente}</span>
+              </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className='text-right'>
+              <div className='flex flex-col items-end gap-2'>
+                <div className='inline-flex items-center bg-gray-700 text-white px-4 py-2.5 rounded-lg'>
+                  <FaCalendarAlt className='mr-3 text-base' />
+                  <div>
+                    <div className='text-xs text-gray-300'>Ingreso</div>
+                    <div className='font-bold text-sm'>{formatearFecha(data.fechaIngreso)}</div>
+                  </div>
+                </div>
+                {data.km && data.km > 0 && (
+                  <div className='inline-flex items-center bg-blue-600 text-white px-4 py-2.5 rounded-lg'>
+                    <FaTachometerAlt className='mr-3 text-base' />
+                    <div>
+                      <div className='text-xs text-blue-100'>Kilometraje</div>
+                      <div className='font-bold text-sm'>{data.km.toLocaleString()} km</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
           </div>
 
           {data.tipoServicio && (

@@ -1,4 +1,4 @@
-import { VehicleInput } from '../types/types'
+import { VehicleInput, ServiceData, ServiceDataMotor, ServiceDataCaja } from '../types/types'
 interface FirestoreTimestamp {
   toDate(): Date
 }
@@ -72,6 +72,11 @@ interface RawFirestoreVehicle {
     agua: number
     frenos: number
   }
+  serviceData?: ServiceData
+  serviceDataMotor?: ServiceDataMotor
+  serviceDataCaja?: ServiceDataCaja
+  fotoVehiculo?: string
+  observaciones?: RawFirestoreStep[]
 }
 
 type ValidationObject = Record<string, unknown> | unknown[] | unknown
@@ -275,6 +280,42 @@ export function normalizeVehicleData(data: RawFirestoreVehicle): VehicleInput {
           agua: Number(data.fluidLevels.agua) || 0,
           frenos: Number(data.fluidLevels.frenos) || 0,
         }
+      : undefined,
+    serviceData: data.serviceData || undefined,
+    serviceDataMotor: data.serviceDataMotor || (data.serviceData?.type === 'motor' ? data.serviceData as ServiceDataMotor : undefined),
+    serviceDataCaja: data.serviceDataCaja || (data.serviceData?.type === 'caja' ? data.serviceData as ServiceDataCaja : undefined),
+    fotoVehiculo: data.fotoVehiculo || undefined,
+    observaciones: Array.isArray(data.observaciones)
+      ? data.observaciones.map((step: RawFirestoreStep) => ({
+          id: typeof step.id === 'string' ? step.id : '',
+          title: typeof step.title === 'string' ? step.title : '',
+          status: isValidStepStatus(step.status) ? step.status : 'completed',
+          date:
+            step.date instanceof Date
+              ? step.date
+              : step.date && typeof step.date === 'object' && 'toDate' in step.date
+              ? (step.date as FirestoreTimestamp).toDate()
+              : step.date ? new Date(step.date as string) : new Date(),
+          notes: typeof step.notes === 'string' ? step.notes : '',
+          files: Array.isArray(step.files)
+            ? step.files.map((file: RawFirestoreFile) => ({
+                id: typeof file.id === 'string' ? file.id : '',
+                fileName: typeof file.fileName === 'string' ? file.fileName : 'archivo',
+                type: ['image', 'video'].includes(file.type || '') ? (file.type as 'image' | 'video') : 'image',
+                url: typeof file.url === 'string' ? file.url : '',
+                thumbnailUrl: typeof file.thumbnailUrl === 'string' ? file.thumbnailUrl : undefined,
+                storageRef: typeof file.storageRef === 'string' ? file.storageRef : '',
+                uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt
+                  : file.uploadedAt && typeof file.uploadedAt === 'object' && 'toDate' in file.uploadedAt
+                  ? (file.uploadedAt as FirestoreTimestamp).toDate()
+                  : file.uploadedAt ? new Date(file.uploadedAt as string) : new Date(),
+                size: typeof file.size === 'number' ? file.size : 0,
+                dimensions: file.dimensions && typeof file.dimensions === 'object'
+                  ? { width: typeof file.dimensions.width === 'number' ? file.dimensions.width : 0, height: typeof file.dimensions.height === 'number' ? file.dimensions.height : 0 }
+                  : undefined,
+              }))
+            : [],
+        }))
       : undefined,
     steps: Array.isArray(data.steps)
       ? data.steps.map((step: RawFirestoreStep) => ({

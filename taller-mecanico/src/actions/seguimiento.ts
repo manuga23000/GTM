@@ -10,6 +10,7 @@ import {
   DocumentData,
 } from 'firebase/firestore'
 import { db } from '../lib/firebase'
+import type { ServiceData, ServiceDataMotor, ServiceDataCaja } from './types/types'
 
 export interface StepFile {
   id: string
@@ -104,6 +105,11 @@ export interface SeguimientoData {
     agua: number
     frenos: number
   }
+  serviceData?: ServiceData
+  serviceDataMotor?: ServiceDataMotor
+  serviceDataCaja?: ServiceDataCaja
+  fotoVehiculo?: string
+  observaciones?: TrabajoRealizado[]
 }
 
 /**
@@ -265,6 +271,13 @@ export async function getSeguimientoByPatente(
       imagenes: data.imagenes || [],
       km: data.km,
       fluidLevels: data.fluidLevels || undefined,
+      serviceData: data.serviceData || undefined,
+      serviceDataMotor: data.serviceDataMotor || (data.serviceData?.type === 'motor' ? data.serviceData as ServiceDataMotor : undefined),
+      serviceDataCaja: data.serviceDataCaja || (data.serviceData?.type === 'caja' ? data.serviceData as ServiceDataCaja : undefined),
+      fotoVehiculo: data.fotoVehiculo || undefined,
+      observaciones: Array.isArray(data.observaciones)
+        ? mapearTrabajosRealizados(data.observaciones as FirestoreStep[])
+        : [],
     }
 
     return seguimientoData
@@ -415,6 +428,13 @@ export async function buscarHistorialCompleto(
         fechaFinalizado: formatearFecha(data.finalizedAt),
         km: data.km,
         fluidLevels: data.fluidLevels || undefined,
+        serviceData: data.serviceData || undefined,
+        serviceDataMotor: data.serviceDataMotor || (data.serviceData?.type === 'motor' ? data.serviceData as ServiceDataMotor : undefined),
+        serviceDataCaja: data.serviceDataCaja || (data.serviceData?.type === 'caja' ? data.serviceData as ServiceDataCaja : undefined),
+        fotoVehiculo: data.fotoVehiculo || undefined,
+        observaciones: Array.isArray(data.observaciones)
+          ? mapearTrabajosRealizados(data.observaciones as FirestoreStep[])
+          : [],
       }
 
       historial.push(servicioHistorico)

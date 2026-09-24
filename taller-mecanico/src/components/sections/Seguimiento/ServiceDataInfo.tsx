@@ -35,6 +35,14 @@ interface VehicleInfo {
   fotoVehiculo?: string
 }
 
+interface ObservacionItem {
+  id: string
+  titulo: string
+  descripcion?: string
+  fecha: string
+  archivos: { id: string; fileName: string; type: 'image' | 'video'; url: string; thumbnailUrl?: string; storageRef: string; uploadedAt: Date; size: number; dimensions?: { width: number; height: number } }[]
+}
+
 interface ServiceDataInfoProps {
   serviceData: ServiceData
   tipoServicio?: string
@@ -44,6 +52,7 @@ interface ServiceDataInfoProps {
   km?: number
   vehiculo?: VehicleInfo
   compact?: boolean
+  observaciones?: ObservacionItem[]
 }
 
 const formatearFecha = (fecha: string) => {
@@ -664,6 +673,90 @@ function FilterSection({
   )
 }
 
+// ─── ObservacionesDarkSection ────────────────────────────────
+
+function ObservacionesDarkSection({ observaciones, accentColor }: { observaciones: ObservacionItem[]; accentColor: 'orange' | 'blue' }) {
+  const [lightboxPhotos, setLightboxPhotos] = useState<{ url: string; label: string }[]>([])
+  const [lightboxIndex, setLightboxIndex] = useState(-1)
+
+  const isOrange = accentColor === 'orange'
+  const iconFrom = isOrange ? 'from-orange-500' : 'from-blue-500'
+  const iconTo = isOrange ? 'to-amber-600' : 'to-cyan-600'
+  const iconShadow = isOrange ? 'shadow-orange-500/25' : 'shadow-blue-500/25'
+  const borderColor = isOrange ? 'border-orange-500/20' : 'border-blue-500/20'
+  const accentText = isOrange ? 'text-orange-400' : 'text-blue-400'
+
+  const openLightbox = (obs: ObservacionItem, fileIndex: number) => {
+    const imageFiles = (obs.archivos || []).filter(a => a.type === 'image')
+    setLightboxPhotos(imageFiles.map(a => ({ url: a.url, label: obs.titulo })))
+    const idx = imageFiles.findIndex((_, i) => i === fileIndex)
+    setLightboxIndex(idx >= 0 ? idx : 0)
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.55, duration: 0.6 }}
+      className='space-y-4'
+    >
+      <div className='flex items-center gap-3'>
+        <div className={`w-10 h-10 bg-gradient-to-br ${iconFrom} ${iconTo} rounded-xl flex items-center justify-center shadow-lg ${iconShadow}`}>
+          <FaCheck className='text-white text-sm' />
+        </div>
+        <h3 className='text-white font-bold text-lg sm:text-xl'>Observaciones</h3>
+      </div>
+      <div className='space-y-3'>
+        {observaciones.map((obs) => {
+          const imageFiles = (obs.archivos || []).filter(a => a.type === 'image')
+          const videoFiles = (obs.archivos || []).filter(a => a.type === 'video')
+          return (
+            <div key={obs.id} className={`rounded-xl border ${borderColor} bg-white/[0.03] p-4`}>
+              <h4 className='text-white font-semibold text-sm mb-1'>{obs.titulo}</h4>
+              {obs.descripcion && <p className='text-zinc-400 text-xs whitespace-pre-line'>{obs.descripcion}</p>}
+              {obs.fecha && <p className={`${accentText} text-xs mt-2`}>{new Date(obs.fecha).toLocaleDateString('es-AR')}</p>}
+              {(imageFiles.length > 0 || videoFiles.length > 0) && (
+                <div className='flex flex-wrap gap-2 mt-3'>
+                  {imageFiles.map((archivo, imgIdx) => (
+                    <button
+                      key={archivo.id}
+                      onClick={() => openLightbox(obs, imgIdx)}
+                      className='w-16 h-16 rounded-lg overflow-hidden border border-zinc-700 hover:border-zinc-500 transition-colors cursor-pointer relative group'
+                    >
+                      <Image src={archivo.url} alt={archivo.fileName} width={64} height={64} className='w-full h-full object-cover' />
+                      <div className='absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center'>
+                        <FaSearchPlus className='text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity' />
+                      </div>
+                    </button>
+                  ))}
+                  {videoFiles.map((archivo) => (
+                    <a key={archivo.id} href={archivo.url} target='_blank' rel='noopener noreferrer' className='w-16 h-16 rounded-lg overflow-hidden border border-zinc-700 hover:border-zinc-500 transition-colors relative'>
+                      <video src={archivo.url} className='w-full h-full object-cover' />
+                      <div className='absolute inset-0 bg-black/30 flex items-center justify-center'>
+                        <span className='text-white text-lg'>▶</span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      <AnimatePresence>
+        {lightboxIndex >= 0 && lightboxPhotos.length > 0 && (
+          <PhotoLightbox
+            photos={lightboxPhotos}
+            currentIndex={lightboxIndex}
+            onClose={() => setLightboxIndex(-1)}
+            onNavigate={setLightboxIndex}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
 // ─── CajaView ───────────────────────────────────────────────
 
 function CajaView({
@@ -674,6 +767,7 @@ function CajaView({
   km,
   vehiculo,
   compact,
+  observaciones,
 }: {
   data: ServiceDataCaja
   tipoServicio?: string
@@ -682,6 +776,7 @@ function CajaView({
   km?: number
   vehiculo?: VehicleInfo
   compact?: boolean
+  observaciones?: ObservacionItem[]
 }) {
   const filtrosActivos: { key: string; label: string; fotoUrl?: string }[] = []
   if (data.filtro)
@@ -814,6 +909,11 @@ function CajaView({
 
         <FilterSection filtrosActivos={filtrosActivos} />
 
+        {/* Observaciones */}
+        {observaciones && observaciones.length > 0 && (
+          <ObservacionesDarkSection observaciones={observaciones} accentColor='orange' />
+        )}
+
         {/* Próximo Servicio */}
         {km && km > 0 && (
           <motion.div
@@ -937,6 +1037,7 @@ function MotorView({
   km,
   vehiculo,
   compact,
+  observaciones,
 }: {
   data: ServiceDataMotor
   tipoServicio?: string
@@ -945,6 +1046,7 @@ function MotorView({
   km?: number
   vehiculo?: VehicleInfo
   compact?: boolean
+  observaciones?: ObservacionItem[]
 }) {
   const filtroLabels: Record<string, string> = {
     aceite: 'Filtro de Aceite',
@@ -1073,6 +1175,11 @@ function MotorView({
 
         <FilterSection filtrosActivos={filtrosActivos} />
 
+        {/* Observaciones */}
+        {observaciones && observaciones.length > 0 && (
+          <ObservacionesDarkSection observaciones={observaciones} accentColor='blue' />
+        )}
+
         {/* Próximo Servicio */}
         {km && km > 0 && (
           <motion.div
@@ -1196,6 +1303,7 @@ export default function ServiceDataInfo({
   km,
   vehiculo,
   compact,
+  observaciones,
 }: ServiceDataInfoProps) {
   if (!serviceData) return null
 
@@ -1209,6 +1317,7 @@ export default function ServiceDataInfo({
         km={km}
         vehiculo={vehiculo}
         compact={compact}
+        observaciones={observaciones}
       />
     )
   }
@@ -1223,6 +1332,7 @@ export default function ServiceDataInfo({
         km={km}
         vehiculo={vehiculo}
         compact={compact}
+        observaciones={observaciones}
       />
     )
   }

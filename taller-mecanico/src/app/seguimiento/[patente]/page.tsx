@@ -324,6 +324,10 @@ export default function SeguimientoPage() {
     () => historialCompleto.filter(h => !!h.serviceDataCaja),
     [historialCompleto]
   )
+  const historialReparaciones = useMemo(
+    () => historialCompleto.filter(h => !h.serviceDataMotor && !h.serviceDataCaja),
+    [historialCompleto]
+  )
 
   if (loading) {
     return (
@@ -568,7 +572,8 @@ export default function SeguimientoPage() {
               serviceData={serviceData}
               tipoServicio={servicio.tipoServicio ? getServiceTitulo(servicio.tipoServicio, type) : servicio.tipoServicio}
               km={servicio.km}
-              compact
+              vehiculo={vehiculoInfo}
+              observaciones={servicio.observaciones}
             />
           </motion.div>
         )}
@@ -620,9 +625,9 @@ export default function SeguimientoPage() {
             </div>
             <h3 className='text-xl font-semibold text-gray-800'>
               Historial de Servicios
-              {historialCompleto.length > 0 && (
+              {historialReparaciones.length > 0 && (
                 <span className='ml-2 text-sm font-normal text-gray-500 whitespace-nowrap'>
-                  ({historialCompleto.length} servicio{historialCompleto.length !== 1 ? 's' : ''})
+                  ({historialReparaciones.length} servicio{historialReparaciones.length !== 1 ? 's' : ''})
                 </span>
               )}
             </h3>
@@ -632,9 +637,9 @@ export default function SeguimientoPage() {
             <div className='flex justify-center py-4'>
               <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500' />
             </div>
-          ) : historialCompleto.length > 0 ? (
+          ) : historialReparaciones.length > 0 ? (
             <div className='space-y-4'>
-              {historialCompleto.map((servicio, index) => (
+              {historialReparaciones.map((servicio, index) => (
                 <motion.div
                   key={`servicio-${servicio.serviceNumber}`}
                   initial={{ opacity: 0, y: 20 }}
@@ -755,6 +760,7 @@ export default function SeguimientoPage() {
           proximoPaso={seguimientoData.proximoPaso}
           km={seguimientoData.km}
           vehiculo={vehiculoInfo}
+          observaciones={seguimientoData.observaciones}
         />
       ) : (
         <div className='min-h-[30vh] bg-zinc-950 flex items-center justify-center'>
@@ -764,9 +770,6 @@ export default function SeguimientoPage() {
             <p className='text-zinc-400'>No hay servicio de motor activo actualmente</p>
           </div>
         </div>
-      )}
-      {tieneServicioActivo && seguimientoData?.observaciones && seguimientoData.observaciones.length > 0 && (
-        <ObservacionesSection observaciones={seguimientoData.observaciones} dark />
       )}
       <div className='bg-zinc-950 px-4 pb-12'>
         <div className='max-w-4xl mx-auto'>
@@ -794,6 +797,7 @@ export default function SeguimientoPage() {
           proximoPaso={seguimientoData.proximoPaso}
           km={seguimientoData.km}
           vehiculo={vehiculoInfo}
+          observaciones={seguimientoData.observaciones}
         />
       ) : (
         <div className='min-h-[30vh] bg-zinc-950 flex items-center justify-center'>
@@ -803,9 +807,6 @@ export default function SeguimientoPage() {
             <p className='text-zinc-400'>No hay servicio de caja activo actualmente</p>
           </div>
         </div>
-      )}
-      {tieneServicioActivo && seguimientoData?.observaciones && seguimientoData.observaciones.length > 0 && (
-        <ObservacionesSection observaciones={seguimientoData.observaciones} dark />
       )}
       <div className='bg-zinc-950 px-4 pb-12'>
         <div className='max-w-4xl mx-auto'>

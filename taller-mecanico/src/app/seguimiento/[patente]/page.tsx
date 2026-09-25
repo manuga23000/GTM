@@ -12,6 +12,7 @@ import LoadingScreen from '@/components/ui/LoadingScreen'
 import { SeguimientoData, TrabajoRealizado } from '@/actions/seguimiento'
 import FileViewer from '@/components/sections/Seguimiento/FileViewer'
 import ServiceDataInfo from '@/components/sections/Seguimiento/ServiceDataInfo'
+import SpaceBackground from '@/components/sections/Seguimiento/SpaceBackground'
 import { getReparacionesTitulo, getServiceTitulo } from '@/components/sections/Admin/ServiceDataForm'
 
 type SectionType = 'reparaciones' | 'motor' | 'caja'
@@ -530,50 +531,65 @@ export default function SeguimientoPage() {
     const serviceData = type === 'motor' ? servicio.serviceDataMotor : servicio.serviceDataCaja
     if (!serviceData) return null
 
+    const accentColor = type === 'motor' ? 'blue' : 'orange'
+
     return (
       <motion.div
         key={`servicio-${type}-${servicio.serviceNumber}`}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.1 }}
-        className={`border rounded-2xl overflow-hidden ${type === 'motor' ? 'border-blue-500/20' : 'border-orange-500/20'}`}
+        className={`border rounded-lg p-5 ${
+          type === 'motor'
+            ? 'border-blue-500/20 bg-blue-950/20'
+            : 'border-orange-500/20 bg-orange-950/20'
+        }`}
       >
-        <div className='p-4 bg-white/[0.03]'>
-          <div className='flex items-center justify-between mb-3'>
-            <div className='flex items-center gap-3'>
-              <FaCheckCircle className='text-green-500 text-lg flex-shrink-0' />
-              <div>
-                <h4 className='font-semibold text-white text-lg'>{servicio.tipoServicio ? getServiceTitulo(servicio.tipoServicio, type) : 'Servicio general'}</h4>
-                <div className='text-sm text-zinc-400 mt-1'>
-                  Finalizado: {new Date(servicio.fechaFinalizado || '').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                </div>
+        <div className='space-y-3'>
+          <div className='flex items-center gap-3'>
+            <FaCheckCircle className='text-green-500 text-lg flex-shrink-0' />
+            <div className='flex-1'>
+              <h4 className='font-semibold text-white text-lg'>
+                {servicio.tipoServicio ? getServiceTitulo(servicio.tipoServicio, type) : 'Servicio general'}
+              </h4>
+              <div className='text-sm text-zinc-400 mt-1'>
+                Finalizado: {new Date(servicio.fechaFinalizado || '').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
               </div>
             </div>
+          </div>
+
+          <div className='flex justify-between items-center'>
             {servicio.km ? (
-              <div className={`text-xl font-bold ${type === 'motor' ? 'text-blue-400' : 'text-orange-400'}`}>
+              <div className={`text-xl md:text-2xl font-bold ${type === 'motor' ? 'text-blue-400' : 'text-orange-400'}`}>
                 {servicio.km.toLocaleString()} KM
               </div>
-            ) : null}
+            ) : <div />}
+            <button
+              onClick={() => setServicioExpandido(servicioExpandido === servicio.serviceNumber ? null : servicio.serviceNumber || 0)}
+              className={`px-3 py-2 md:px-4 md:py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 flex-shrink-0 ${
+                type === 'motor'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-orange-600 hover:bg-orange-700 text-white'
+              }`}
+            >
+              {servicioExpandido === servicio.serviceNumber ? '👁️ Ver menos' : '👁️ Ver más'}
+            </button>
           </div>
-          <button
-            onClick={() => setServicioExpandido(servicioExpandido === servicio.serviceNumber ? null : servicio.serviceNumber || 0)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-              type === 'motor'
-                ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                : 'bg-orange-600 hover:bg-orange-700 text-white'
-            }`}
-          >
-            {servicioExpandido === servicio.serviceNumber ? 'Ver menos' : 'Ver detalles'}
-          </button>
         </div>
+
         {servicioExpandido === servicio.serviceNumber && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} transition={{ duration: 0.3 }}>
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className={`mt-4 border-t pt-4 ${type === 'motor' ? 'border-blue-500/20' : 'border-orange-500/20'}`}
+          >
             <ServiceDataInfo
               serviceData={serviceData}
               tipoServicio={servicio.tipoServicio ? getServiceTitulo(servicio.tipoServicio, type) : servicio.tipoServicio}
               km={servicio.km}
-              vehiculo={vehiculoInfo}
-              observaciones={servicio.observaciones}
+              compact
             />
           </motion.div>
         )}
@@ -751,7 +767,8 @@ export default function SeguimientoPage() {
   // ─── Motor Content ───────────────────────────────────────
 
   const MotorContent = () => (
-    <main>
+    <main className='relative'>
+      <SpaceBackground />
       {tieneServicioActivo && seguimientoData?.serviceDataMotor ? (
         <ServiceDataInfo
           serviceData={seguimientoData.serviceDataMotor}
@@ -763,7 +780,7 @@ export default function SeguimientoPage() {
           observaciones={seguimientoData.observaciones}
         />
       ) : (
-        <div className='min-h-[30vh] bg-zinc-950 flex items-center justify-center'>
+        <div className='min-h-[30vh] flex items-center justify-center'>
           <div className='text-center'>
             <div className='text-5xl mb-4'>🔵</div>
             <h2 className='text-2xl font-bold text-white mb-2'>Servicio de Motor</h2>
@@ -771,7 +788,7 @@ export default function SeguimientoPage() {
           </div>
         </div>
       )}
-      <div className='bg-zinc-950 px-4 pb-12'>
+      <div className='relative px-4 pb-12'>
         <div className='max-w-4xl mx-auto'>
           <HistorialDarkSection
             title='Historial de Servicios de Motor'
@@ -788,7 +805,8 @@ export default function SeguimientoPage() {
   // ─── Caja Content ────────────────────────────────────────
 
   const CajaContent = () => (
-    <main>
+    <main className='relative'>
+      <SpaceBackground />
       {tieneServicioActivo && seguimientoData?.serviceDataCaja ? (
         <ServiceDataInfo
           serviceData={seguimientoData.serviceDataCaja}
@@ -800,7 +818,7 @@ export default function SeguimientoPage() {
           observaciones={seguimientoData.observaciones}
         />
       ) : (
-        <div className='min-h-[30vh] bg-zinc-950 flex items-center justify-center'>
+        <div className='min-h-[30vh] flex items-center justify-center'>
           <div className='text-center'>
             <div className='text-5xl mb-4'>🟠</div>
             <h2 className='text-2xl font-bold text-white mb-2'>Servicio de Caja</h2>
@@ -808,7 +826,7 @@ export default function SeguimientoPage() {
           </div>
         </div>
       )}
-      <div className='bg-zinc-950 px-4 pb-12'>
+      <div className='relative px-4 pb-12'>
         <div className='max-w-4xl mx-auto'>
           <HistorialDarkSection
             title='Historial de Servicios de Caja'

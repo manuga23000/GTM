@@ -33,6 +33,7 @@ interface VehicleInfo {
   cliente: string
   fechaIngreso: string
   fotoVehiculo?: string
+  km?: number
 }
 
 interface ObservacionItem {
@@ -274,7 +275,7 @@ function VehicleInfoBar({
           </p>
           <p className='text-zinc-400 text-sm'>Año {vehiculo.año}</p>
         </div>
-        <div className='flex items-center gap-4 text-sm'>
+        <div className='flex items-center gap-4 text-sm flex-wrap justify-center'>
           <span className='text-zinc-400 flex items-center gap-1.5'>
             <FaUser className='text-xs text-zinc-500' />
             {vehiculo.cliente}
@@ -283,6 +284,15 @@ function VehicleInfoBar({
           <span className='text-zinc-500'>
             {formatearFechaCorta(vehiculo.fechaIngreso)}
           </span>
+          {vehiculo.km && vehiculo.km > 0 && (
+            <>
+              <span className='text-zinc-600'>|</span>
+              <span className={`font-bold flex items-center gap-1.5 ${accentColor === 'orange' ? 'text-orange-400' : 'text-blue-400'}`}>
+                <FaTachometerAlt className='text-xs' />
+                {vehiculo.km.toLocaleString()} km
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -308,7 +318,7 @@ function VehicleInfoBar({
             {vehiculo.cliente}
           </p>
         </div>
-        <div className='text-right'>
+        <div className='flex flex-col items-end gap-2'>
           <div className='inline-flex items-center gap-2.5 bg-white/5 border border-white/10 px-4 py-2.5 rounded-lg'>
             <FaCalendarAlt className='text-zinc-500 text-sm' />
             <div>
@@ -318,6 +328,21 @@ function VehicleInfoBar({
               </div>
             </div>
           </div>
+          {vehiculo.km && vehiculo.km > 0 && (
+            <div className={`inline-flex items-center gap-2.5 px-4 py-2.5 rounded-lg ${
+              accentColor === 'orange'
+                ? 'bg-orange-500/15 border border-orange-500/25'
+                : 'bg-blue-500/15 border border-blue-500/25'
+            }`}>
+              <FaTachometerAlt className={`text-sm ${accentColor === 'orange' ? 'text-orange-400' : 'text-blue-400'}`} />
+              <div>
+                <div className='text-zinc-500 text-xs'>Kilometraje</div>
+                <div className={`font-bold text-sm ${accentColor === 'orange' ? 'text-orange-300' : 'text-blue-300'}`}>
+                  {vehiculo.km.toLocaleString()} km
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>

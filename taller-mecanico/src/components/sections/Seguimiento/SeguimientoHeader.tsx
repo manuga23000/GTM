@@ -14,9 +14,10 @@ interface SeguimientoHeaderProps {
     km?: number
     fotoVehiculo?: string
   }
+  dark?: boolean
 }
 
-export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
+export default function SeguimientoHeader({ data, dark }: SeguimientoHeaderProps) {
   const formatearFecha = (fecha: string) => {
     const date = new Date(fecha)
     return date.toLocaleDateString('es-AR', {

@@ -16,6 +16,7 @@ interface NewVehicleData {
   notes: string
   createdAt: Date
   estimatedCompletionDate: Date | null
+  fotoVehiculo: string | undefined
 }
 
 interface VehicleInTracking {

@@ -219,6 +219,7 @@ export default function VehicleConfig() {
     notes: '',
     createdAt: new Date(),
     estimatedCompletionDate: null as Date | null,
+    fotoVehiculo: undefined as string | undefined,
   })
 
   const selectedVehicleData = useMemo(() => {
@@ -241,6 +242,9 @@ export default function VehicleConfig() {
       const historial = await buscarHistorialCompleto(patente)
       if (historial.length > 0) {
         const ultimoServicio = historial[0]
+        const fotoHistorial = historial.find(h => h.fotoVehiculo)?.fotoVehiculo
+          || historial.find(h => h.serviceDataMotor?.fotoVehiculo)?.serviceDataMotor?.fotoVehiculo
+          || historial.find(h => h.serviceDataCaja?.fotoVehiculo)?.serviceDataCaja?.fotoVehiculo
         setNewVehicle(prev => ({
           ...prev,
           plateNumber: patente.toUpperCase(),
@@ -254,6 +258,7 @@ export default function VehicleConfig() {
           serviceType: '',
           notes: '',
           estimatedCompletionDate: null,
+          fotoVehiculo: fotoHistorial || prev.fotoVehiculo,
         }))
         setDatosHistorialCargados(true)
         showMessage(`Datos cargados del historial (${historial.length} servicio${historial.length > 1 ? 's' : ''} anterior${historial.length > 1 ? 'es' : ''})`)
@@ -443,7 +448,7 @@ export default function VehicleConfig() {
       const response = await createVehicle({ ...newVehicle, createdAt: newVehicle.createdAt, km: newVehicle.km, steps: [] })
       if (response.success) {
         await fetchVehicles()
-        setNewVehicle({ plateNumber: '', brand: '', model: '', year: new Date().getFullYear(), clientName: '', clientPhone: '', serviceType: '', chassisNumber: '', km: 0, notes: '', createdAt: new Date(), estimatedCompletionDate: null })
+        setNewVehicle({ plateNumber: '', brand: '', model: '', year: new Date().getFullYear(), clientName: '', clientPhone: '', serviceType: '', chassisNumber: '', km: 0, notes: '', createdAt: new Date(), estimatedCompletionDate: null, fotoVehiculo: undefined })
         setDatosHistorialCargados(false)
         setShowAddForm(false)
         showMessage('Vehículo agregado exitosamente')

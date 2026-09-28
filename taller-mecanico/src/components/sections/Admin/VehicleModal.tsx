@@ -58,6 +58,7 @@ interface NewVehicleData {
   notes: string
   createdAt: Date
   estimatedCompletionDate: Date | null
+  fotoVehiculo: string | undefined
 }
 
 interface StepFile {
@@ -1209,6 +1210,14 @@ export default function VehicleModal({
                   </motion.div>
                 )}
 
+                <div className='mb-3 sm:mb-4'>
+                  <VehiclePhotoUpload
+                    fotoUrl={newVehicle.fotoVehiculo}
+                    onChange={url => setNewVehicle((prev: NewVehicleData) => ({ ...prev, fotoVehiculo: url }))}
+                    plateNumber={newVehicle.plateNumber}
+                  />
+                </div>
+
                 <VehicleForm
                   vehicle={newVehicle}
                   setVehicle={setNewVehicle as VehicleSetter<NewVehicleData>}
@@ -1290,6 +1299,14 @@ export default function VehicleModal({
                   </button>
                 </div>
 
+                <div className='mb-3 sm:mb-4'>
+                  <VehiclePhotoUpload
+                    fotoUrl={editVehicle.fotoVehiculo}
+                    onChange={url => setEditVehicle(prev => prev ? ({ ...prev, fotoVehiculo: url }) : prev)}
+                    plateNumber={editVehicle.plateNumber}
+                  />
+                </div>
+
                 <VehicleForm
                   vehicle={editVehicle}
                   setVehicle={value => {
@@ -1301,14 +1318,6 @@ export default function VehicleModal({
                   }}
                   isEdit={true}
                 />
-
-                <div className='mt-4'>
-                  <VehiclePhotoUpload
-                    fotoUrl={editVehicle.fotoVehiculo}
-                    onChange={url => setEditVehicle(prev => prev ? ({ ...prev, fotoVehiculo: url }) : prev)}
-                    plateNumber={editVehicle.plateNumber}
-                  />
-                </div>
 
                 <div className='flex gap-2 sm:gap-3 pt-3 sm:pt-4 mt-4 sm:mt-5 border-t border-zinc-800'>
                   <button

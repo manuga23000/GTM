@@ -1,6 +1,6 @@
 'use client'
 import { useParams } from 'next/navigation'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { FaCheckCircle, FaWrench, FaCog } from 'react-icons/fa'
 import { TbEngine } from 'react-icons/tb'
@@ -44,7 +44,7 @@ function SectionTabBar({
   onSelect,
 }: {
   sections: SectionType[]
-  activeSection: SectionType
+  activeSection: SectionType | null
   onSelect: (s: SectionType) => void
 }) {
   return (
@@ -203,8 +203,17 @@ export default function SeguimientoPage() {
   const [servicioExpandido, setServicioExpandido] = useState<number | null>(
     null
   )
-  const [activeSection, setActiveSection] = useState<SectionType>('reparaciones')
+  const [activeSection, setActiveSection] = useState<SectionType | null>(null)
   const [initialSectionSet, setInitialSectionSet] = useState(false)
+  const scrollRef = useRef(0)
+
+  const handleSectionChange = useCallback((section: SectionType) => {
+    scrollRef.current = window.scrollY
+    setActiveSection(section)
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollRef.current)
+    })
+  }, [])
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -312,7 +321,7 @@ export default function SeguimientoPage() {
         setActiveSection(sections[0])
       }
       setInitialSectionSet(true)
-    } else if (sections.length > 0 && !sections.includes(activeSection)) {
+    } else if (activeSection && sections.length > 0 && !sections.includes(activeSection)) {
       setActiveSection(sections[0])
     }
   }, [sections, activeSection, seguimientoData, initialSectionSet])
@@ -511,6 +520,9 @@ export default function SeguimientoPage() {
 
   const fotoVehiculo = seguimientoData?.fotoVehiculo || seguimientoData?.serviceDataMotor?.fotoVehiculo || seguimientoData?.serviceDataCaja?.fotoVehiculo
     || datosParaHeader.fotoVehiculo || datosParaHeader.serviceDataMotor?.fotoVehiculo || datosParaHeader.serviceDataCaja?.fotoVehiculo
+    || historialCompleto.find(h => h.fotoVehiculo)?.fotoVehiculo
+    || historialCompleto.find(h => h.serviceDataMotor?.fotoVehiculo)?.serviceDataMotor?.fotoVehiculo
+    || historialCompleto.find(h => h.serviceDataCaja?.fotoVehiculo)?.serviceDataCaja?.fotoVehiculo
 
   const vehiculoInfo = {
     patente: datosParaHeader.patente,
@@ -780,11 +792,14 @@ export default function SeguimientoPage() {
           observaciones={seguimientoData.observaciones}
         />
       ) : (
-        <div className='min-h-[30vh] flex items-center justify-center'>
-          <div className='text-center'>
-            <div className='text-5xl mb-4'>🔵</div>
-            <h2 className='text-2xl font-bold text-white mb-2'>Servicio de Motor</h2>
-            <p className='text-zinc-400'>No hay servicio de motor activo actualmente</p>
+        <div className='py-8'>
+          <SeguimientoHeader data={vehiculoInfo} dark />
+          <div className='min-h-[20vh] flex items-center justify-center'>
+            <div className='text-center'>
+              <div className='text-5xl mb-4'>🔵</div>
+              <h2 className='text-2xl font-bold text-white mb-2'>Servicio de Motor</h2>
+              <p className='text-zinc-400'>No hay servicio de motor activo actualmente</p>
+            </div>
           </div>
         </div>
       )}
@@ -818,11 +833,14 @@ export default function SeguimientoPage() {
           observaciones={seguimientoData.observaciones}
         />
       ) : (
-        <div className='min-h-[30vh] flex items-center justify-center'>
-          <div className='text-center'>
-            <div className='text-5xl mb-4'>🟠</div>
-            <h2 className='text-2xl font-bold text-white mb-2'>Servicio de Caja</h2>
-            <p className='text-zinc-400'>No hay servicio de caja activo actualmente</p>
+        <div className='py-8'>
+          <SeguimientoHeader data={vehiculoInfo} dark />
+          <div className='min-h-[20vh] flex items-center justify-center'>
+            <div className='text-center'>
+              <div className='text-5xl mb-4'>🟠</div>
+              <h2 className='text-2xl font-bold text-white mb-2'>Servicio de Caja</h2>
+              <p className='text-zinc-400'>No hay servicio de caja activo actualmente</p>
+            </div>
           </div>
         </div>
       )}
@@ -839,6 +857,18 @@ export default function SeguimientoPage() {
       </div>
     </main>
   )
+
+  // ─── Wait for initial section to be determined ───────────
+  if (!activeSection) {
+    return (
+      <>
+        <Navbar />
+        <div className='fixed inset-0 bg-black z-50 flex items-center justify-center'>
+          <LoadingScreen onLoadingComplete={() => {}} duration={800} />
+        </div>
+      </>
+    )
+  }
 
   // ─── Single section (no tabs) ────────────────────────────
 
@@ -887,7 +917,7 @@ export default function SeguimientoPage() {
         <SectionTabBar
           sections={sections}
           activeSection={activeSection}
-          onSelect={setActiveSection}
+          onSelect={handleSectionChange}
         />
       </div>
     </>

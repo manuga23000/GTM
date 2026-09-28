@@ -8,8 +8,6 @@ export * from './admin'
 
 export {
   getSeguimientoByPatente,
-  buscarVehiculosPorPatente,
-  actualizarEstadoVehiculo,
 } from './seguimiento'
 
 export type {

@@ -18,7 +18,6 @@ import {
   FaShieldAlt,
   FaDownload,
 } from 'react-icons/fa'
-import SpaceBackground from './SpaceBackground'
 import type {
   ServiceData,
   ServiceDataCaja,
@@ -354,11 +353,9 @@ function VehicleInfoBar({
 function OilHeroCard({
   aceite,
   accentColor,
-  fallbackImageUrl,
 }: {
   aceite: { marca: string; tipo: string; fotoUrl?: string }
   accentColor: 'orange' | 'blue'
-  fallbackImageUrl?: string
 }) {
   const [photoOpen, setPhotoOpen] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
@@ -852,7 +849,6 @@ function CajaView({
 
   return (
     <div className='min-h-screen relative'>
-      <SpaceBackground />
       {/* HERO */}
       <div className='relative overflow-hidden'>
         <div className='absolute inset-0'>
@@ -929,7 +925,6 @@ function CajaView({
         <OilHeroCard
           aceite={data.aceite}
           accentColor='orange'
-          fallbackImageUrl='/images/home/atf.png'
         />
 
         <FilterSection filtrosActivos={filtrosActivos} />
@@ -1122,7 +1117,6 @@ function MotorView({
 
   return (
     <div className='min-h-screen relative'>
-      <SpaceBackground />
       {/* HERO */}
       <div className='relative overflow-hidden'>
         <div className='absolute inset-0'>

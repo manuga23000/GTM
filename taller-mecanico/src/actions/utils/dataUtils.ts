@@ -498,8 +498,3 @@ export function isValidStepFile(file: unknown): file is CleanStepFile {
   )
 }
 
-export interface AdminResponse {
-  success: boolean
-  message: string
-  error?: string
-}

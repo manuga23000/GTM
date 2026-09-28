@@ -26,14 +26,6 @@ export default function SeguimientoHeader({ data }: SeguimientoHeaderProps) {
     })
   }
 
-  const formatearFechaCompleta = (fecha: string) => {
-    return new Date(fecha).toLocaleDateString('es-AR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    })
-  }
-
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}

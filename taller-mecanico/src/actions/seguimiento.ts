@@ -447,29 +447,3 @@ export async function buscarHistorialCompleto(
   }
 }
 
-export async function buscarVehiculosPorPatente(
-  _patenteParc: string
-): Promise<SeguimientoData[]> {
-  try {
-    return []
-  } catch (error) {
-    console.error('Error en búsqueda parcial:', error)
-    return []
-  }
-}
-
-export async function actualizarEstadoVehiculo(
-  patente: string,
-  _nuevoEstado: string,
-  _notas?: string
-): Promise<boolean> {
-  try {
-    const patenteNormalizada = patente.toUpperCase().trim()
-    const _docRef = doc(db, 'vehicles', patenteNormalizada)
-
-    return true
-  } catch (error) {
-    console.error('Error actualizando estado:', error)
-    return false
-  }
-}

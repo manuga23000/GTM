@@ -1147,12 +1147,6 @@ export default function VehicleModal({
     return () => clearTimeout(timer)
   }, [patenteDebounce, onPatenteChange])
 
-  const _handlePatenteInputChange = (value: string) => {
-    const normalizedValue = value.toUpperCase()
-    setNewVehicle((prev: NewVehicleData) => ({ ...prev, plateNumber: normalizedValue }))
-    setPatenteDebounce(normalizedValue)
-  }
-
   const handleCloseAddForm = () => {
     setShowAddForm(false)
     setPatenteDebounce('')

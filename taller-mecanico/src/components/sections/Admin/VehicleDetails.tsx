@@ -16,6 +16,8 @@ import {
 } from 'firebase/firestore'
 import { app } from '@/lib/firebase'
 import FluidConfig from './FluidConfig'
+import LavadoLinkModal from './LavadoLinkModal'
+import { crearLavado, Lavado } from '@/actions/lavados'
 import {
   X,
   Pencil,
@@ -37,6 +39,7 @@ import {
   Hash,
   Gauge,
   CalendarDays,
+  Sparkles,
 } from 'lucide-react'
 
 interface StepFile {
@@ -261,6 +264,8 @@ export default function VehicleDetails({
 }: VehicleDetailsProps) {
   const [showFluidConfig, setShowFluidConfig] = useState(false)
   const [localVehicle, setLocalVehicle] = useState(vehicle)
+  const [lavadoCreado, setLavadoCreado] = useState<Lavado | null>(null)
+  const [creandoLavado, setCreandoLavado] = useState(false)
 
   useEffect(() => {
     setLocalVehicle(vehicle)
@@ -286,6 +291,22 @@ export default function VehicleDetails({
       console.error('❌ Error guardando niveles:', error)
       throw error
     }
+  }
+
+  const handleRegalarLavado = async () => {
+    if (!confirm(`¿Regalar un lavado a ${localVehicle.clientName} (${localVehicle.plateNumber})?`)) return
+    setCreandoLavado(true)
+    const result = await crearLavado({
+      patente: localVehicle.plateNumber,
+      clienteNombre: localVehicle.clientName,
+      clienteTelefono: localVehicle.clientPhone,
+      marca: localVehicle.brand,
+      modelo: localVehicle.model,
+      servicioOrigen: localVehicle.serviceType,
+    })
+    setCreandoLavado(false)
+    if (result.success && result.lavado) setLavadoCreado(result.lavado)
+    else alert(result.message)
   }
 
   return (
@@ -419,6 +440,14 @@ export default function VehicleDetails({
               >
                 <Droplets className='w-3.5 h-3.5' strokeWidth={2} />
                 Fluidos
+              </button>
+              <button
+                onClick={handleRegalarLavado}
+                disabled={creandoLavado}
+                className='flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 bg-sky-600/70 hover:bg-sky-500 text-white font-medium rounded-xl text-xs sm:text-sm transition-all whitespace-nowrap border border-sky-500/30 disabled:opacity-50'
+              >
+                <Sparkles className='w-3.5 h-3.5' strokeWidth={2} />
+                {creandoLavado ? 'Creando…' : 'Regalar lavado'}
               </button>
               <button
                 onClick={onDeleteVehicle}
@@ -630,6 +659,8 @@ export default function VehicleDetails({
           )}
         </div>
       </div>
+
+      <LavadoLinkModal lavado={lavadoCreado} onClose={() => setLavadoCreado(null)} />
     </motion.div>
   )
 }

@@ -6,8 +6,6 @@ import {
   updateServiceConfig,
   initializeServiceConfigs,
   cleanDuplicateConfigs,
-  getVacationMode,
-  setVacationMode,
 } from '@/actions/serviceconfig'
 import {
   Search,
@@ -15,7 +13,6 @@ import {
   Settings2,
   Cog,
   Wrench,
-  PalmtreeIcon,
   Save,
   RefreshCw,
   CheckCircle2,
@@ -54,8 +51,6 @@ export default function ServiceConfig() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
-  const [vacationMode, setVacationModeState] = useState(false)
-  const [vacationLoading, setVacationLoading] = useState(false)
 
   const availableServices = [
     'Diagnóstico',
@@ -88,35 +83,6 @@ export default function ServiceConfig() {
     'Otro / No estoy seguro',
   ]
 
-  const loadVacationMode = async () => {
-    try {
-      const vacationConfig = await getVacationMode()
-      if (vacationConfig) setVacationModeState(vacationConfig.enabled)
-    } catch (error) {
-      console.error('❌ Error cargando modo vacaciones:', error)
-    }
-  }
-
-  const handleToggleVacationMode = async () => {
-    setVacationLoading(true)
-    try {
-      const newState = !vacationMode
-      const result = await setVacationMode(newState)
-      if (result.success) {
-        setVacationModeState(newState)
-        setMessage(`✅ ${result.message}`)
-      } else {
-        setMessage(`❌ ${result.message}`)
-      }
-      setTimeout(() => setMessage(''), 3000)
-    } catch (error) {
-      console.error('❌ Error al cambiar modo vacaciones:', error)
-      setMessage('❌ Error al cambiar modo vacaciones')
-      setTimeout(() => setMessage(''), 3000)
-    } finally {
-      setVacationLoading(false)
-    }
-  }
 
   const loadConfigs = useCallback(async () => {
     try {
@@ -150,7 +116,6 @@ export default function ServiceConfig() {
 
   useEffect(() => {
     loadConfigs()
-    loadVacationMode()
   }, [loadConfigs])
 
   const updateConfig = (serviceName: string, field: string, value: unknown) => {
@@ -430,45 +395,6 @@ export default function ServiceConfig() {
           {message.replace('✅ ', '').replace('❌ ', '')}
         </div>
       )}
-
-      {/* ── Vacation mode ── */}
-      <div className='bg-zinc-900/70 border border-amber-500/25 rounded-2xl p-4 sm:p-5 overflow-hidden relative'>
-        <div className='absolute inset-0 bg-gradient-to-br from-amber-500/8 to-orange-500/5 pointer-events-none' />
-        <div className='relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-          <div className='flex items-start gap-3'>
-            <div className='p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/20 shrink-0'>
-              <Wrench className='w-5 h-5 text-amber-400' strokeWidth={1.8} />
-            </div>
-            <div>
-              <h3 className='text-base font-bold text-amber-400 mb-1'>Modo Vacaciones</h3>
-              <p className='text-zinc-400 text-xs sm:text-sm'>
-                {vacationMode ? (
-                  <>
-                    <span className='text-amber-300 font-semibold'>ACTIVO:</span> Bloqueando turnos del{' '}
-                    <span className='text-white font-medium'>31 de enero</span> al{' '}
-                    <span className='text-white font-medium'>10 de febrero</span>
-                  </>
-                ) : (
-                  'Desactivado. Los clientes pueden sacar turnos normalmente.'
-                )}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={handleToggleVacationMode}
-            disabled={vacationLoading}
-            className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 min-w-[130px] border disabled:opacity-50 disabled:cursor-not-allowed ${
-              vacationMode
-                ? 'bg-red-600/80 hover:bg-red-500 text-white border-red-500/30'
-                : 'bg-emerald-600/80 hover:bg-emerald-500 text-white border-emerald-500/30'
-            }`}
-          >
-            {vacationLoading ? (
-              <span className='w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin' />
-            ) : vacationMode ? 'Desactivar' : 'Activar'}
-          </button>
-        </div>
-      </div>
 
       {/* ── Service selector ── */}
       <div className='bg-zinc-900/70 border border-zinc-800 p-4 sm:p-5 rounded-2xl'>

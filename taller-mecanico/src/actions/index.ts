@@ -23,7 +23,6 @@ export type {
   VehicleStep,
   TimelineItem as SeguimientoTimelineItem,
   ImagenItem as SeguimientoImagenItem,
-  SeguimientoData as SeguimientoVehicleData,
 } from './types/types'
 
 export * from './utils/dataUtils'

@@ -13,7 +13,7 @@ import { SeguimientoData, TrabajoRealizado } from '@/actions/seguimiento'
 import FileViewer from '@/components/sections/Seguimiento/FileViewer'
 import ServiceDataInfo from '@/components/sections/Seguimiento/ServiceDataInfo'
 import SpaceBackground from '@/components/sections/Seguimiento/SpaceBackground'
-import { getReparacionesTitulo, getServiceTitulo } from '@/components/sections/Admin/ServiceDataForm'
+import { getReparacionesTitulo, getServiceTitulo, getDetectedServiceTypes } from '@/components/sections/Admin/ServiceDataForm'
 
 type SectionType = 'reparaciones' | 'motor' | 'caja'
 
@@ -230,16 +230,18 @@ export default function SeguimientoPage() {
             switch (status?.toLowerCase()) {
               case 'received':
                 return 'Vehículo recibido'
-              case 'diagnosis':
+              case 'in-diagnosis':
                 return 'En diagnóstico'
-              case 'repair':
+              case 'in-repair':
                 return 'En reparación'
-              case 'quality_control':
-                return 'Control de calidad'
-              case 'ready':
-                return 'Listo para entrega'
+              case 'completed':
+                return 'Completado'
+              case 'delivered':
+                return 'Entregado'
+              case 'finalized':
+                return 'Finalizado'
               default:
-                return 'Vehículo recibido'
+                return status || 'Vehículo recibido'
             }
           }
 
@@ -292,11 +294,20 @@ export default function SeguimientoPage() {
     cargarHistorial()
   }, [patente])
 
+  const detectedTypes = useMemo(() =>
+    seguimientoData?.tipoServicio
+      ? getDetectedServiceTypes(seguimientoData.tipoServicio)
+      : { motor: false, caja: false },
+    [seguimientoData?.tipoServicio]
+  )
+
   const hasSteps = (seguimientoData?.trabajosRealizados?.length || 0) > 0 ||
     historialCompleto.some(h => (h.trabajosRealizados?.length || 0) > 0)
   const hasMotor = !!seguimientoData?.serviceDataMotor ||
+    detectedTypes.motor ||
     historialCompleto.some(h => !!h.serviceDataMotor)
   const hasCaja = !!seguimientoData?.serviceDataCaja ||
+    detectedTypes.caja ||
     historialCompleto.some(h => !!h.serviceDataCaja)
 
   const sections = useMemo(() => {
@@ -311,9 +322,9 @@ export default function SeguimientoPage() {
 
   useEffect(() => {
     if (!initialSectionSet && seguimientoData && sections.length > 0) {
-      if (seguimientoData.serviceDataCaja && sections.includes('caja')) {
+      if ((seguimientoData.serviceDataCaja || detectedTypes.caja) && sections.includes('caja')) {
         setActiveSection('caja')
-      } else if (seguimientoData.serviceDataMotor && sections.includes('motor')) {
+      } else if ((seguimientoData.serviceDataMotor || detectedTypes.motor) && sections.includes('motor')) {
         setActiveSection('motor')
       } else if (sections.includes('reparaciones')) {
         setActiveSection('reparaciones')
@@ -324,7 +335,7 @@ export default function SeguimientoPage() {
     } else if (activeSection && sections.length > 0 && !sections.includes(activeSection)) {
       setActiveSection(sections[0])
     }
-  }, [sections, activeSection, seguimientoData, initialSectionSet])
+  }, [sections, activeSection, seguimientoData, initialSectionSet, detectedTypes])
 
   const historialMotor = useMemo(
     () => historialCompleto.filter(h => !!h.serviceDataMotor),
@@ -797,8 +808,14 @@ export default function SeguimientoPage() {
           <div className='min-h-[20vh] flex items-center justify-center'>
             <div className='text-center'>
               <div className='text-5xl mb-4'>🔵</div>
-              <h2 className='text-2xl font-bold text-white mb-2'>Servicio de Motor</h2>
-              <p className='text-zinc-400'>No hay servicio de motor activo actualmente</p>
+              <h2 className='text-2xl font-bold text-white mb-2'>
+                {seguimientoData?.tipoServicio ? getServiceTitulo(seguimientoData.tipoServicio, 'motor') : 'Servicio de Motor'}
+              </h2>
+              <p className='text-zinc-400'>
+                {detectedTypes.motor && tieneServicioActivo
+                  ? 'Todavía no se cargó información de este servicio'
+                  : 'No hay servicio de motor activo actualmente'}
+              </p>
             </div>
           </div>
         </div>
@@ -838,8 +855,14 @@ export default function SeguimientoPage() {
           <div className='min-h-[20vh] flex items-center justify-center'>
             <div className='text-center'>
               <div className='text-5xl mb-4'>🟠</div>
-              <h2 className='text-2xl font-bold text-white mb-2'>Servicio de Caja</h2>
-              <p className='text-zinc-400'>No hay servicio de caja activo actualmente</p>
+              <h2 className='text-2xl font-bold text-white mb-2'>
+                {seguimientoData?.tipoServicio ? getServiceTitulo(seguimientoData.tipoServicio, 'caja') : 'Servicio de Caja'}
+              </h2>
+              <p className='text-zinc-400'>
+                {detectedTypes.caja && tieneServicioActivo
+                  ? 'Todavía no se cargó información de este servicio'
+                  : 'No hay servicio de caja activo actualmente'}
+              </p>
             </div>
           </div>
         </div>

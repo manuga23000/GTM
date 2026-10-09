@@ -464,24 +464,26 @@ export default function VehicleConfig() {
     }
   }
 
-  const getStatusColor = (status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered') => {
+  const getStatusColor = (status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered' | 'finalized') => {
     switch (status) {
       case 'received':     return 'bg-blue-600'
       case 'in-diagnosis': return 'bg-amber-600'
       case 'in-repair':    return 'bg-orange-600'
       case 'completed':    return 'bg-emerald-600'
       case 'delivered':    return 'bg-zinc-600'
+      case 'finalized':    return 'bg-purple-600'
       default:             return 'bg-zinc-600'
     }
   }
 
-  const getStatusText = (status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered') => {
+  const getStatusText = (status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered' | 'finalized') => {
     switch (status) {
       case 'received':     return 'Recibido'
       case 'in-diagnosis': return 'En diagnóstico'
       case 'in-repair':    return 'En reparación'
       case 'completed':    return 'Completado'
       case 'delivered':    return 'Entregado'
+      case 'finalized':    return 'Finalizado'
       default:             return 'Desconocido'
     }
   }

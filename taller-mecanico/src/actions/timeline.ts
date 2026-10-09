@@ -1,4 +1,4 @@
-import { getDocs, collection } from 'firebase/firestore'
+import { getDocs, collection, doc, deleteDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
 interface FirestoreTimestamp {
@@ -67,5 +67,15 @@ export async function getAllTimelineVehicles(): Promise<TimelineVehicle[]> {
   } catch (error) {
     console.error('Error obteniendo historial:', error)
     return []
+  }
+}
+
+export async function deleteTimelineVehicle(id: string): Promise<{ success: boolean; message: string }> {
+  try {
+    await deleteDoc(doc(db, 'timeline', id))
+    return { success: true, message: 'Vehículo eliminado del historial' }
+  } catch (error) {
+    console.error('Error eliminando vehículo del historial:', error)
+    return { success: false, message: 'Error al eliminar el vehículo del historial' }
   }
 }

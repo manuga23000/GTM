@@ -31,7 +31,7 @@ interface VehicleInTracking {
   chassisNumber?: string
   entryDate: Date
   estimatedCompletionDate?: Date | null
-  status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'
+  status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered' | 'finalized'
   km?: number
   steps: VehicleStep[]
   notes: string

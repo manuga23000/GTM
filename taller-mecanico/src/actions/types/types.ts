@@ -232,20 +232,3 @@ export interface ImagenItem {
   tipo: 'antes' | 'proceso' | 'despues'
 }
 
-export interface SeguimientoData {
-  patente: string
-  modelo: string
-  marca: string
-  año: string
-  cliente: string
-  fechaIngreso: string
-  estadoActual?: string
-  telefono?: string
-  tipoServicio?: string
-  trabajosRealizados?: string[]
-  proximoPaso?: string
-  fechaEstimadaEntrega?: string
-  timeline?: TimelineItem[]
-  imagenes?: ImagenItem[]
-  updatedAt?: string
-}

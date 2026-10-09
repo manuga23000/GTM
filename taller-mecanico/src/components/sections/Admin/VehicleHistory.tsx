@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getAllTimelineVehicles, TimelineVehicle } from '@/actions/timeline'
+import { getAllTimelineVehicles, deleteTimelineVehicle, TimelineVehicle } from '@/actions/timeline'
 import {
   Search,
   X,
@@ -18,9 +18,11 @@ import {
   Gauge,
   Loader2,
   Hash,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react'
 
-type SortField = 'plateNumber' | 'finalizedAt'
+type SortField = 'plateNumber' | 'finalizedAt' | 'clientName'
 type SortDirection = 'asc' | 'desc'
 
 const VEHICLES_PER_PAGE = 10
@@ -32,6 +34,8 @@ export default function VehicleHistory() {
   const [currentPage, setCurrentPage] = useState(1)
   const [sortField, setSortField] = useState<SortField>('finalizedAt')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     loadVehicles()
@@ -53,6 +57,28 @@ export default function VehicleHistory() {
     }
   }
 
+  const handleDelete = async (id: string) => {
+    setDeleting(true)
+    try {
+      const result = await deleteTimelineVehicle(id)
+      if (result.success) {
+        setVehicles(prev => {
+          const updated = prev.filter(v => v.id !== id)
+          const newTotalPages = Math.ceil(updated.length / VEHICLES_PER_PAGE)
+          if (currentPage > newTotalPages && newTotalPages > 0) {
+            setCurrentPage(newTotalPages)
+          }
+          return updated
+        })
+      }
+    } catch (error) {
+      console.error('Error eliminando:', error)
+    } finally {
+      setDeleting(false)
+      setDeleteConfirm(null)
+    }
+  }
+
   const filteredAndSorted = useMemo(() => {
     const term = searchTerm.toLowerCase().trim()
     let result = vehicles
@@ -62,13 +88,20 @@ export default function VehicleHistory() {
         v =>
           v.plateNumber.toLowerCase().includes(term) ||
           v.clientName.toLowerCase().includes(term) ||
-          (v.clientPhone && v.clientPhone.toLowerCase().includes(term))
+          (v.clientPhone && v.clientPhone.toLowerCase().includes(term)) ||
+          (v.brand && v.brand.toLowerCase().includes(term)) ||
+          (v.model && v.model.toLowerCase().includes(term)) ||
+          (v.serviceType && v.serviceType.toLowerCase().includes(term))
       )
     }
 
     result = [...result].sort((a, b) => {
       if (sortField === 'plateNumber') {
         const cmp = a.plateNumber.localeCompare(b.plateNumber)
+        return sortDirection === 'asc' ? cmp : -cmp
+      }
+      if (sortField === 'clientName') {
+        const cmp = a.clientName.localeCompare(b.clientName)
         return sortDirection === 'asc' ? cmp : -cmp
       }
       const dateA = a.finalizedAt.getTime()
@@ -117,7 +150,7 @@ export default function VehicleHistory() {
             <Search className='absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none' strokeWidth={2} />
             <input
               type='text'
-              placeholder='Buscar por nombre, patente o teléfono…'
+              placeholder='Buscar por nombre, patente, teléfono, marca, modelo, servicio…'
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className='w-full pl-10 pr-9 py-2.5 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/30 transition-all text-sm'
@@ -134,7 +167,7 @@ export default function VehicleHistory() {
         </div>
 
         {/* Sort buttons */}
-        <div className='flex gap-2 mt-4'>
+        <div className='flex flex-wrap gap-2 mt-4'>
           <button
             onClick={() => toggleSort('plateNumber')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
@@ -145,6 +178,17 @@ export default function VehicleHistory() {
           >
             <ArrowUpDown className='w-3 h-3' strokeWidth={2} />
             Patente {sortField === 'plateNumber' && (sortDirection === 'asc' ? 'A→Z' : 'Z→A')}
+          </button>
+          <button
+            onClick={() => toggleSort('clientName')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              sortField === 'clientName'
+                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                : 'bg-zinc-800 text-zinc-400 border border-zinc-700 hover:border-zinc-600'
+            }`}
+          >
+            <ArrowUpDown className='w-3 h-3' strokeWidth={2} />
+            Cliente {sortField === 'clientName' && (sortDirection === 'asc' ? 'A→Z' : 'Z→A')}
           </button>
           <button
             onClick={() => toggleSort('finalizedAt')}
@@ -159,6 +203,68 @@ export default function VehicleHistory() {
           </button>
         </div>
       </div>
+
+      {/* Delete confirmation modal */}
+      <AnimatePresence>
+        {deleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className='fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4'
+            onClick={() => !deleting && setDeleteConfirm(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className='bg-zinc-900 border border-red-500/30 rounded-2xl p-6 max-w-sm w-full'
+            >
+              <div className='flex items-center gap-3 mb-4'>
+                <div className='p-2.5 rounded-xl bg-red-500/15 border border-red-500/20'>
+                  <AlertTriangle className='w-5 h-5 text-red-400' strokeWidth={2} />
+                </div>
+                <div>
+                  <h3 className='text-base font-bold text-white'>Eliminar del historial</h3>
+                  <p className='text-zinc-400 text-xs mt-0.5'>
+                    {(() => {
+                      const v = vehicles.find(v => v.id === deleteConfirm)
+                      return v ? `${v.plateNumber} — ${v.clientName}` : ''
+                    })()}
+                  </p>
+                </div>
+              </div>
+              <p className='text-zinc-400 text-sm mb-5'>
+                Esta acción es permanente y no se puede deshacer. Se eliminará este registro del historial.
+              </p>
+              <div className='flex gap-3'>
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  disabled={deleting}
+                  className='flex-1 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-sm font-medium transition-colors disabled:opacity-50'
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => handleDelete(deleteConfirm)}
+                  disabled={deleting}
+                  className='flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2'
+                >
+                  {deleting ? (
+                    <span className='w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin' />
+                  ) : (
+                    <>
+                      <Trash2 className='w-3.5 h-3.5' strokeWidth={2} />
+                      Eliminar
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Content */}
       {loading ? (
@@ -188,6 +294,7 @@ export default function VehicleHistory() {
                   <th className='text-left px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider'>Finalizado</th>
                   <th className='text-center px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider'>#</th>
                   <th className='text-center px-4 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider'>Trabajos</th>
+                  <th className='text-center px-2 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider w-10'></th>
                 </tr>
               </thead>
               <tbody>
@@ -247,6 +354,15 @@ export default function VehicleHistory() {
                           {vehicle.stepsCount}
                         </span>
                       </td>
+                      <td className='px-2 py-3 text-center'>
+                        <button
+                          onClick={() => setDeleteConfirm(vehicle.id)}
+                          className='p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-all'
+                          title='Eliminar del historial'
+                        >
+                          <Trash2 className='w-3.5 h-3.5' strokeWidth={2} />
+                        </button>
+                      </td>
                     </motion.tr>
                   ))}
                 </AnimatePresence>
@@ -268,16 +384,25 @@ export default function VehicleHistory() {
                 >
                   <div className='h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500' />
                   <div className='p-4 space-y-2.5'>
-                    {/* Plate + service number */}
+                    {/* Plate + service number + delete */}
                     <div className='flex items-center justify-between'>
                       <div className='flex items-center gap-2'>
                         <Car className='w-4 h-4 text-emerald-400' strokeWidth={2} />
                         <span className='font-bold text-white text-sm tracking-wide'>{vehicle.plateNumber}</span>
                       </div>
-                      <span className='inline-flex items-center gap-1 px-2 py-0.5 bg-zinc-800 rounded-md text-xs text-zinc-300 font-medium'>
-                        <Hash className='w-3 h-3' strokeWidth={2} />
-                        Servicio {vehicle.serviceNumber}
-                      </span>
+                      <div className='flex items-center gap-2'>
+                        <span className='inline-flex items-center gap-1 px-2 py-0.5 bg-zinc-800 rounded-md text-xs text-zinc-300 font-medium'>
+                          <Hash className='w-3 h-3' strokeWidth={2} />
+                          Servicio {vehicle.serviceNumber}
+                        </span>
+                        <button
+                          onClick={() => setDeleteConfirm(vehicle.id)}
+                          className='p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-all'
+                          title='Eliminar del historial'
+                        >
+                          <Trash2 className='w-3.5 h-3.5' strokeWidth={2} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Vehicle info */}

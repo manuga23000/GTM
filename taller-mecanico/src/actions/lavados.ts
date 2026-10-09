@@ -20,7 +20,7 @@ const LARGO_CODIGO = 8
 const ALFABETO = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
 const ZONA_HORARIA = 'America/Argentina/Buenos_Aires'
 
-export type EstadoLavado = 'emitido' | 'usado' | 'pagado'
+export type EstadoLavado = 'emitido' | 'usado' | 'pagado' | 'anulado'
 export type EstadoLavadoEfectivo = EstadoLavado | 'vencido'
 
 export interface Lavado {
@@ -30,12 +30,14 @@ export interface Lavado {
   clienteTelefono: string
   marca: string
   modelo: string
+  anio?: number
   servicioOrigen: string
   estado: EstadoLavado
   creadoAt: Date
   venceAt: Date
   usadoAt?: Date
   pagadoAt?: Date
+  anuladoAt?: Date
   montoPagado?: number
   notas?: string
 }
@@ -46,6 +48,7 @@ export interface LavadoInput {
   clienteTelefono?: string
   marca?: string
   modelo?: string
+  anio?: number
   servicioOrigen?: string
   notas?: string
 }
@@ -61,12 +64,14 @@ interface FirestoreLavadoData extends DocumentData {
   clienteTelefono: string
   marca: string
   modelo: string
+  anio?: number
   servicioOrigen: string
   estado: EstadoLavado
   creadoAt: Timestamp
   venceAt: Timestamp
   usadoAt?: Timestamp
   pagadoAt?: Timestamp
+  anuladoAt?: Timestamp
   montoPagado?: number
   notas?: string
 }
@@ -78,12 +83,14 @@ const toLavado = (data: FirestoreLavadoData): Lavado => ({
   clienteTelefono: data.clienteTelefono || '',
   marca: data.marca || '',
   modelo: data.modelo || '',
+  anio: typeof data.anio === 'number' ? data.anio : undefined,
   servicioOrigen: data.servicioOrigen || '',
   estado: data.estado,
   creadoAt: data.creadoAt.toDate(),
   venceAt: data.venceAt.toDate(),
   usadoAt: data.usadoAt?.toDate(),
   pagadoAt: data.pagadoAt?.toDate(),
+  anuladoAt: data.anuladoAt?.toDate(),
   montoPagado: data.montoPagado,
   notas: data.notas,
 })
@@ -112,6 +119,15 @@ export function formatearCodigo(codigo: string): string {
   return limpio.length === LARGO_CODIGO
     ? `${limpio.slice(0, 4)}-${limpio.slice(4)}`
     : limpio
+}
+
+/**
+ * "Marca Modelo Año" (vacío si no hay datos)
+ */
+export function descripcionVehiculo(lavado: Lavado): string {
+  return [lavado.marca, lavado.modelo, lavado.anio ? String(lavado.anio) : '']
+    .filter(Boolean)
+    .join(' ')
 }
 
 export function esCodigoValido(codigo: string): boolean {
@@ -178,6 +194,11 @@ export function motivoNoValido(
       ? `Ya usado el ${formatearFecha(lavado.usadoAt)}`
       : 'Ya usado'
   }
+  if (estado === 'anulado') {
+    return lavado.anuladoAt
+      ? `Anulado el ${formatearFecha(lavado.anuladoAt)}`
+      : 'Anulado'
+  }
   if (estado === 'vencido') return `Vencido el ${formatearFecha(lavado.venceAt)}`
   return null
 }
@@ -235,6 +256,7 @@ export async function crearLavado(input: LavadoInput): Promise<LavadoResponse> {
         clienteTelefono: input.clienteTelefono?.trim() || '',
         marca: input.marca?.trim() || '',
         modelo: input.modelo?.trim() || '',
+        ...(input.anio ? { anio: input.anio } : {}),
         servicioOrigen: input.servicioOrigen?.trim() || '',
         estado: 'emitido',
         creadoAt: Timestamp.fromDate(creadoAt),
@@ -458,7 +480,8 @@ export async function marcarLavadosPagados(
 }
 
 /**
- * Anula un link activo: se borra y la página pasa a "LINK INVÁLIDO"
+ * Anula (desactiva) un link activo: queda en el registro como "anulado"
+ * y la página muestra "ANULADO"
  */
 export async function anularLavado(codigo: string): Promise<AdminResponse> {
   try {
@@ -482,7 +505,10 @@ export async function anularLavado(codigo: string): Promise<AdminResponse> {
           error: 'NOT_VALID',
         }
       }
-      transaction.delete(docRef)
+      transaction.update(docRef, {
+        estado: 'anulado',
+        anuladoAt: Timestamp.now(),
+      })
       return {
         success: true,
         message: `Link ${formatearCodigo(limpio)} anulado`,

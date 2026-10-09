@@ -29,6 +29,7 @@ import {
   estadoEfectivo,
   formatearCodigo,
   formatearFecha,
+  descripcionVehiculo,
   normalizarCodigo,
   esCodigoValido,
   motivoNoValido,
@@ -76,6 +77,12 @@ const estadoConfig: Record<
     card: 'text-red-400',
     activo: 'border-red-500/60 bg-red-500/10',
   },
+  anulado: {
+    label: 'Anulados',
+    badge: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
+    card: 'text-zinc-400',
+    activo: 'border-zinc-500/60 bg-zinc-500/10',
+  },
 }
 
 const estadoLabel: Record<EstadoLavadoEfectivo, string> = {
@@ -83,6 +90,7 @@ const estadoLabel: Record<EstadoLavadoEfectivo, string> = {
   usado: 'Usado sin pagar',
   pagado: 'Pagado',
   vencido: 'Vencido',
+  anulado: 'Anulado',
 }
 
 export default function LavadosManager() {
@@ -174,7 +182,7 @@ export default function LavadosManager() {
   const handleAnular = async (lavado: Lavado) => {
     if (
       !confirm(
-        `¿Anular el link ${formatearCodigo(lavado.codigo)} de ${lavado.clienteNombre}? El cliente ya no lo va a poder usar.`
+        `¿Anular el link ${formatearCodigo(lavado.codigo)} de ${lavado.clienteNombre}? El cliente ya no lo va a poder usar, pero queda en el registro como anulado.`
       )
     )
       return
@@ -219,7 +227,7 @@ export default function LavadosManager() {
       acc[estado]++
       return acc
     },
-    { emitido: 0, usado: 0, pagado: 0, vencido: 0 }
+    { emitido: 0, usado: 0, pagado: 0, vencido: 0, anulado: 0 }
   )
 
   const filtrados = useMemo(() => {
@@ -234,6 +242,7 @@ export default function LavadosManager() {
           !term ||
           lavado.patente.toLowerCase().includes(term.replace(/\s+/g, '')) ||
           lavado.clienteNombre.toLowerCase().includes(term) ||
+          descripcionVehiculo(lavado).toLowerCase().includes(term) ||
           (termCodigo !== '' && lavado.codigo.includes(termCodigo))
       )
   }, [lavados, searchTerm, filtro])
@@ -342,8 +351,7 @@ export default function LavadosManager() {
                     { label: 'Cliente', value: busqueda.lavado.clienteNombre },
                     {
                       label: 'Vehículo',
-                      value:
-                        `${busqueda.lavado.marca} ${busqueda.lavado.modelo}`.trim() || '—',
+                      value: descripcionVehiculo(busqueda.lavado) || '—',
                     },
                     { label: 'Vence', value: formatearFecha(busqueda.lavado.venceAt) },
                   ].map(({ label, value }) => (
@@ -389,7 +397,7 @@ export default function LavadosManager() {
       </div>
 
       {/* ── Contadores (también filtran) ── */}
-      <div className='grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3'>
+      <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3'>
         {(Object.keys(estadoConfig) as EstadoLavadoEfectivo[]).map(estado => (
           <button
             key={estado}
@@ -414,7 +422,7 @@ export default function LavadosManager() {
       <div className='bg-zinc-900/70 border border-zinc-800 rounded-2xl p-4 sm:p-6'>
         <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3'>
           <div className='flex flex-wrap gap-2'>
-            {(['todos', 'emitido', 'usado', 'pagado', 'vencido'] as Filtro[]).map(f => (
+            {(['todos', 'emitido', 'usado', 'pagado', 'vencido', 'anulado'] as Filtro[]).map(f => (
               <button
                 key={f}
                 onClick={() => setFiltro(f)}
@@ -433,7 +441,7 @@ export default function LavadosManager() {
             <Search className='absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none' strokeWidth={2} />
             <input
               type='text'
-              placeholder='Buscar por patente, cliente o código…'
+              placeholder='Buscar por patente, cliente, auto o código…'
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className='w-full pl-10 pr-9 py-2.5 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/30 transition-all text-sm'
@@ -519,12 +527,12 @@ export default function LavadosManager() {
                       <div className='flex flex-wrap gap-x-4 gap-y-1 text-xs sm:text-sm text-zinc-400'>
                         <span className='flex items-center gap-1.5'>
                           <Car className='w-3.5 h-3.5 text-zinc-500' strokeWidth={2} />
-                          <span className='text-zinc-200 font-medium'>{lavado.patente}</span>
-                          {(lavado.marca || lavado.modelo) && (
-                            <span>
-                              {lavado.marca} {lavado.modelo}
-                            </span>
-                          )}
+                          <span className='text-zinc-200 font-medium'>
+                            {descripcionVehiculo(lavado) || 'Vehículo sin datos'}
+                          </span>
+                          <span className='px-1.5 py-0.5 bg-zinc-900/70 border border-zinc-700 rounded text-zinc-300 text-xs font-semibold tracking-wide'>
+                            {lavado.patente}
+                          </span>
                         </span>
                         <span className='flex items-center gap-1.5'>
                           <User className='w-3.5 h-3.5 text-zinc-500' strokeWidth={2} />
@@ -544,6 +552,7 @@ export default function LavadosManager() {
                         </span>
                         <span>Vence {formatearFecha(lavado.venceAt)}</span>
                         {lavado.usadoAt && <span>Usado {formatearFecha(lavado.usadoAt)}</span>}
+                        {lavado.anuladoAt && <span>Anulado {formatearFecha(lavado.anuladoAt)}</span>}
                         {lavado.pagadoAt && (
                           <span className='text-sky-400'>
                             Pagado {formatearFecha(lavado.pagadoAt)}

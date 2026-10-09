@@ -309,6 +309,7 @@ export default function VehicleDetails({
       clienteTelefono: localVehicle.clientPhone,
       marca: localVehicle.brand,
       modelo: localVehicle.model,
+      anio: localVehicle.year,
       servicioOrigen: localVehicle.serviceType,
     })
     setCreandoLavado(false)

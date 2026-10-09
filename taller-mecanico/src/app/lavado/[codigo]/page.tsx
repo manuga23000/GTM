@@ -3,6 +3,7 @@ import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import {
   escucharLavado,
+  descripcionVehiculo,
   estadoEfectivo,
   formatearCodigo,
   formatearFecha,
@@ -50,6 +51,8 @@ export default function LavadoPage() {
     const efectivo = estadoEfectivo(lavado, ahora ?? new Date())
     if (efectivo === 'emitido') {
       estado = { verde: true, titulo: 'VÁLIDO', detalle: 'Se puede lavar' }
+    } else if (efectivo === 'anulado') {
+      estado = { verde: false, titulo: 'ANULADO', detalle: 'No lavar' }
     } else if (efectivo === 'vencido') {
       estado = {
         verde: false,
@@ -72,6 +75,9 @@ export default function LavadoPage() {
       ? [
           { label: 'Código', value: formatearCodigo(vista.lavado.codigo) },
           { label: 'Patente', value: vista.lavado.patente },
+          ...(descripcionVehiculo(vista.lavado)
+            ? [{ label: 'Vehículo', value: descripcionVehiculo(vista.lavado) }]
+            : []),
           {
             label: 'Cliente',
             value: vista.lavado.clienteNombre.trim().split(/\s+/)[0] || '—',
@@ -114,7 +120,7 @@ export default function LavadoPage() {
                   className='flex justify-between items-center gap-4 py-3'
                 >
                   <dt className='text-zinc-500 text-base'>{label}</dt>
-                  <dd className='font-bold text-base text-right break-all'>
+                  <dd className='font-bold text-base text-right break-words'>
                     {value}
                   </dd>
                 </div>

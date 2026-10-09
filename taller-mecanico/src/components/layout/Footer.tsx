@@ -19,7 +19,9 @@ import {
 export default function Footer() {
   const pathname = usePathname()
   const hideFooter =
-    pathname.startsWith('/admin') || pathname.startsWith('/cancelar-turno')
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/cancelar-turno') ||
+    pathname.startsWith('/lavado')
 
   if (hideFooter) return null
 

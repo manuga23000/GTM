@@ -61,6 +61,13 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // Reglas para lavados de regalo (el ID del documento es el código del link)
+    match /lavados/{codigo} {
+      allow get: if true;
+      allow list: if request.auth != null;
+      allow create, update, delete: if request.auth != null;
+    }
+
     // Bloquear acceso a cualquier otra colección por defecto
     match /{document=**} {
       allow read, write: if false;

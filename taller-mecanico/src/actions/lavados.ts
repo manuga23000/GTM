@@ -225,9 +225,22 @@ export function telefonoWhatsApp(telefono?: string): string | null {
   return digitos.length === 10 ? `549${digitos}` : null
 }
 
+export const LAVADERO = {
+  telefono: '3364583613',
+  telefonoVisible: '336 458-3613',
+  direccion: 'Pasaje Gorbarán 384',
+  referencia: 'Cortada del Fortín',
+  mapsUrl:
+    'https://www.google.com/maps/search/?api=1&query=' +
+    encodeURIComponent('Pasaje Gorbarán 384, San Nicolás de los Arroyos'),
+}
+
 export function mensajeWhatsAppLavado(nombre: string, link: string): string {
   const nombrePila = nombre.trim().split(/\s+/)[0] || ''
-  return `¡Hola ${nombrePila}! Gracias por confiar en GTM. Te regalamos un lavado. Mostrá este link en el lavadero dentro de los próximos ${DIAS_VALIDEZ} días: ${link}`
+  return `¡Hola ${nombrePila}! Gracias por confiar en GTM. Te regalamos un lavado. Mostrá este link en el lavadero dentro de los próximos ${DIAS_VALIDEZ} días: ${link}
+
+📍 ${LAVADERO.direccion} (${LAVADERO.referencia})
+📞 ${LAVADERO.telefono}`
 }
 
 export async function crearLavado(input: LavadoInput): Promise<LavadoResponse> {

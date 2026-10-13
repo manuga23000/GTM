@@ -5,10 +5,7 @@
       "Bash(timeout:*)",
       "Bash(npx tsc:*)",
       "Bash(grep:*)",
-      "Bash(npx next *)",
-      "WebFetch(domain:ui.aceternity.com)",
-      "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(npx shadcn@latest add \"@aceternity/aurora-background\" --yes)"
+      "Bash(npx next *)"
     ]
   }
 }

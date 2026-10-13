@@ -16,9 +16,6 @@ import {
 } from 'firebase/firestore'
 import { app } from '@/lib/firebase'
 import FluidConfig from './FluidConfig'
-import { ServiceDataDisplay } from './ServiceDataForm'
-import LavadoLinkModal from './LavadoLinkModal'
-import { crearLavado, Lavado } from '@/actions/lavados'
 import {
   X,
   Pencil,
@@ -40,9 +37,7 @@ import {
   Hash,
   Gauge,
   CalendarDays,
-  Sparkles,
 } from 'lucide-react'
-import type { ServiceData, ServiceDataMotor, ServiceDataCaja } from '@/actions/types/types'
 
 interface StepFile {
   id: string
@@ -99,11 +94,6 @@ interface VehicleInTracking {
     agua: number
     frenos: number
   }
-  serviceData?: ServiceData
-  serviceDataMotor?: ServiceDataMotor
-  serviceDataCaja?: ServiceDataCaja
-  fotoVehiculo?: string
-  observaciones?: VehicleStep[]
 }
 
 interface VehicleDetailsProps {
@@ -271,8 +261,6 @@ export default function VehicleDetails({
 }: VehicleDetailsProps) {
   const [showFluidConfig, setShowFluidConfig] = useState(false)
   const [localVehicle, setLocalVehicle] = useState(vehicle)
-  const [lavadoCreado, setLavadoCreado] = useState<Lavado | null>(null)
-  const [creandoLavado, setCreandoLavado] = useState(false)
 
   useEffect(() => {
     setLocalVehicle(vehicle)
@@ -298,23 +286,6 @@ export default function VehicleDetails({
       console.error('❌ Error guardando niveles:', error)
       throw error
     }
-  }
-
-  const handleRegalarLavado = async () => {
-    if (!confirm(`¿Regalar un lavado a ${localVehicle.clientName} (${localVehicle.plateNumber})?`)) return
-    setCreandoLavado(true)
-    const result = await crearLavado({
-      patente: localVehicle.plateNumber,
-      clienteNombre: localVehicle.clientName,
-      clienteTelefono: localVehicle.clientPhone,
-      marca: localVehicle.brand,
-      modelo: localVehicle.model,
-      anio: localVehicle.year,
-      servicioOrigen: localVehicle.serviceType,
-    })
-    setCreandoLavado(false)
-    if (result.success && result.lavado) setLavadoCreado(result.lavado)
-    else alert(result.message)
   }
 
   return (
@@ -450,14 +421,6 @@ export default function VehicleDetails({
                 Fluidos
               </button>
               <button
-                onClick={handleRegalarLavado}
-                disabled={creandoLavado}
-                className='flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 bg-sky-600/70 hover:bg-sky-500 text-white font-medium rounded-xl text-xs sm:text-sm transition-all whitespace-nowrap border border-sky-500/30 disabled:opacity-50'
-              >
-                <Sparkles className='w-3.5 h-3.5' strokeWidth={2} />
-                {creandoLavado ? 'Creando…' : 'Regalar lavado'}
-              </button>
-              <button
                 onClick={onDeleteVehicle}
                 className='flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 bg-red-600/70 hover:bg-red-500 text-white font-medium rounded-xl text-xs sm:text-sm transition-all border border-red-500/30'
               >
@@ -500,10 +463,7 @@ export default function VehicleDetails({
                         serviceNumber: serviceCount,
                       }
                       if (fluidLevels !== undefined) vehicleData.fluidLevels = fluidLevels
-                      const cleanData = Object.fromEntries(
-                        Object.entries(vehicleData).filter(([, v]) => v !== undefined)
-                      )
-                      await setDoc(doc(db, 'timeline', timelineDocId), cleanData)
+                      await setDoc(doc(db, 'timeline', timelineDocId), vehicleData)
                       await deleteDoc(doc(db, 'vehicles', vehicle.id))
                       alert(`Servicio finalizado correctamente. Número de servicio: ${serviceCount}`)
                       await onVehicleFinalized()
@@ -648,17 +608,6 @@ export default function VehicleDetails({
                 </div>
               </div>
 
-              {/* Service-specific data */}
-              {localVehicle.serviceDataMotor && (
-                <ServiceDataDisplay serviceData={localVehicle.serviceDataMotor} />
-              )}
-              {localVehicle.serviceDataCaja && (
-                <ServiceDataDisplay serviceData={localVehicle.serviceDataCaja} />
-              )}
-              {!localVehicle.serviceDataMotor && !localVehicle.serviceDataCaja && localVehicle.serviceData && (
-                <ServiceDataDisplay serviceData={localVehicle.serviceData} />
-              )}
-
               {/* Works count */}
               <div className='bg-emerald-900/20 border border-emerald-500/25 p-3 sm:p-4 rounded-xl text-center'>
                 <div className='text-emerald-300 font-extrabold text-2xl sm:text-3xl'>{totalSteps}</div>
@@ -681,8 +630,6 @@ export default function VehicleDetails({
           )}
         </div>
       </div>
-
-      <LavadoLinkModal lavado={lavadoCreado} onClose={() => setLavadoCreado(null)} />
     </motion.div>
   )
 }

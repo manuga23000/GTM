@@ -18,7 +18,7 @@ import {
   AvailabilityCheck,
 } from './types/types'
 import { sendTurnoConfirmationToClient } from '@/lib/emailjs'
-import { getServiceConfig } from './serviceconfig'
+import { getServiceConfig, getVacationMode } from './serviceconfig'
 
 const COLLECTION_NAME = 'turnos'
 
@@ -162,6 +162,27 @@ export async function createTurno(
         }
       }
 
+      // Validate vacation mode - block dates between Jan 31 and Feb 10
+      const vacationConfig = await getVacationMode()
+      if (vacationConfig && vacationConfig.enabled) {
+        const vacationStart = new Date('2026-01-31')
+        const vacationEnd = new Date('2026-02-10')
+        vacationStart.setHours(0, 0, 0, 0)
+        vacationEnd.setHours(23, 59, 59, 999)
+
+        const selectedDate = new Date(turnoData.date)
+        selectedDate.setHours(12, 0, 0, 0)
+
+        if (selectedDate >= vacationStart && selectedDate <= vacationEnd) {
+          return {
+            success: false,
+            message:
+              'Estamos de vacaciones del 31 de enero al 10 de febrero. Por favor, selecciona una fecha después del 10 de febrero.',
+            error: 'VACATION_PERIOD',
+          }
+        }
+      }
+
       // Validate service allowed days if configured
       const serviceConfig = await getServiceAvailabilityConfig(serviceToCheck)
       if (serviceConfig?.allowedDays && serviceConfig.allowedDays.length > 0) {
@@ -244,6 +265,29 @@ export async function checkAvailability(
   service: string
 ): Promise<AvailabilityCheck> {
   try {
+    // Check vacation mode first
+    const vacationConfig = await getVacationMode()
+    if (vacationConfig && vacationConfig.enabled) {
+      const [year, month, day] = date.split('-').map(Number)
+      const checkDate = new Date(year, month - 1, day)
+      checkDate.setHours(12, 0, 0, 0)
+
+      const vacationStart = new Date('2026-01-31')
+      const vacationEnd = new Date('2026-02-10')
+      vacationStart.setHours(0, 0, 0, 0)
+      vacationEnd.setHours(23, 59, 59, 999)
+
+      if (checkDate >= vacationStart && checkDate <= vacationEnd) {
+        return {
+          date,
+          service,
+          available: false,
+          totalSlots: 0,
+          usedSlots: 0,
+        }
+      }
+    }
+
     const serviceConfig = await getServiceAvailabilityConfig(service)
 
     if (!serviceConfig) {

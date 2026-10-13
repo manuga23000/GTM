@@ -102,31 +102,6 @@ export default function VehicleConfig() {
         notes: v.notes || '',
         nextStep: v.nextStep || '',
         fluidLevels: v.fluidLevels || undefined,
-        serviceData: v.serviceData || undefined,
-        serviceDataMotor: v.serviceDataMotor || (v.serviceData?.type === 'motor' ? v.serviceData : undefined),
-        serviceDataCaja: v.serviceDataCaja || (v.serviceData?.type === 'caja' ? v.serviceData : undefined),
-        fotoVehiculo: v.fotoVehiculo || undefined,
-        observaciones: (v.observaciones || []).map(obs => {
-          let obsDate: Date
-          const dateValue = obs.date
-          if (dateValue instanceof Date) {
-            obsDate = dateValue
-          } else if (dateValue && typeof dateValue === 'object' && 'seconds' in dateValue) {
-            const timestamp = dateValue as FirestoreTimestamp
-            obsDate = new Date(timestamp.seconds * 1000)
-          } else {
-            obsDate = new Date()
-          }
-          return {
-            ...obs,
-            status: 'completed' as const,
-            date: obsDate,
-            files: (obs.files || []).map(file => ({
-              ...file,
-              uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(file.uploadedAt),
-            })),
-          }
-        }),
       }))
       setVehiclesInTracking(mapped)
     } catch (error) {
@@ -146,10 +121,6 @@ export default function VehicleConfig() {
               return {
                 ...v,
                 fluidLevels: vehicleData.fluidLevels !== undefined ? vehicleData.fluidLevels : v.fluidLevels,
-                serviceData: vehicleData.serviceData !== undefined ? vehicleData.serviceData : v.serviceData,
-                serviceDataMotor: vehicleData.serviceDataMotor !== undefined ? vehicleData.serviceDataMotor : v.serviceDataMotor,
-                serviceDataCaja: vehicleData.serviceDataCaja !== undefined ? vehicleData.serviceDataCaja : v.serviceDataCaja,
-                fotoVehiculo: vehicleData.fotoVehiculo !== undefined ? vehicleData.fotoVehiculo : v.fotoVehiculo,
                 steps: (vehicleData.steps || []).map(step => {
                   let stepDate: Date
                   const dateValue = step.date
@@ -173,27 +144,6 @@ export default function VehicleConfig() {
                 }),
                 notes: vehicleData.notes || v.notes,
                 nextStep: vehicleData.nextStep || v.nextStep,
-                observaciones: (vehicleData.observaciones || []).map(obs => {
-                  let obsDate: Date
-                  const dateValue = obs.date
-                  if (dateValue instanceof Date) {
-                    obsDate = dateValue
-                  } else if (dateValue && typeof dateValue === 'object' && 'seconds' in dateValue) {
-                    const timestamp = dateValue as FirestoreTimestamp
-                    obsDate = new Date(timestamp.seconds * 1000)
-                  } else {
-                    obsDate = new Date()
-                  }
-                  return {
-                    ...obs,
-                    status: 'completed' as const,
-                    date: obsDate,
-                    files: (obs.files || []).map(file => ({
-                      ...file,
-                      uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(file.uploadedAt),
-                    })),
-                  }
-                }),
               }
             }
             return v
@@ -219,7 +169,6 @@ export default function VehicleConfig() {
     notes: '',
     createdAt: new Date(),
     estimatedCompletionDate: null as Date | null,
-    fotoVehiculo: undefined as string | undefined,
   })
 
   const selectedVehicleData = useMemo(() => {
@@ -242,9 +191,6 @@ export default function VehicleConfig() {
       const historial = await buscarHistorialCompleto(patente)
       if (historial.length > 0) {
         const ultimoServicio = historial[0]
-        const fotoHistorial = historial.find(h => h.fotoVehiculo)?.fotoVehiculo
-          || historial.find(h => h.serviceDataMotor?.fotoVehiculo)?.serviceDataMotor?.fotoVehiculo
-          || historial.find(h => h.serviceDataCaja?.fotoVehiculo)?.serviceDataCaja?.fotoVehiculo
         setNewVehicle(prev => ({
           ...prev,
           plateNumber: patente.toUpperCase(),
@@ -258,7 +204,6 @@ export default function VehicleConfig() {
           serviceType: '',
           notes: '',
           estimatedCompletionDate: null,
-          fotoVehiculo: fotoHistorial || prev.fotoVehiculo,
         }))
         setDatosHistorialCargados(true)
         showMessage(`Datos cargados del historial (${historial.length} servicio${historial.length > 1 ? 's' : ''} anterior${historial.length > 1 ? 'es' : ''})`)
@@ -331,7 +276,6 @@ export default function VehicleConfig() {
           chassisNumber: editVehicle.chassisNumber,
           km: editVehicle.km,
           estimatedCompletionDate: editVehicle.estimatedCompletionDate,
-          fotoVehiculo: editVehicle.fotoVehiculo,
           steps: vehicleData.steps || [],
         })
         if (!createResponse.success) {
@@ -355,7 +299,6 @@ export default function VehicleConfig() {
           km: editVehicle.km,
           createdAt: editVehicle.entryDate,
           estimatedCompletionDate: editVehicle.estimatedCompletionDate,
-          fotoVehiculo: editVehicle.fotoVehiculo,
         })
         if (!response.success) {
           showMessage(response.message || 'Error al actualizar vehículo')
@@ -403,23 +346,11 @@ export default function VehicleConfig() {
           uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(file.uploadedAt),
         })),
       }))
-      const normalizedObservaciones = (editTracking.observaciones || []).map(obs => ({
-        ...obs,
-        files: (obs.files || []).map(file => ({
-          ...file,
-          uploadedAt: file.uploadedAt instanceof Date ? file.uploadedAt : new Date(file.uploadedAt),
-        })),
-      }))
       const updateResult = await updateVehicle(editTracking.plateNumber, {
         steps: normalizedSteps,
-        observaciones: normalizedObservaciones,
         nextStep: editTracking.nextStep,
         notes: editTracking.notes,
         estimatedCompletionDate: editTracking.estimatedCompletionDate,
-        serviceData: editTracking.serviceData,
-        serviceDataMotor: editTracking.serviceDataMotor,
-        serviceDataCaja: editTracking.serviceDataCaja,
-        fotoVehiculo: editTracking.fotoVehiculo,
       })
       if (updateResult.success) {
         await fetchVehicles()
@@ -448,7 +379,7 @@ export default function VehicleConfig() {
       const response = await createVehicle({ ...newVehicle, createdAt: newVehicle.createdAt, km: newVehicle.km, steps: [] })
       if (response.success) {
         await fetchVehicles()
-        setNewVehicle({ plateNumber: '', brand: '', model: '', year: new Date().getFullYear(), clientName: '', clientPhone: '', serviceType: '', chassisNumber: '', km: 0, notes: '', createdAt: new Date(), estimatedCompletionDate: null, fotoVehiculo: undefined })
+        setNewVehicle({ plateNumber: '', brand: '', model: '', year: new Date().getFullYear(), clientName: '', clientPhone: '', serviceType: '', chassisNumber: '', km: 0, notes: '', createdAt: new Date(), estimatedCompletionDate: null })
         setDatosHistorialCargados(false)
         setShowAddForm(false)
         showMessage('Vehículo agregado exitosamente')
@@ -464,26 +395,24 @@ export default function VehicleConfig() {
     }
   }
 
-  const getStatusColor = (status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered' | 'finalized') => {
+  const getStatusColor = (status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered') => {
     switch (status) {
       case 'received':     return 'bg-blue-600'
       case 'in-diagnosis': return 'bg-amber-600'
       case 'in-repair':    return 'bg-orange-600'
       case 'completed':    return 'bg-emerald-600'
       case 'delivered':    return 'bg-zinc-600'
-      case 'finalized':    return 'bg-purple-600'
       default:             return 'bg-zinc-600'
     }
   }
 
-  const getStatusText = (status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered' | 'finalized') => {
+  const getStatusText = (status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered') => {
     switch (status) {
       case 'received':     return 'Recibido'
       case 'in-diagnosis': return 'En diagnóstico'
       case 'in-repair':    return 'En reparación'
       case 'completed':    return 'Completado'
       case 'delivered':    return 'Entregado'
-      case 'finalized':    return 'Finalizado'
       default:             return 'Desconocido'
     }
   }

@@ -11,7 +11,6 @@ import ServiceConfig from './ServiceConfig'
 import VehicleConfig from './VehicleConfig'
 import ExpenseManager from './ExpenseManager'
 import VehicleHistory from './VehicleHistory'
-import LavadosManager from './LavadosManager'
 import Link from 'next/link'
 import {
   CalendarDays,
@@ -24,7 +23,6 @@ import {
   CheckCircle2,
   Wrench,
   History,
-  Sparkles,
 } from 'lucide-react'
 
 const tabs = [
@@ -34,7 +32,6 @@ const tabs = [
   { id: 'vehicles', label: 'Autos',      Icon: Car          },
   { id: 'history',  label: 'Historial',  Icon: History      },
   { id: 'expenses', label: 'Gastos',     Icon: Wallet       },
-  { id: 'lavados',  label: 'Lavados',    Icon: Sparkles     },
 ] as const
 
 type TabId = (typeof tabs)[number]['id']
@@ -266,7 +263,6 @@ export default function AdminDashboard() {
             {activeTab === 'vehicles' && <VehicleConfig />}
             {activeTab === 'history'  && <VehicleHistory />}
             {activeTab === 'expenses' && <ExpenseManager />}
-            {activeTab === 'lavados'  && <LavadosManager />}
           </motion.div>
         </AnimatePresence>
       </div>

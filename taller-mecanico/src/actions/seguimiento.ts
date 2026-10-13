@@ -10,7 +10,6 @@ import {
   DocumentData,
 } from 'firebase/firestore'
 import { db } from '../lib/firebase'
-import type { ServiceData, ServiceDataMotor, ServiceDataCaja } from './types/types'
 
 export interface StepFile {
   id: string
@@ -105,11 +104,6 @@ export interface SeguimientoData {
     agua: number
     frenos: number
   }
-  serviceData?: ServiceData
-  serviceDataMotor?: ServiceDataMotor
-  serviceDataCaja?: ServiceDataCaja
-  fotoVehiculo?: string
-  observaciones?: TrabajoRealizado[]
 }
 
 /**
@@ -271,13 +265,6 @@ export async function getSeguimientoByPatente(
       imagenes: data.imagenes || [],
       km: data.km,
       fluidLevels: data.fluidLevels || undefined,
-      serviceData: data.serviceData || undefined,
-      serviceDataMotor: data.serviceDataMotor || (data.serviceData?.type === 'motor' ? data.serviceData as ServiceDataMotor : undefined),
-      serviceDataCaja: data.serviceDataCaja || (data.serviceData?.type === 'caja' ? data.serviceData as ServiceDataCaja : undefined),
-      fotoVehiculo: data.fotoVehiculo || undefined,
-      observaciones: Array.isArray(data.observaciones)
-        ? mapearTrabajosRealizados(data.observaciones as FirestoreStep[])
-        : [],
     }
 
     return seguimientoData
@@ -428,13 +415,6 @@ export async function buscarHistorialCompleto(
         fechaFinalizado: formatearFecha(data.finalizedAt),
         km: data.km,
         fluidLevels: data.fluidLevels || undefined,
-        serviceData: data.serviceData || undefined,
-        serviceDataMotor: data.serviceDataMotor || (data.serviceData?.type === 'motor' ? data.serviceData as ServiceDataMotor : undefined),
-        serviceDataCaja: data.serviceDataCaja || (data.serviceData?.type === 'caja' ? data.serviceData as ServiceDataCaja : undefined),
-        fotoVehiculo: data.fotoVehiculo || undefined,
-        observaciones: Array.isArray(data.observaciones)
-          ? mapearTrabajosRealizados(data.observaciones as FirestoreStep[])
-          : [],
       }
 
       historial.push(servicioHistorico)
@@ -447,3 +427,29 @@ export async function buscarHistorialCompleto(
   }
 }
 
+export async function buscarVehiculosPorPatente(
+  _patenteParc: string
+): Promise<SeguimientoData[]> {
+  try {
+    return []
+  } catch (error) {
+    console.error('Error en búsqueda parcial:', error)
+    return []
+  }
+}
+
+export async function actualizarEstadoVehiculo(
+  patente: string,
+  _nuevoEstado: string,
+  _notas?: string
+): Promise<boolean> {
+  try {
+    const patenteNormalizada = patente.toUpperCase().trim()
+    const _docRef = doc(db, 'vehicles', patenteNormalizada)
+
+    return true
+  } catch (error) {
+    console.error('Error actualizando estado:', error)
+    return false
+  }
+}

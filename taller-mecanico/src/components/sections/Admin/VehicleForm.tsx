@@ -16,7 +16,6 @@ interface NewVehicleData {
   notes: string
   createdAt: Date
   estimatedCompletionDate: Date | null
-  fotoVehiculo: string | undefined
 }
 
 interface VehicleInTracking {
@@ -31,7 +30,7 @@ interface VehicleInTracking {
   chassisNumber?: string
   entryDate: Date
   estimatedCompletionDate?: Date | null
-  status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered' | 'finalized'
+  status: 'received' | 'in-diagnosis' | 'in-repair' | 'completed' | 'delivered'
   km?: number
   steps: VehicleStep[]
   notes: string

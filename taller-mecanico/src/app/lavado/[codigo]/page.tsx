@@ -84,7 +84,7 @@ export default function LavadoPage() {
             label: 'Cliente',
             value: vista.lavado.clienteNombre.trim().split(/\s+/)[0] || '—',
           },
-          { label: 'Incluye', value: 'Lavado completo' },
+          { label: 'Incluye', value: 'Lavado' },
           { label: 'Vence', value: formatearFecha(vista.lavado.venceAt) },
         ]
       : []
@@ -188,28 +188,39 @@ export default function LavadoPage() {
 
                 {/* Lavadero */}
                 <div className='bg-slate-50 border-t border-zinc-100 px-5 py-4'>
-                  <p className='text-[11px] font-bold tracking-[0.25em] text-zinc-400 uppercase mb-3'>
+                  <p className='text-[11px] font-bold tracking-[0.25em] text-zinc-400 uppercase'>
                     Dónde usarlo
                   </p>
+                  <p className='mt-1 font-extrabold text-slate-900 text-lg leading-tight'>
+                    {LAVADERO.nombre}
+                  </p>
+                  <p className='text-zinc-500 text-xs mb-3'>
+                    Dos entradas, es el mismo lugar
+                  </p>
                   <div className='space-y-2'>
-                    <a
-                      href={LAVADERO.mapsUrl}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                      className='flex items-center gap-3 p-3 rounded-2xl bg-white border border-zinc-200 active:bg-zinc-50'
-                    >
-                      <span className='w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0'>
-                        <MapPin className='w-5 h-5 text-amber-600' strokeWidth={2.2} />
-                      </span>
-                      <span className='leading-tight'>
-                        <span className='block font-bold text-slate-900 text-[15px]'>
-                          {LAVADERO.direccion}
+                    {LAVADERO.entradas.map(entrada => (
+                      <a
+                        key={entrada.direccion}
+                        href={entrada.mapsUrl}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='flex items-center gap-3 p-3 rounded-2xl bg-white border border-zinc-200 active:bg-zinc-50'
+                      >
+                        <span className='w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0'>
+                          <MapPin className='w-5 h-5 text-amber-600' strokeWidth={2.2} />
                         </span>
-                        <span className='block text-zinc-500 text-xs mt-0.5'>
-                          {LAVADERO.referencia}
+                        <span className='leading-tight'>
+                          <span className='block font-bold text-slate-900 text-[15px]'>
+                            {entrada.direccion}
+                          </span>
+                          {entrada.referencia && (
+                            <span className='block text-zinc-500 text-xs mt-0.5'>
+                              {entrada.referencia}
+                            </span>
+                          )}
                         </span>
-                      </span>
-                    </a>
+                      </a>
+                    ))}
                     <a
                       href={`tel:+54${LAVADERO.telefono}`}
                       className='flex items-center gap-3 p-3 rounded-2xl bg-white border border-zinc-200 active:bg-zinc-50'
@@ -217,8 +228,13 @@ export default function LavadoPage() {
                       <span className='w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0'>
                         <Phone className='w-5 h-5 text-amber-600' strokeWidth={2.2} />
                       </span>
-                      <span className='font-bold text-slate-900 text-[15px] tabular-nums'>
-                        {LAVADERO.telefonoVisible}
+                      <span className='leading-tight'>
+                        <span className='block font-bold text-slate-900 text-[15px] tabular-nums'>
+                          {LAVADERO.telefonoVisible}
+                        </span>
+                        <span className='block text-zinc-500 text-xs mt-0.5'>
+                          Para acordar un turno
+                        </span>
                       </span>
                     </a>
                   </div>
